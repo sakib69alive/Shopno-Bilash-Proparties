@@ -9,6 +9,7 @@ import { DesktopNav } from "./DesktopNav";
 import { Logo } from "./Logo";
 import { MenuButton } from "./MenuButton";
 import { MobileNav } from "./MobileNav";
+import { SearchTrigger } from "@/components/search/SearchTrigger";
 import { SavedTrigger } from "@/components/saved/SavedTrigger";
 import { cn } from "@/lib/utils";
 import type { CompanySettings } from "@/types/settings";
@@ -134,6 +135,7 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
             <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} tone={tone} />
             <div className="flex items-center gap-4 lg:gap-6">
               <DesktopNav tone={tone} />
+              <SearchTrigger tone={tone} variant="full" />
               <SavedTrigger tone={tone} />
               {settings?.showPublicSignInLink && (
                 <Link

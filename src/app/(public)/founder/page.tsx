@@ -4,7 +4,9 @@ import { FounderStory } from "@/components/founder/FounderStory";
 import { FounderStatement } from "@/components/founder/FounderStatement";
 import { FounderPrinciples } from "@/components/founder/FounderPrinciples";
 import { FounderGallery } from "@/components/founder/FounderGallery";
+import { TeamSection } from "@/components/founder/TeamSection";
 import { founderProfileRepository, FOUNDER_PROFILE_ID } from "@/features/founderProfile/repository";
+import { listTeamMembersOrdered } from "@/features/teamMembers/repository";
 
 export const metadata: Metadata = {
   title: "Founder",
@@ -21,6 +23,8 @@ export default async function FounderPage() {
   const profile = await founderProfileRepository.findById(FOUNDER_PROFILE_ID);
   if (!profile) return null;
 
+  const teamMembers = await listTeamMembersOrdered();
+
   return (
     <>
       <FounderHero profile={profile} />
@@ -28,6 +32,7 @@ export default async function FounderPage() {
       <FounderStatement profile={profile} />
       <FounderPrinciples profile={profile} />
       <FounderGallery profile={profile} />
+      <TeamSection members={teamMembers} />
     </>
   );
 }

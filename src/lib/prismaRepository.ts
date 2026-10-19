@@ -69,6 +69,7 @@ export type PrismaJsonModel =
   | "galleryImage"
   | "pageContent"
   | "founderProfile"
+  | "teamMember"
   | "costAllocation"
   | "ownerContribution"
   | "contributionPayment"

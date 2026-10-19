@@ -405,6 +405,17 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         ],
       },
       {
+        label: "Team & Partners",
+        href: "/admin/content/team",
+        permission: "content.view",
+        summary: "Partners and leadership shown in a grid alongside the Founder on the public Founder page — a list, so add as many as the company actually has.",
+        details: [
+          "Each entry needs a Name and a Title/Role; Photo and a short Bio are optional. Without a photo, the public grid falls back to a placeholder image rather than hiding the card.",
+          "Entries publish in the order you added them, same as Company Policy rules — to reorder, delete and re-add in the order you want.",
+          "This is separate from Founder Profile: Founder Profile is the one owner/founder's full page (hero, story, statement), while Team & Partners is everyone else shown alongside them.",
+        ],
+      },
+      {
         label: "Our Story",
         href: "/admin/content/story",
         permission: "content.view",
@@ -514,7 +525,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         summary: "Download a full copy of everything in this system (or just the data, without images) to your own device, and restore from one if something ever goes wrong.",
         details: [
           "\"Full Backup\" includes every record plus every uploaded photo/document — the complete picture, larger file. \"Data Only\" is every record and number with no images — small and fast, good for a quick, frequent backup.",
-          "A backup covers everything: projects, units, sales, payments, expenses, owners, documents, and every piece of public-site content editable from this admin panel (Our Story, Founder Profile, Company Policy, News, Gallery, Settings, all of it).",
+          "A backup covers everything: projects, units, sales, payments, expenses, owners, documents, and every piece of public-site content editable from this admin panel (Our Story, Founder Profile, Team & Partners, Company Policy, News, Gallery, Settings, all of it).",
           "Restoring replaces ALL current data with the backup's contents — anything added or changed since that backup was taken is lost, and this can't be undone. It requires typing a confirmation phrase on purpose, so it can never happen by a stray click.",
           "A restored backup's files go back to exactly the same place they came from automatically — there's nothing to sort or place by hand.",
         ],

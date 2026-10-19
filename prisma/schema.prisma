@@ -284,6 +284,15 @@ model FounderProfile {
   data Json
 }
 
+// Additional leadership/partners shown alongside the Founder on the public
+// Founder page — a list (unlike FounderProfile's singleton), admin can add
+// as many as needed. Sorted by creation order at read time, same reasoning
+// as CompanyMilestone/PolicyRule: no stored order field to keep in sync.
+model TeamMember {
+  id   String @id
+  data Json
+}
+
 model CostAllocation {
   id   String @id
   data Json

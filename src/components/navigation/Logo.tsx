@@ -25,8 +25,8 @@ export interface LogoProps {
 // has to guess an aspect ratio (and never causes layout shift). A custom
 // uploaded logo is rendered at the same box regardless of its own real
 // aspect ratio (object-contain), so this stays accurate enough either way.
-const LOGO_WIDTH = 1477;
-const LOGO_HEIGHT = 1065;
+const LOGO_WIDTH = 1200;
+const LOGO_HEIGHT = 912;
 
 const DEFAULT_NAME = "Shopno Bilash Properties";
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { LogIn } from "lucide-react";
+import { LogIn, Search } from "lucide-react";
 import {
   PUBLIC_NAV_PRIMARY,
   PUBLIC_NAV_MORE,
@@ -11,6 +11,7 @@ import {
 } from "@/config/navigation";
 import { buttonVariants } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
+import { useSearch } from "@/components/search/SearchContext";
 import { cn } from "@/lib/utils";
 
 export interface MobileNavProps {
@@ -25,6 +26,12 @@ const FOCUSABLE = 'a[href], button:not([disabled])';
 
 export function MobileNav({ id, open, onClose, showSignIn }: MobileNavProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const { openSearch } = useSearch();
+
+  function handleSearchClick() {
+    onClose();
+    openSearch();
+  }
 
   // Lock body scroll and move focus into the panel while open.
   useEffect(() => {
@@ -81,6 +88,19 @@ export function MobileNav({ id, open, onClose, showSignIn }: MobileNavProps) {
       )}
     >
       <nav aria-label="Primary" className="flex flex-1 flex-col justify-center gap-2 px-6">
+        <button
+          type="button"
+          onClick={handleSearchClick}
+          className={cn(
+            "text-fg-muted hover:border-fg-subtle hover:text-fg border-border-strong reveal mb-4 flex items-center gap-2.5 rounded-md border px-4 py-3 transition-colors",
+            open && "is-visible",
+          )}
+          style={{ transitionDelay: open ? "40ms" : undefined }}
+        >
+          <Search aria-hidden className="size-4.5" />
+          <span className="text-body-sm">Search</span>
+        </button>
+
         {PUBLIC_NAV_PRIMARY.map((item, i) => (
           <Link
             key={item.href}

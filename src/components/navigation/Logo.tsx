@@ -61,6 +61,14 @@ export function Logo({ className, href = "/", src, mode = "image", displayName, 
           width={LOGO_WIDTH}
           height={LOGO_HEIGHT}
           priority
+          // Next's image optimizer flattens transparency onto an opaque
+          // white background when it re-encodes an image (confirmed: the
+          // optimized output's alpha channel is gone even though the
+          // source file has real alpha) — exactly the "white box" this
+          // transparent mark exists to avoid. The logo is already a small,
+          // pre-compressed file at every call site, so there's nothing to
+          // gain from Next re-processing it anyway.
+          unoptimized
           className="h-full w-auto object-contain"
         />
       )}

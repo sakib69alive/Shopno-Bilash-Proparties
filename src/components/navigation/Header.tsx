@@ -20,12 +20,31 @@ import type { CompanySettings } from "@/types/settings";
 // pill has its own solid fill regardless of tone).
 const SAMPLE_X_FROM_RIGHT = 100;
 
+// Hysteresis around the compact/large switch, rather than one single
+// threshold — Lenis (the site's smooth-scroll) settles in sub-pixel steps
+// around a resting position, and a single threshold re-fires both state
+// setters every one of those steps right at the boundary, which read as a
+// flicker between the two sizes. A dead zone (COMPACT_EXIT < y <=
+// COMPACT_ENTER) keeps whichever state is already active.
+const COMPACT_ENTER = 96;
+const COMPACT_EXIT = 56;
+
+// Same reasoning for show/hide-on-scroll: ignore any scroll delta smaller
+// than this between two samples (Lenis momentum, not a deliberate flick),
+// so the header doesn't flip visibility on noise.
+const MIN_SCROLL_DELTA = 6;
+
 /**
- * Global site header — permanently transparent, on every page and at every
- * scroll position (no solid/frosted fill; that read as a heavy opaque bar
- * once scrolled). Nav content switches between a dark-on-light "default"
- * tone and a light-on-dark "inverted" tone depending on what's actually
- * scrolled underneath it right now, detected live rather than assumed:
+ * Global site header — permanently transparent (no solid/frosted fill; that
+ * read as a heavy opaque bar once scrolled), on every page. It's large at
+ * the very top of the page (a bigger logo, matching a hero's own scale) and
+ * shrinks to its normal compact size as soon as the visitor scrolls past
+ * `COMPACT_THRESHOLD`; once compact, it hides on scroll-down and reappears
+ * (still compact) on scroll-up, so it's out of the way while reading but a
+ * scroll-up gesture always brings navigation back. Nav content also switches
+ * between a dark-on-light "default" tone and a light-on-dark "inverted" tone
+ * depending on what's actually scrolled underneath it right now, detected
+ * live rather than assumed:
  *
  * `mix-blend-mode: difference` was tried first (auto-invert with zero
  * tracking) but doesn't actually work for this — a `position: fixed`
@@ -50,6 +69,11 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
   const pathname = usePathname();
   const headerRef = useRef<HTMLElement>(null);
   const [sampledTone, setSampledTone] = useState<"default" | "inverted">("default");
+  // `compact` = past COMPACT_THRESHOLD (small logo, eligible to hide/reveal);
+  // `hidden` only ever applies once compact — the large top-of-page state is
+  // never hidden, so there's always a way back to a visible header.
+  const [compact, setCompact] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   // MobileNav is its own solid light sheet drawn above everything once
   // open — geometry-only dark detection below can't "see" that it's
@@ -68,6 +92,8 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
     if (mobileOpen) return;
 
     let raf = 0;
+    let lastScrollY = window.scrollY;
+    let isCompact = window.scrollY > COMPACT_ENTER;
 
     function sample() {
       const header = headerRef.current;
@@ -84,6 +110,27 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
         }
       }
       setSampledTone(dark ? "inverted" : "default");
+
+      const scrollY = window.scrollY;
+      const delta = scrollY - lastScrollY;
+
+      if (isCompact && scrollY <= COMPACT_EXIT) {
+        isCompact = false;
+      } else if (!isCompact && scrollY > COMPACT_ENTER) {
+        isCompact = true;
+      }
+
+      if (!isCompact) {
+        setCompact(false);
+        setHidden(false);
+      } else {
+        setCompact(true);
+        if (Math.abs(delta) > MIN_SCROLL_DELTA) {
+          setHidden(delta > 0);
+        }
+      }
+
+      lastScrollY = scrollY;
     }
 
     function onScroll() {
@@ -127,12 +174,31 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
+  const effectivelyHidden = hidden && !mobileOpen;
+
   return (
     <>
-      <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 border-b border-transparent bg-transparent">
+      <header
+        ref={headerRef}
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 border-b border-transparent bg-transparent transition-transform duration-300 ease-[var(--ease-standard)]",
+          effectivelyHidden && "-translate-y-full",
+        )}
+      >
         <Container>
-          <div className="flex h-16 items-center justify-between">
-            <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} tone={tone} />
+          <div
+            className={cn(
+              "flex items-center justify-between transition-[height] duration-300 ease-[var(--ease-standard)]",
+              compact ? "h-16" : "h-20 sm:h-24 lg:h-28",
+            )}
+          >
+            <Logo
+              src={settings?.logo}
+              mode={settings?.logoMode}
+              displayName={settings?.displayName}
+              tone={tone}
+              className={compact ? undefined : "h-16 sm:h-20 lg:h-24"}
+            />
             <div className="flex items-center gap-4 lg:gap-6">
               <DesktopNav tone={tone} />
               <SearchTrigger tone={tone} variant="full" />

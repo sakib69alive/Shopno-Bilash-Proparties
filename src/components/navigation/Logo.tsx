@@ -43,7 +43,10 @@ export function Logo({ className, href = "/", src, mode = "image", displayName, 
     <Link
       href={href}
       aria-label={`${name} — home`}
-      className={cn("inline-flex h-12 shrink-0 items-center transition-opacity duration-150 hover:opacity-85 sm:h-16", className)}
+      className={cn(
+        "inline-flex h-12 shrink-0 items-center transition-[height,opacity] duration-300 ease-[var(--ease-standard)] hover:opacity-85 sm:h-16",
+        className,
+      )}
     >
       {mode === "name" ? (
         <span

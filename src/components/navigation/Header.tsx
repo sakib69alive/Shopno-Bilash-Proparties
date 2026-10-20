@@ -181,15 +181,20 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
       <header
         ref={headerRef}
         className={cn(
-          "fixed inset-x-0 top-0 z-50 border-b border-transparent bg-transparent transition-transform duration-300 ease-[var(--ease-standard)]",
+          // `will-change-transform` pre-promotes this to its own GPU layer
+          // before the first animation runs — without it, Chromium can
+          // render that very first composited frame (right after page
+          // load, over the hero's gradient) as solid black until some
+          // later repaint (e.g. a scroll) forces it to recomposite.
+          "fixed inset-x-0 top-0 z-50 border-b border-transparent bg-transparent will-change-transform transition-transform duration-300 ease-[var(--ease-standard)]",
           effectivelyHidden && "-translate-y-full",
         )}
       >
         <Container>
           <div
             className={cn(
-              "flex items-center justify-between transition-[height] duration-300 ease-[var(--ease-standard)]",
-              compact ? "h-16" : "h-20 sm:h-24 lg:h-28",
+              "flex items-center justify-between",
+              compact ? "h-16" : "h-24 sm:h-32 lg:h-36",
             )}
           >
             <Logo
@@ -197,7 +202,7 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
               mode={settings?.logoMode}
               displayName={settings?.displayName}
               tone={tone}
-              className={compact ? undefined : "h-16 sm:h-20 lg:h-24"}
+              className={compact ? undefined : "h-20 sm:h-28 lg:h-32"}
             />
             <div className="flex items-center gap-4 lg:gap-6">
               <DesktopNav tone={tone} />

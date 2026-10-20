@@ -30,7 +30,7 @@ export interface LogoProps {
 // custom uploaded logo is rendered at the same box regardless of its own
 // real aspect ratio (object-contain), so this stays accurate enough either way.
 const LOGO_WIDTH = 1200;
-const LOGO_HEIGHT = 912;
+const LOGO_HEIGHT = 756;
 
 const DEFAULT_NAME = "Shopno Bilash Properties";
 
@@ -43,10 +43,7 @@ export function Logo({ className, href = "/", src, mode = "image", displayName, 
     <Link
       href={href}
       aria-label={`${name} — home`}
-      className={cn(
-        "inline-flex h-12 shrink-0 items-center transition-[height,opacity] duration-300 ease-[var(--ease-standard)] hover:opacity-85 sm:h-16",
-        className,
-      )}
+      className={cn("inline-flex h-12 shrink-0 items-center transition-opacity duration-150 hover:opacity-85 sm:h-16", className)}
     >
       {mode === "name" ? (
         <span

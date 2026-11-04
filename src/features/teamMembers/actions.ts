@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { teamMemberRepository } from "@/features/teamMembers/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { TEAM_GROUPS, type TeamGroup } from "@/types/teamMember";
 
 export interface TeamMemberFormState {
   error?: string;
@@ -24,11 +25,13 @@ function parseTeamMemberFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
+  const groupRaw = String(formData.get("group") ?? "partner");
+  const group: TeamGroup = (TEAM_GROUPS as string[]).includes(groupRaw) ? (groupRaw as TeamGroup) : "partner";
 
   if (!name || name.length < 2) return { error: "Enter a name." } as const;
   if (!title || title.length < 2) return { error: "Enter a title/role." } as const;
 
-  return { fields: { name, title, bio: bio || undefined } } as const;
+  return { fields: { name, title, group, bio: bio || undefined } } as const;
 }
 
 /** A file input with nothing chosen still shows up in FormData as an empty File — treat that as "no file". */

@@ -97,7 +97,10 @@ export function Header({ settings }: { settings: CompanySettings | null }) {
 
     function sample() {
       const header = headerRef.current;
-      if (!header) return;
+      // Below `lg` the phone shell (components/mobile/) replaces this
+      // header and the layout hides it with `display: none` — nothing to
+      // sample, so skip the work (and the state updates) there.
+      if (!header || header.getClientRects().length === 0) return;
       const x = Math.max(0, window.innerWidth - SAMPLE_X_FROM_RIGHT);
       const y = header.getBoundingClientRect().height / 2;
 

@@ -40,6 +40,7 @@ import {
 } from "@/features/ownerPortal/queries";
 import type { OwnerType } from "@/types/finance/costAllocation";
 import type { Project } from "@/types/project";
+import { resolveUnitPlan } from "@/lib/unitPlan";
 
 function Feature({ icon: Icon, label, value }: { icon: typeof Ruler; label: string; value: string }) {
   return (
@@ -177,7 +178,7 @@ export async function PropertyDetailPage({ base, unitId }: { base: string; unitI
         </Reveal>
       </div>
 
-      <PropertyFloorPlan src={unit.layoutImage} unitLabel={`Unit ${unit.unitNumber}`} />
+      <PropertyFloorPlan src={resolveUnitPlan(unit, project, floor?.floorNumber).src} unitLabel={`Unit ${unit.unitNumber}`} />
 
       <Reveal>
         <SectionHeading>Parking</SectionHeading>

@@ -15,6 +15,9 @@ import Lenis from "lenis";
 export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Touch devices already have native momentum scrolling; Lenis on top of it
+    // only adds latency and fights the browser's own gestures.
+    if (window.matchMedia("(pointer: coarse), (max-width: 1023.98px)").matches) return;
 
     // `autoRaf: true` lets Lenis drive its own internal rAF loop instead of
     // a second, separate one here — two independent per-frame loops (this

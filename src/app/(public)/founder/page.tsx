@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { FounderM } from "@/components/mobile/FounderM";
 import { FounderHero } from "@/components/founder/FounderHero";
 import { FounderStory } from "@/components/founder/FounderStory";
 import { FounderStatement } from "@/components/founder/FounderStatement";
@@ -27,12 +29,15 @@ export default async function FounderPage() {
 
   return (
     <>
+      <FounderM profile={profile} members={teamMembers} />
+      <DesktopOnly>
       <FounderHero profile={profile} />
       <FounderStory profile={profile} />
       <FounderStatement profile={profile} />
       <FounderPrinciples profile={profile} />
       <FounderGallery profile={profile} />
       <TeamSection members={teamMembers} />
+      </DesktopOnly>
     </>
   );
 }

@@ -75,6 +75,7 @@ async function parseUnitFields(formData: FormData) {
   const additionalChargesRaw = String(formData.get("additionalCharges") ?? "");
   const discountRaw = String(formData.get("discount") ?? "");
   const status = String(formData.get("status") ?? "");
+  const unitTypeIdRaw = String(formData.get("unitTypeId") ?? "").trim();
 
   if (!projectId) return { error: "Choose a project." } as const;
   const project = await projectRepository.findById(projectId);
@@ -88,6 +89,11 @@ async function parseUnitFields(formData: FormData) {
   if (!unitNumber) return { error: "Enter a unit number." } as const;
   if (!isUnitStatus(status)) return { error: "Choose a valid status." } as const;
   if (facing && !isUnitFacing(facing)) return { error: "Choose a valid facing." } as const;
+
+  // Blank = match the blueprint type automatically from the flat number; otherwise it must be one of this project's types.
+  if (unitTypeIdRaw && !(project.unitTypes ?? []).some((t) => t.id === unitTypeIdRaw)) {
+    return { error: "That blueprint type doesn't belong to this project." } as const;
+  }
 
   const sizeSqft = toOptionalNumber(sizeSqftRaw) ?? 0;
   const basePrice = toOptionalNumber(basePriceRaw) ?? 0;
@@ -107,6 +113,7 @@ async function parseUnitFields(formData: FormData) {
       balconies: toOptionalNumber(balconiesRaw) ?? 0,
       parkingSpaces: toOptionalNumber(parkingSpacesRaw) ?? 0,
       facing: facing ? (facing as UnitFacing) : undefined,
+      unitTypeId: unitTypeIdRaw || undefined,
       basePrice,
       additionalCharges,
       discount,
@@ -154,6 +161,7 @@ export async function createUnit(_prevState: UnitFormState, formData: FormData):
     parkingSpaces: fields.parkingSpaces,
     facing: fields.facing,
     layoutImage,
+    unitTypeId: fields.unitTypeId,
     galleryImages,
     basePrice: { amount: fields.basePrice, currency: "BDT" },
     additionalCharges: { amount: fields.additionalCharges, currency: "BDT" },
@@ -191,6 +199,10 @@ export async function updateUnit(id: string, _prevState: UnitFormState, formData
       const saved = await saveUploadedFile(layoutFile, "units");
       if (existing.layoutImage) await deleteUploadedFile(existing.layoutImage);
       layoutImage = saved.url;
+    } else if (formData.get("removeLayoutImage") === "on" && existing.layoutImage) {
+      // Drop the flat's own custom plan so it falls back to its blueprint type.
+      await deleteUploadedFile(existing.layoutImage);
+      layoutImage = undefined;
     }
     if (galleryFiles.length > 0) {
       const saved = await Promise.all(galleryFiles.map((f) => saveUploadedFile(f, "units")));
@@ -213,6 +225,7 @@ export async function updateUnit(id: string, _prevState: UnitFormState, formData
     parkingSpaces: fields.parkingSpaces,
     facing: fields.facing,
     layoutImage,
+    unitTypeId: fields.unitTypeId,
     galleryImages,
     basePrice: { amount: fields.basePrice, currency: "BDT" },
     additionalCharges: { amount: fields.additionalCharges, currency: "BDT" },

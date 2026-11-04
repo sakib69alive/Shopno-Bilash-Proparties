@@ -36,7 +36,7 @@ export function PropertyFloorPlan({ src, unitLabel }: { src?: string; unitLabel:
         </button>
       </Reveal>
 
-      <Lightbox images={[{ src, alt }]} index={open ? 0 : null} onClose={() => setOpen(false)} onNavigate={() => {}} label="Floor plan" />
+      <Lightbox images={[{ src, alt }]} index={open ? 0 : null} onClose={() => setOpen(false)} onNavigate={() => {}} label="Floor plan" surface="light" />
     </>
   );
 }

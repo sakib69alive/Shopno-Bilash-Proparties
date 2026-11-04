@@ -45,7 +45,7 @@ export function ConstructionTimelineChart({ phases, effectiveProgressOf }: Const
   return (
     <div className="flex flex-col gap-3">
       {/* Desktop/tablet: proportional bar chart */}
-      <div className="hidden overflow-x-auto sm:block">
+      <div className="hidden overflow-x-auto scrollbar-none sm:block">
         <div className="min-w-[640px]">
           <div className="relative flex flex-col gap-2">
             {todayPercent >= 0 && todayPercent <= 100 && (

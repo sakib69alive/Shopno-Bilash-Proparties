@@ -55,7 +55,7 @@ export default async function ContractorPaymentReportPage({ searchParams }: Page
         {rows.length === 0 ? (
           <EmptyState title="No contractor payments yet" description="Payments recorded against contractors will appear here." />
         ) : (
-          <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+          <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">

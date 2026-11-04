@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { ConstructionDetailM } from "@/components/mobile/ConstructionM";
 import { ConstructionBeforeAfter } from "@/components/construction/ConstructionBeforeAfter";
 import { ConstructionClosingCTA } from "@/components/construction/ConstructionClosingCTA";
 import { ConstructionCurrentAndUpcoming } from "@/components/construction/ConstructionCurrentAndUpcoming";
@@ -39,6 +41,8 @@ export default async function ConstructionProgressPage({ params }: PageProps) {
 
   return (
     <>
+      <ConstructionDetailM project={project} progress={progress} hasUnits={hasUnits} />
+      <DesktopOnly>
       <ConstructionHeader project={project} progress={progress} />
       <ConstructionOverallProgress progress={progress} />
       <ConstructionTimeline progress={progress} />
@@ -46,6 +50,7 @@ export default async function ConstructionProgressPage({ params }: PageProps) {
       <ConstructionBeforeAfter progress={progress} />
       <ConstructionCurrentAndUpcoming progress={progress} />
       <ConstructionClosingCTA project={project} hasUnits={hasUnits} />
+      </DesktopOnly>
     </>
   );
 }

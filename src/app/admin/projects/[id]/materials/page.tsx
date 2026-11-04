@@ -148,7 +148,7 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
 
           <section>
             <h2 className="text-label text-fg-subtle mb-3 uppercase">Stock</h2>
-            <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">

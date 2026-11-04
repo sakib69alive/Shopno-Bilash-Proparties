@@ -8,7 +8,7 @@ import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectRepository } from "@/features/projects/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
-import type { ProjectStatus } from "@/types/project";
+import type { ProjectStatus, UnitType } from "@/types/project";
 
 export interface ProjectFormState {
   error?: string;
@@ -59,6 +59,54 @@ function getUploadedFile(formData: FormData, field: string): File | null {
 
 function getUploadedFiles(formData: FormData, field: string): File[] {
   return formData.getAll(field).filter((f): f is File => f instanceof File && f.size > 0);
+}
+
+/**
+ * Zips the Blueprint-types rows (parallel same-named fields) back into
+ * `UnitType[]`, saving any newly chosen image and removing files that a
+ * replaced or deleted type no longer uses. A row with nothing filled in is
+ * ignored; a row with an image or code but no name is an error.
+ */
+async function buildUnitTypes(formData: FormData, existing: UnitType[] = []): Promise<{ types: UnitType[] } | { error: string }> {
+  const ids = formData.getAll("unitTypeId").map(String);
+  const names = formData.getAll("unitTypeName").map((v) => String(v).trim());
+  const codes = formData.getAll("unitTypeCode").map((v) => String(v).trim());
+  const urls = formData.getAll("unitTypeImageUrl").map(String);
+  const files = formData.getAll("unitTypeImage");
+
+  const types: UnitType[] = [];
+  const usedCodes = new Set<string>();
+  try {
+    for (let i = 0; i < names.length; i++) {
+      const file = files[i] instanceof File && (files[i] as File).size > 0 ? (files[i] as File) : null;
+      const previous = existing.find((t) => t.id === ids[i]);
+      if (!names[i] && !codes[i] && !file && !urls[i]) continue;
+      if (!names[i]) return { error: "Give every blueprint type a name." };
+
+      const code = codes[i] || undefined;
+      if (code) {
+        const key = code.toUpperCase();
+        if (usedCodes.has(key)) return { error: `Two blueprint types use the code "${code}" — each code can belong to one type.` };
+        usedCodes.add(key);
+      }
+
+      let image = previous?.image && urls[i] === previous.image ? previous.image : undefined;
+      if (file) {
+        const saved = await saveUploadedFile(file, "projects");
+        if (previous?.image) await deleteUploadedFile(previous.image);
+        image = saved.url;
+      }
+      types.push({ id: previous?.id ?? randomUUID(), name: names[i], positionCode: code, image });
+    }
+
+    // Images of types that were removed from the form.
+    for (const old of existing) {
+      if (old.image && !types.some((t) => t.id === old.id)) await deleteUploadedFile(old.image);
+    }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Couldn't save a blueprint image." };
+  }
+  return { types };
 }
 
 async function requireProjectPermission(permission: "project.create" | "project.update" | "project.delete") {
@@ -167,6 +215,9 @@ export async function createProject(_prevState: ProjectFormState, formData: Form
     return { error: err instanceof Error ? err.message : "Couldn't save the uploaded image(s)." };
   }
 
+  const builtTypes = await buildUnitTypes(formData);
+  if ("error" in builtTypes) return { error: builtTypes.error };
+
   const id = randomUUID();
   const now = new Date().toISOString();
 
@@ -198,6 +249,7 @@ export async function createProject(_prevState: ProjectFormState, formData: Form
     budget: fields.budget !== undefined ? { amount: fields.budget, currency: "BDT" } : undefined,
     media: { coverImage, gallery, renders: [], videos: [] },
     isPublished: fields.isPublished,
+    unitTypes: builtTypes.types,
     createdAt: now,
     updatedAt: now,
     createdBy: user.id,
@@ -242,6 +294,9 @@ export async function updateProject(
     return { error: err instanceof Error ? err.message : "Couldn't save the uploaded image(s)." };
   }
 
+  const builtTypes = await buildUnitTypes(formData, existing.unitTypes);
+  if ("error" in builtTypes) return { error: builtTypes.error };
+
   const updated = await projectRepository.update(id, {
     code: fields.code,
     name: fields.name,
@@ -268,6 +323,7 @@ export async function updateProject(
     budget: fields.budget !== undefined ? { amount: fields.budget, currency: "BDT" } : undefined,
     media: { ...existing.media, coverImage, gallery },
     isPublished: fields.isPublished,
+    unitTypes: builtTypes.types,
     updatedBy: user.id,
     updatedAt: new Date().toISOString(),
   });

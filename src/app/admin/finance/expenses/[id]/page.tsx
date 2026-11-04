@@ -161,7 +161,7 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
         <section className="lg:col-span-2">
           <h2 className="text-label text-fg-subtle mb-2 uppercase">Adjustments / Refunds</h2>
           {adjustments!.length > 0 ? (
-            <div className="border-border bg-surface-raised mb-3 overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised mb-3 overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">

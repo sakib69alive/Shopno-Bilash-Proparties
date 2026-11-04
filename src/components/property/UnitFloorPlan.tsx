@@ -72,6 +72,7 @@ export function UnitFloorPlan({ unit }: { unit: Unit }) {
         onClose={() => setOpen(false)}
         onNavigate={() => {}}
         label="Floor plan"
+        surface="light"
       />
     </Section>
   );

@@ -8,6 +8,7 @@ import { Section } from "@/components/ui/Section";
 import { PROJECT_STATUS_LABEL, type Project, type ProjectStatus } from "@/content/projects";
 import { UNIT_STATUS_LABEL, type Unit } from "@/content/units";
 import { PARKING_TYPE_MAP } from "@/lib/parkingTypeIcons";
+import { getProjectAvailability } from "@/lib/projectAvailability";
 import { cn } from "@/lib/utils";
 
 /** A plain-language rendering of the status enum — not project-specific data, just naming what the status means. */
@@ -37,6 +38,8 @@ export function ProjectStatusAndAvailability({
   /** Whether content/construction.ts has an entry for this project — gates the "View Construction Progress" link. */
   hasConstructionProgress?: boolean;
 }) {
+  const availability = getProjectAvailability(project, units);
+
   const hasParkingAvailability =
     project.availableParkingCar !== undefined ||
     project.totalParkingCar !== undefined ||
@@ -44,8 +47,8 @@ export function ProjectStatusAndAvailability({
     project.totalParkingBike !== undefined;
 
   const hasAvailability =
-    project.availableUnits !== undefined ||
-    project.totalUnits !== undefined ||
+    availability.available !== undefined ||
+    availability.total !== undefined ||
     (project.unitTypes && project.unitTypes.length > 0) ||
     units.length > 0 ||
     hasParkingAvailability;
@@ -72,12 +75,12 @@ export function ProjectStatusAndAvailability({
             <Reveal delay={100} className="lg:border-border lg:border-l lg:pl-16">
               <p className="text-label text-fg-subtle mb-6 uppercase">Availability</p>
 
-              {project.availableUnits !== undefined && (
+              {availability.available !== undefined && (
                 <p className="text-display-m text-accent">
-                  {project.availableUnits}
+                  {availability.available}
                   <span className="text-h3 text-fg-muted">
                     {" "}
-                    / {project.totalUnits ?? project.availableUnits} units
+                    / {availability.total ?? availability.available} units
                   </span>
                 </p>
               )}

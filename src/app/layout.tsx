@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Inter, Manrope, Noto_Sans_Bengali } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Instrument_Serif, Manrope, Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,6 +14,15 @@ const manrope = Manrope({
   display: "swap",
 });
 
+// Hero and lead lines on the phone layout only — one weight, so the
+// request stays small.
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
 const notoSansBengali = Noto_Sans_Bengali({
   variable: "--font-noto-sans-bengali",
   subsets: ["bengali"],
@@ -25,6 +34,12 @@ const notoSansBengali = Noto_Sans_Bengali({
 // canonical links, the sitemap) resolve correctly. Falls back to localhost
 // for development rather than inventing a placeholder domain.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+// `viewportFit: "cover"` lets the phone shell's fixed bars use
+// `env(safe-area-inset-*)` for the notch / home indicator.
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -45,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-theme="light"
-      className={`${inter.variable} ${manrope.variable} ${notoSansBengali.variable} antialiased overflow-x-hidden`}
+      className={`${inter.variable} ${manrope.variable} ${instrumentSerif.variable} ${notoSansBengali.variable} antialiased overflow-x-hidden`}
     >
       {/*
         `overflow-x-hidden` here is a deliberate safety net, not a fix for

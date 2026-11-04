@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { UnitDetailM } from "@/components/mobile/UnitDetailM";
 import { Gallery } from "@/components/ui/Gallery";
 import { UnitAvailabilityPrice } from "@/components/property/UnitAvailabilityPrice";
 import { UnitDescription } from "@/components/property/UnitDescription";
@@ -52,6 +54,8 @@ export default async function UnitDetailsPage({ params }: PageProps) {
 
   return (
     <>
+      <UnitDetailM unit={unit} project={project} otherUnits={otherUnits} />
+      <DesktopOnly>
       <UnitHero unit={unit} project={project} />
       <Gallery images={unit.gallery} label="Interior & Exterior" />
       <UnitSpecifications unit={unit} />
@@ -61,6 +65,7 @@ export default async function UnitDetailsPage({ params }: PageProps) {
       <UnitAvailabilityPrice unit={unit} />
       <UnitEnquiryCTA unit={unit} projectName={project.name} />
       <UnitRelated units={otherUnits} projectSlug={slug} />
+      </DesktopOnly>
     </>
   );
 }

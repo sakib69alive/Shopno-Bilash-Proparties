@@ -42,7 +42,7 @@ export default async function CashFlowReportPage({ searchParams }: PageProps) {
         breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Cash Flow" }]}
       />
       <div className="p-4 sm:p-6">
-        <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+        <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">

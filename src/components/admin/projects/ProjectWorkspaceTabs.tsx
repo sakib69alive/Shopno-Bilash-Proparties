@@ -39,7 +39,7 @@ export function ProjectWorkspaceTabs({ projectId, role }: ProjectWorkspaceTabsPr
   const visibleTabs = TABS.filter((tab) => !tab.permission || hasPermission(role, tab.permission));
 
   return (
-    <nav aria-label="Project sections" className="border-border -mb-px flex gap-5 overflow-x-auto border-b">
+    <nav aria-label="Project sections" className="border-border -mb-px flex gap-5 overflow-x-auto scrollbar-none border-b">
       {visibleTabs.map((tab) => {
         const href = tab.segment ? `${base}/${tab.segment}` : base;
         // "settings" redirects straight to "edit" — treat that as still-active so the tab strip doesn't go blank on landing.

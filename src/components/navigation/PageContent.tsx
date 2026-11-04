@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { cn } from "@/lib/utils";
+import { useMobileChrome } from "@/components/mobile/MobileChrome";
 import { useHeaderVariant } from "./HeaderVariantContext";
 
 /**
@@ -14,9 +15,18 @@ import { useHeaderVariant } from "./HeaderVariantContext";
  */
 export function PageContent({ children }: { children: ReactNode }) {
   const variant = useHeaderVariant();
+  const { barOverlay } = useMobileChrome();
 
   return (
-    <main className={cn("flex-1", variant === "solid" && "pt-16")}>
+    // Below `lg` the phone top bar is a solid bar, not a transparent header over
+    // a hero, so every page clears it whichever header variant it asks for.
+    <main
+      className={cn(
+        "flex-1 lg:pt-0",
+        !barOverlay && "pt-[calc(var(--m-topbar-h)+env(safe-area-inset-top))]",
+        variant === "solid" && "lg:pt-16",
+      )}
+    >
       <PageTransition>{children}</PageTransition>
     </main>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRegisterBarOverlay } from "@/components/mobile/MobileChrome";
 import { usePageHeaderVariant } from "@/components/navigation/HeaderVariantContext";
 import { Container } from "@/components/ui/Container";
 import { Media } from "@/components/ui/Media";
@@ -15,9 +16,10 @@ import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
  */
 export function ProjectHero({ project }: { project: Project }) {
   usePageHeaderVariant("overlay");
+  useRegisterBarOverlay();
 
   return (
-    <section data-header-tone="dark" className="relative flex min-h-[100svh] flex-col overflow-hidden">
+    <section data-bar-hero data-header-tone="dark" className="relative flex min-h-[100svh] flex-col overflow-hidden">
       <Media
         ratio="auto"
         src={project.coverImage.src}

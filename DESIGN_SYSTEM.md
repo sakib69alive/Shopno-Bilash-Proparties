@@ -101,6 +101,7 @@ Side padding (the `--gutter` token, consumed by `<Container>`) is responsive: 16
 ## 6. Radius & shadow
 
 - Radius: `sm` 6px, `md` 10px, `lg` 16px, pill = Tailwind's `rounded-full`. Deliberately restrained — this is an architecture brand, not a bubbly consumer app.
+- **Phone-layout exception (below `lg`):** the app-style mobile shell and cards in `src/components/mobile/` use two larger radii — `--m-radius-card` 20px and `--m-radius-hero` 28px (plus `rounded-full` pills). The reference for the phone redesign is a rounded, app-like real-estate UI, and 6–16px corners read as a desktop page squeezed onto a phone. These tokens are scoped by name (`--m-*`): only components under `components/mobile/` reference them, so the restrained scale above still governs every desktop (`lg` and up) surface and everything outside the mobile folder. See `docs/mobile-first-plan.md`.
 - Shadow: `sm/md/lg/float`, all warm-tinted (`rgb(28 27 25 / …)` in light, near-black in dark) and low-opacity. Never a heavy black shadow. `float` is reserved for genuinely floating UI (open dropdowns/modals), not resting cards.
 
 ---

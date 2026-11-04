@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { AboutM } from "@/components/mobile/AboutM";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
 import { BusinessModels } from "@/components/about/BusinessModels";
 import { Closing } from "@/components/about/Closing";
 import { Expertise } from "@/components/about/Expertise";
@@ -33,6 +35,8 @@ export default async function AboutPage() {
 
   return (
     <>
+      <AboutM milestones={milestones} stats={impactStats} />
+      <DesktopOnly>
       <Intro />
       <OurStory milestones={milestones} />
       <Vision />
@@ -42,6 +46,7 @@ export default async function AboutPage() {
       <Expertise />
       <Impact stats={impactStats} />
       <Closing />
+      </DesktopOnly>
     </>
   );
 }

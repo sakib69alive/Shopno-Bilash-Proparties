@@ -9,6 +9,7 @@ import { recordAuditEvent } from "@/features/audit/repository";
 import { customerPaymentRepository } from "@/features/finance/repository";
 import { customerRepository } from "@/features/customers/repository";
 import { projectRepository } from "@/features/projects/repository";
+import { saleRepository } from "@/features/sales/repository";
 import type { PaymentMethod } from "@/types/finance/customer";
 
 export interface PaymentFormState {
@@ -30,7 +31,8 @@ async function requireFinancePermission() {
 
 async function parsePaymentFields(formData: FormData) {
   const customerId = String(formData.get("customerId") ?? "").trim();
-  const projectId = String(formData.get("projectId") ?? "").trim();
+  let projectId = String(formData.get("projectId") ?? "").trim();
+  const saleId = String(formData.get("saleId") ?? "").trim();
   const amountRaw = String(formData.get("amount") ?? "");
   const category = String(formData.get("category") ?? "").trim();
   const date = String(formData.get("date") ?? "").trim();
@@ -41,6 +43,11 @@ async function parsePaymentFields(formData: FormData) {
   if (!customerId) return { error: "Choose a customer." } as const;
   const customer = await customerRepository.findById(customerId);
   if (!customer) return { error: "That customer no longer exists." } as const;
+  if (saleId) {
+    const sale = await saleRepository.findById(saleId);
+    if (!sale || sale.customerId !== customerId) return { error: "That sale doesn't belong to this customer." } as const;
+    projectId = sale.projectId;
+  }
   if (projectId) {
     const project = await projectRepository.findById(projectId);
     if (!project) return { error: "That project no longer exists." } as const;
@@ -56,6 +63,7 @@ async function parsePaymentFields(formData: FormData) {
     fields: {
       customerId,
       projectId: projectId || undefined,
+      saleId: saleId || undefined,
       amount,
       category,
       date,
@@ -82,6 +90,7 @@ export async function createPayment(_prevState: PaymentFormState, formData: Form
     amount: { amount: fields.amount, currency: "BDT" },
     category: fields.category,
     projectId: fields.projectId,
+    saleId: fields.saleId,
     reference: fields.reference,
     customerId: fields.customerId,
     method: fields.method,
@@ -94,7 +103,8 @@ export async function createPayment(_prevState: PaymentFormState, formData: Form
   await recordAuditEvent({ actorUserId: user.id, action: "payment.create", entityType: "CustomerPayment", entityId: id });
 
   revalidatePath("/admin/sales/payments");
-  redirect("/admin/sales/payments");
+  // Straight to the new payment, where "Create receipt" is one click away.
+  redirect(`/admin/sales/payments/${id}`);
 }
 
 export async function updatePayment(
@@ -116,6 +126,7 @@ export async function updatePayment(
     amount: { amount: fields.amount, currency: "BDT" },
     category: fields.category,
     projectId: fields.projectId,
+    saleId: fields.saleId,
     reference: fields.reference,
     customerId: fields.customerId,
     method: fields.method,

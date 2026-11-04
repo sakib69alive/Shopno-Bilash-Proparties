@@ -10,7 +10,7 @@ export interface AllocationPreviewTableProps {
 /** Read-only — used for "sqft"/"unit-ratio" methods, where the amounts are formula-computed, not typed in by hand. */
 export function AllocationPreviewTable({ preview, totalAmount }: AllocationPreviewTableProps) {
   return (
-    <div className="border-border overflow-x-auto rounded-lg border">
+    <div className="border-border overflow-x-auto scrollbar-none rounded-lg border">
       <table className="w-full text-left">
         <thead>
           <tr className="border-border text-label text-fg-subtle border-b uppercase">

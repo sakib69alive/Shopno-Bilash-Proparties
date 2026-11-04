@@ -28,6 +28,7 @@ import { resolveDocumentOwner } from "@/features/documents/resolveOwner";
 import { resolveUnitOwner } from "@/features/ownership/resolveUnitOwner";
 import { getOwnershipHistory } from "@/features/ownership/queries";
 import { ownershipTransferRepository } from "@/features/ownership/repository";
+import { resolveUnitPlan } from "@/lib/unitPlan";
 import { customerRepository } from "@/features/customers/repository";
 import type { PendingTransferRow } from "@/components/admin/properties/UnitOwnershipPanel";
 import { canAccessProject } from "@/lib/projectScope";
@@ -240,10 +241,16 @@ export default async function AdminPropertyDetailPage({ params }: PageProps) {
     </div>
   );
 
+  const plan = resolveUnitPlan(unit, project, floor?.floorNumber);
   const designContent = (
     <div className="flex flex-col gap-4">
-      {unit.layoutImage ? (
-        <Media src={unit.layoutImage} alt={`${unit.unitNumber} floor plan`} ratio="standard" radius="lg" sizes="(min-width: 1024px) 50vw, 100vw" />
+      {plan.source !== "none" && (
+        <p className="text-body-sm text-fg-muted">
+          {plan.source === "custom" ? "Custom blueprint for this flat." : `Blueprint type: ${plan.type?.name}${plan.source === "auto-type" ? " (matched automatically by flat code)" : ""}.`}
+        </p>
+      )}
+      {plan.src ? (
+        <Media src={plan.src} alt={`${unit.unitNumber} floor plan`} ratio="standard" radius="lg" sizes="(min-width: 1024px) 50vw, 100vw" />
       ) : (
         <div className="border-border bg-surface text-fg-subtle flex aspect-[4/3] max-w-md items-center justify-center rounded-lg border border-dashed">
           <p className="text-body-sm">No floor plan yet</p>

@@ -13,6 +13,7 @@ import { PaymentHistoryList } from "@/components/portal/PaymentHistoryList";
 import { AdjustmentsList } from "@/components/portal/AdjustmentsList";
 import { SalePriceBreakdown } from "@/components/portal/SalePriceBreakdown";
 import { formatBDT } from "@/lib/format";
+import { SalePaymentsSection } from "@/components/portal/SalePaymentsSection";
 import {
   getOwnerUnitDetail,
   getOwnerUnits,
@@ -23,6 +24,7 @@ import {
   getOwnerAdjustments,
   getOwnerPaymentHistory,
   getOwnerUnitShares,
+  getOwnerSaleSummaries,
   type OwnerInstallmentRow,
 } from "@/features/ownerPortal/queries";
 
@@ -62,7 +64,7 @@ export async function PropertyPaymentsPage({ base, unitId }: { base: string; uni
 
   const { unit, project, building, floor, parking, sale } = detail;
 
-  const [allUnits, ownerProjects, outstanding, nextInstallment, schedule, adjustments, payments, unitShares] = await Promise.all([
+  const [allUnits, ownerProjects, outstanding, nextInstallment, schedule, adjustments, payments, unitShares, allSaleSummaries] = await Promise.all([
     getOwnerUnits(context.ownerType, context.ownerId),
     getOwnerProjects(context.ownerType, context.ownerId),
     getOwnerOutstanding(context.ownerType, context.ownerId, unit.projectId),
@@ -71,7 +73,10 @@ export async function PropertyPaymentsPage({ base, unitId }: { base: string; uni
     getOwnerAdjustments(context.ownerType, context.ownerId, unit.projectId),
     getOwnerPaymentHistory(context.ownerType, context.ownerId, unit.projectId),
     getOwnerUnitShares(context.ownerType, context.ownerId, unit.projectId),
+    getOwnerSaleSummaries(context.ownerType, context.ownerId),
   ]);
+  const saleSummaries = allSaleSummaries.filter((x) => x.unitId === unit.id);
+  const constructionPayments = saleSummaries.length > 0 ? payments.filter((p) => p.category === "construction") : payments;
 
   const projectNameById = new Map(ownerProjects.map((p) => [p.id, p.name]));
   const switcherItems = allUnits.map((u) => ({ unitId: u.id, unitNumber: u.unitNumber, projectName: projectNameById.get(u.projectId) ?? "—" }));
@@ -103,6 +108,8 @@ export async function PropertyPaymentsPage({ base, unitId }: { base: string; uni
           })()}
         </p>
       )}
+
+      <SalePaymentsSection summaries={saleSummaries} />
 
       <Reveal>
         <PaymentProgressHero
@@ -165,10 +172,12 @@ export async function PropertyPaymentsPage({ base, unitId }: { base: string; uni
         </Reveal>
       )}
 
-      <Reveal>
-        <SectionHeading>Payment History</SectionHeading>
-        <PaymentHistoryList payments={payments} />
-      </Reveal>
+      {(constructionPayments.length > 0 || saleSummaries.length === 0) && (
+        <Reveal>
+          <SectionHeading>{saleSummaries.length > 0 ? "Construction payments" : "Payment History"}</SectionHeading>
+          <PaymentHistoryList payments={constructionPayments} />
+        </Reveal>
+      )}
     </div>
   );
 }

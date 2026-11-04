@@ -12,6 +12,9 @@ import type { InstallmentFormState } from "@/features/sales/installmentActions";
 export interface InstallmentFormProps {
   action: (state: InstallmentFormState, formData: FormData) => Promise<InstallmentFormState>;
   installment?: Installment;
+  /** Flat sales to choose from ("Rahim Uddin — A-502 · price ৳…"). */
+  sales?: { value: string; label: string }[];
+  defaultSaleId?: string;
   submitLabel: string;
 }
 
@@ -32,7 +35,7 @@ const STATUS_OPTIONS = [
 ];
 
 /** `contractId` is a plain text field — no Contract module exists yet to pick one from, same honesty as the read-only detail page already shows. */
-export function InstallmentForm({ action, installment, submitLabel }: InstallmentFormProps) {
+export function InstallmentForm({ action, installment, sales = [], defaultSaleId, submitLabel }: InstallmentFormProps) {
   const [state, formAction] = useActionState(action, {});
 
   return (
@@ -44,7 +47,22 @@ export function InstallmentForm({ action, installment, submitLabel }: Installmen
         </div>
       )}
 
-      <Input label="Contract ID" name="contractId" required defaultValue={installment?.contractId} placeholder="No Contract module yet — enter a reference id" />
+      {sales.length > 0 ? (
+        <Select
+          label="Which flat sale is this installment for?"
+          name="saleId"
+          required={!installment || !!installment.saleId}
+          options={sales}
+          defaultValue={installment?.saleId ?? defaultSaleId}
+          placeholder="Choose a sale"
+          helperText="The owner sees it on their portal as soon as it is saved."
+        />
+      ) : (
+        <Input label="Contract ID" name="contractId" required defaultValue={installment?.contractId} placeholder="Add a sale first, or enter a reference id" />
+      )}
+      {sales.length > 0 && installment && !installment.saleId && (
+        <Input label="Contract ID (older record)" name="contractId" defaultValue={installment.contractId} />
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Installment Number" name="installmentNumber" type="number" required defaultValue={installment?.installmentNumber} />

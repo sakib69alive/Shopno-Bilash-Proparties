@@ -26,7 +26,7 @@ export default async function AdminTeamListPage() {
     <>
       <AdminPageHeader
         title="Team & Partners"
-        description="Partners and leadership shown alongside the Founder on the public Founder page, in the order added."
+        description="Partners, shareholders and team members shown with the Founder on the public Founder page, in the order added. Each person's Group decides which tab they appear under."
         breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Team & Partners" }]}
         primaryAction={
           canCreate && (

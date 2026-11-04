@@ -36,6 +36,7 @@ import {
   Milestone,
   ScrollText,
   DatabaseBackup,
+  FileSignature,
 } from "lucide-react";
 import type { Permission } from "./permissions";
 
@@ -160,6 +161,20 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
   },
   {
+    label: "Website",
+    items: [
+      { label: "News", href: "/admin/content/news", permission: "content.view", icon: Newspaper },
+      { label: "Gallery", href: "/admin/content/gallery", permission: "content.view", icon: Images },
+      { label: "Projects", href: "/admin/content/projects", permission: "content.view", icon: Building2 },
+      { label: "Properties", href: "/admin/content/properties", permission: "content.view", icon: Home },
+      { label: "Founder Profile", href: "/admin/content/founder", permission: "content.view", icon: UserCog },
+      { label: "Team & Partners", href: "/admin/content/team", permission: "content.view", icon: Users },
+      { label: "Our Story", href: "/admin/content/story", permission: "content.view", icon: Milestone },
+      { label: "Pages", href: "/admin/content/pages", permission: "content.view", icon: FileStack },
+      { label: "Company Policy", href: "/admin/content/policy", permission: "content.view", icon: ScrollText },
+    ],
+  },
+  {
     label: "Development",
     items: [
       { label: "Projects", href: "/admin/projects", permission: "project.view", icon: Building2 },
@@ -214,22 +229,9 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Website",
-    items: [
-      { label: "Projects", href: "/admin/content/projects", permission: "content.view", icon: Building2 },
-      { label: "Properties", href: "/admin/content/properties", permission: "content.view", icon: Home },
-      { label: "News", href: "/admin/content/news", permission: "content.view", icon: Newspaper },
-      { label: "Gallery", href: "/admin/content/gallery", permission: "content.view", icon: Images },
-      { label: "Pages", href: "/admin/content/pages", permission: "content.view", icon: FileStack },
-      { label: "Founder Profile", href: "/admin/content/founder", permission: "content.view", icon: UserCog },
-      { label: "Team & Partners", href: "/admin/content/team", permission: "content.view", icon: Users },
-      { label: "Our Story", href: "/admin/content/story", permission: "content.view", icon: Milestone },
-      { label: "Company Policy", href: "/admin/content/policy", permission: "content.view", icon: ScrollText },
-    ],
-  },
-  {
     label: "Reports",
     items: [
+      { label: "Statements & Notices", href: "/admin/statements", permission: "reports.view", icon: FileSignature },
       { label: "Reports", href: "/admin/finance/reports", permission: "reports.view", icon: BarChart3 },
       { label: "Sales Reports", href: "/admin/sales/reports", permission: "reports.view", icon: Receipt },
       { label: "Analytics", href: "/admin/analytics", permission: "reports.view", icon: LineChart },

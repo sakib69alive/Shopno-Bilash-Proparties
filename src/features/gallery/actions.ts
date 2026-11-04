@@ -149,3 +149,57 @@ export async function deleteGalleryItem(id: string): Promise<void> {
   revalidatePath("/gallery");
   revalidatePath("/admin/content/gallery");
 }
+
+const MAX_BULK_PHOTOS = 40;
+
+/**
+ * Upload many photos in one save (Admin → Gallery → Add photos): they all
+ * share a category, an optional project and an optional date, and each gets
+ * its filename as a placeholder alt text — open any of them later to give it
+ * a proper title or caption. Photos that uploaded are kept even if one file
+ * is rejected, and the message says which.
+ */
+export async function bulkCreateGalleryItems(_prevState: GalleryFormState, formData: FormData): Promise<GalleryFormState> {
+  const user = await requireContentPermission("content.create");
+
+  const category = String(formData.get("category") ?? "");
+  if (!isGalleryCategory(category)) return { error: "Choose a category." };
+  const projectSlug = String(formData.get("projectSlug") ?? "").trim();
+  const date = String(formData.get("date") ?? "").trim();
+
+  const files = formData.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+  if (files.length === 0) return { error: "Choose at least one photo." };
+  if (files.length > MAX_BULK_PHOTOS) return { error: `Add up to ${MAX_BULK_PHOTOS} photos at a time.` };
+
+  const { projectContentRepository } = await import("@/features/projectContent/repository");
+  const liveProjects = await projectContentRepository.list();
+  const validProject = projectSlug && liveProjects.some((p) => p.slug === projectSlug) ? projectSlug : undefined;
+
+  let added = 0;
+  const failed: string[] = [];
+  for (const file of files) {
+    try {
+      const saved = await saveUploadedFile(file, "gallery");
+      const label = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim() || "Gallery photo";
+      await galleryRepository.create({
+        id: randomUUID(),
+        category,
+        image: { src: saved.url, alt: label },
+        projectSlug: validProject,
+        date: date || undefined,
+      });
+      added++;
+    } catch (err) {
+      failed.push(`${file.name} (${err instanceof Error ? err.message : "could not be saved"})`);
+    }
+  }
+
+  if (added === 0) return { error: `Nothing was added. ${failed.join("; ")}` };
+
+  await recordAuditEvent({ actorUserId: user.id, action: "content.gallery.create", entityType: "GalleryImage", entityId: `bulk-${added}` });
+
+  revalidatePath("/gallery");
+  revalidatePath("/admin/content/gallery");
+  if (failed.length > 0) return { error: `Added ${added}, but these did not upload: ${failed.join("; ")}` };
+  redirect(`/admin/content/gallery?added=${added}`);
+}

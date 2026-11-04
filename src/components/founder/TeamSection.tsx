@@ -2,7 +2,7 @@ import { Container } from "@/components/ui/Container";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
-import type { TeamMember } from "@/types/teamMember";
+import { TEAM_GROUPS, TEAM_GROUP_LABEL, teamGroupOf, type TeamMember } from "@/types/teamMember";
 
 export interface TeamSectionProps {
   members: TeamMember[];
@@ -29,8 +29,16 @@ export function TeamSection({ members }: TeamSectionProps) {
           The Team Behind Every Project
         </Reveal>
 
+        {TEAM_GROUPS.map((group) => {
+          const groupMembers = members.filter((m) => teamGroupOf(m) === group);
+          if (groupMembers.length === 0) return null;
+          return (
+            <div key={group} className="mb-14 last:mb-0">
+              <p className="text-label text-fg-subtle border-border mb-8 border-b pb-3 uppercase">
+                {TEAM_GROUP_LABEL[group].many}
+              </p>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-10">
-          {members.map((member, i) => (
+          {groupMembers.map((member, i) => (
             <Reveal key={member.id} delay={i * 80} className="group">
               <div className="relative mb-5 overflow-hidden rounded-lg">
                 <Media
@@ -50,6 +58,9 @@ export function TeamSection({ members }: TeamSectionProps) {
             </Reveal>
           ))}
         </div>
+            </div>
+          );
+        })}
       </Container>
     </Section>
   );

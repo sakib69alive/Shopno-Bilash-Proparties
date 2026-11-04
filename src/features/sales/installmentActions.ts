@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
-import { installmentRepository } from "@/features/sales/repository";
+import { installmentRepository, saleRepository } from "@/features/sales/repository";
 import type { InstallmentStatus } from "@/types/sales";
 
 export interface InstallmentFormState {
@@ -27,14 +27,16 @@ async function requireSalesPermission(permission: "sales.create" | "sales.update
 }
 
 function parseInstallmentFields(formData: FormData) {
-  const contractId = String(formData.get("contractId") ?? "").trim();
+  const saleId = String(formData.get("saleId") ?? "").trim();
+  // A sale is the contract here: when one is chosen it fills the contract reference.
+  const contractId = saleId || String(formData.get("contractId") ?? "").trim();
   const installmentNumberRaw = String(formData.get("installmentNumber") ?? "");
   const dueDate = String(formData.get("dueDate") ?? "").trim();
   const amountRaw = String(formData.get("amount") ?? "");
   const status = String(formData.get("status") ?? "");
   const paidDate = String(formData.get("paidDate") ?? "").trim();
 
-  if (!contractId) return { error: "Enter a contract id — no Contract module exists yet, so this stays a free-text reference." } as const;
+  if (!contractId) return { error: "Choose which flat sale this installment is for." } as const;
   const installmentNumber = Number(installmentNumberRaw);
   if (!Number.isInteger(installmentNumber) || installmentNumber < 1) return { error: "Enter a valid installment number." } as const;
   if (!dueDate) return { error: "Enter a due date." } as const;
@@ -44,7 +46,7 @@ function parseInstallmentFields(formData: FormData) {
   if (!Number.isFinite(amount) || amount <= 0) return { error: "Enter a valid amount." } as const;
 
   return {
-    fields: { contractId, installmentNumber, dueDate, amount, status, paidDate: paidDate || undefined },
+    fields: { saleId: saleId || undefined, contractId, installmentNumber, dueDate, amount, status, paidDate: paidDate || undefined },
   } as const;
 }
 
@@ -57,12 +59,14 @@ export async function createInstallment(
   const parsed = parseInstallmentFields(formData);
   if ("error" in parsed) return { error: parsed.error };
   const { fields } = parsed;
+  if (fields.saleId && !(await saleRepository.findById(fields.saleId))) return { error: "That sale no longer exists." };
 
   const id = randomUUID();
   const now = new Date().toISOString();
 
   await installmentRepository.create({
     id,
+    saleId: fields.saleId,
     contractId: fields.contractId,
     installmentNumber: fields.installmentNumber,
     dueDate: fields.dueDate,
@@ -77,7 +81,9 @@ export async function createInstallment(
   await recordAuditEvent({ actorUserId: user.id, action: "installment.create", entityType: "Installment", entityId: id });
 
   revalidatePath("/admin/sales/installments");
-  redirect("/admin/sales/installments");
+  if (fields.saleId) revalidatePath(`/admin/sales/${fields.saleId}`);
+  revalidatePath("/portal", "layout");
+  redirect(fields.saleId ? `/admin/sales/${fields.saleId}` : "/admin/sales/installments");
 }
 
 export async function updateInstallment(
@@ -95,6 +101,7 @@ export async function updateInstallment(
   if (!existing) return { error: "This installment no longer exists." };
 
   const updated = await installmentRepository.update(id, {
+    saleId: fields.saleId,
     contractId: fields.contractId,
     installmentNumber: fields.installmentNumber,
     dueDate: fields.dueDate,
@@ -110,6 +117,7 @@ export async function updateInstallment(
 
   revalidatePath("/admin/sales/installments");
   revalidatePath(`/admin/sales/installments/${id}`);
+  revalidatePath("/portal", "layout");
   redirect(`/admin/sales/installments/${id}`);
 }
 

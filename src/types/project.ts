@@ -16,6 +16,20 @@ export interface ProjectMedia {
   videos: string[];
 }
 
+/**
+ * One floor-plan design shared by many flats of a project (e.g. "Type A" —
+ * the A flat on every floor). `positionCode` is the part of a flat's number
+ * that stays the same from floor to floor ("A" for 1A, 2A, 3A…), so every flat
+ * with that code picks the type's blueprint up automatically — see
+ * `lib/unitPlan.ts`. Changing a type's image updates all of its flats.
+ */
+export interface UnitType {
+  id: ID;
+  name: string;
+  positionCode?: string;
+  image?: string;
+}
+
 export interface Project extends AuditFields {
   id: ID;
   code: string;
@@ -61,6 +75,9 @@ export interface Project extends AuditFields {
 
   /** Whether this project is visible on the public website yet. */
   isPublished: boolean;
+
+  /** Blueprint designs shared across this project's flats. A flat can still override with its own custom plan (`Unit.layoutImage`). */
+  unitTypes?: UnitType[];
 }
 
 export type BuildingStatus = "planning" | "under-construction" | "completed";

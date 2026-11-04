@@ -8,6 +8,8 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
+import { AdminImageField } from "@/components/admin/settings/AdminImageField";
+import { ProjectGalleryField } from "@/components/admin/projectContent/ProjectGalleryField";
 import { NEWS_CATEGORIES, type NewsArticle } from "@/content/news";
 import type { NewsFormState } from "@/features/news/actions";
 import type { Project } from "@/content/projects";
@@ -83,13 +85,22 @@ export function NewsArticleForm({ action, article, projects, submitLabel }: News
         helperText="Each line becomes one paragraph on the article page."
       />
 
-      <Input
-        label="Cover image alt text"
-        name="coverImageAlt"
-        defaultValue={article?.coverImage.alt}
-        placeholder="Describes the cover image for screen readers"
-        helperText="No image upload yet — this article uses the placeholder cover image."
-      />
+      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+        <legend className="text-label px-1.5">Photos</legend>
+        <AdminImageField
+          label={article ? "Replace cover photo (optional)" : "Cover photo"}
+          name="coverImage"
+          currentSrc={article?.coverImage.src}
+          helperText="Shown at the top of the article and on the News list. JPG, PNG or WEBP."
+        />
+        <Input
+          label="Cover image alt text"
+          name="coverImageAlt"
+          defaultValue={article?.coverImage.alt}
+          placeholder="Describes the cover image for screen readers"
+        />
+        <ProjectGalleryField images={article?.images ?? []} />
+      </fieldset>
 
       <Select
         label="Related project (optional)"

@@ -8,6 +8,7 @@ import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import type { Unit } from "@/types/unit";
 import type { Building, Floor, Project } from "@/types/project";
+import { matchUnitType } from "@/lib/unitPlan";
 import type { UnitFormState } from "@/features/units/actions";
 
 export interface UnitFormProps {
@@ -56,8 +57,14 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
   const [state, formAction] = useActionState(action, {});
   const [projectId, setProjectId] = useState(unit?.projectId ?? defaultProjectId ?? "");
   const [buildingId, setBuildingId] = useState(unit?.buildingId ?? "");
+  const [unitNumber, setUnitNumber] = useState(unit?.unitNumber ?? "");
+  const [unitTypeId, setUnitTypeId] = useState(unit?.unitTypeId ?? "");
+  const [floorId, setFloorId] = useState(unit?.floorId ?? "");
 
   const buildingsForProject = useMemo(() => buildings.filter((b) => b.projectId === projectId), [buildings, projectId]);
+  const projectTypes = useMemo(() => projects.find((p) => p.id === projectId)?.unitTypes ?? [], [projects, projectId]);
+  const floorNumber = floors.find((f) => f.id === floorId)?.floorNumber;
+  const autoType = unitTypeId ? undefined : matchUnitType(unitNumber, projectTypes, floorNumber);
   const floorsForBuilding = useMemo(() => floors.filter((f) => f.buildingId === buildingId), [floors, buildingId]);
 
   return (
@@ -82,7 +89,14 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
           }}
           placeholder="Choose a project"
         />
-        <Input label="Unit Number" name="unitNumber" required defaultValue={unit?.unitNumber} placeholder="e.g. A-502" />
+        <Input
+          label="Unit Number"
+          name="unitNumber"
+          required
+          value={unitNumber}
+          onChange={(e) => setUnitNumber(e.target.value)}
+          placeholder="e.g. 3A"
+        />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -109,7 +123,8 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
                 name="floorId"
                 required
                 options={floorsForBuilding.map((f) => ({ value: f.id, label: f.label }))}
-                defaultValue={unit?.floorId}
+                value={floorId}
+                onChange={(e) => setFloorId(e.target.value)}
                 placeholder="Choose a floor"
               />
             )}
@@ -140,14 +155,39 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
       <Input label="Parking Spaces" name="parkingSpaces" type="number" defaultValue={unit?.parkingSpaces} />
 
       <h2 className="text-label text-fg-subtle -mb-2 uppercase">Design</h2>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="border-border bg-surface flex flex-col gap-4 rounded-xl border p-4">
+        <p className="text-body-sm text-fg-muted">
+          <b>Blueprint.</b> This flat uses its project&rsquo;s shared blueprint type. Pick one below, or leave it on automatic to match by the
+          flat code (e.g. 3A → the type with code A). If this flat&rsquo;s design is different, upload a custom blueprint — that one wins.
+        </p>
+        {projectTypes.length > 0 ? (
+          <Select
+            label="Blueprint type"
+            name="unitTypeId"
+            options={[{ value: "", label: autoType ? `Automatic — ${autoType.name}` : "Automatic (by flat code)" }, ...projectTypes.map((t) => ({ value: t.id, label: t.name }))]}
+            value={unitTypeId}
+            onChange={(e) => setUnitTypeId(e.target.value)}
+          />
+        ) : (
+          <p className="text-body-sm text-fg-subtle">
+            {projectId ? "This project has no blueprint types yet — add them from the project’s edit page to reuse one design across flats." : "Choose a project first."}
+          </p>
+        )}
         <Input
-          label="Floor Plan / Layout Image"
+          label="Custom blueprint for this flat (optional)"
           name="layoutImage"
           type="file"
-          accept="image/jpeg,image/png,image/webp"
-          helperText={unit?.layoutImage ? "Leave empty to keep the current floor plan." : "JPG, PNG or WEBP, up to 15MB."}
+          accept="image/jpeg,image/png,image/webp,image/svg+xml,.svg"
+          helperText={unit?.layoutImage ? "This flat has its own custom blueprint. Choose a file to replace it." : "JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour. Overrides the blueprint type."}
         />
+        {unit?.layoutImage && (
+          <label className="text-body-sm flex items-center gap-2">
+            <input type="checkbox" name="removeLayoutImage" className="size-4" />
+            Remove the custom blueprint (use the blueprint type instead)
+          </label>
+        )}
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
         <Input
           label="Gallery Images"
           name="gallery"

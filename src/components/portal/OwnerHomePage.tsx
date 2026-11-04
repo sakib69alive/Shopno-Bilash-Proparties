@@ -10,6 +10,7 @@ import {
   getOwnerConstructionProgress,
   getOwnerDocuments,
   getOwnerNotifications,
+  getOwnerSaleSummaries,
 } from "@/features/ownerPortal/queries";
 
 export async function OwnerHomePage({ base }: { base: string }) {
@@ -28,7 +29,7 @@ export async function OwnerHomePage({ base }: { base: string }) {
     );
   }
 
-  const [units, projects, outstanding, nextInstallment, progress, documents, notifications] = await Promise.all([
+  const [units, projects, outstanding, nextInstallment, progress, documents, notifications, saleSummaries] = await Promise.all([
     getOwnerUnits(context.ownerType, context.ownerId),
     getOwnerProjects(context.ownerType, context.ownerId),
     getOwnerOutstanding(context.ownerType, context.ownerId),
@@ -36,6 +37,7 @@ export async function OwnerHomePage({ base }: { base: string }) {
     getOwnerConstructionProgress(context.ownerType, context.ownerId),
     getOwnerDocuments(context.ownerType, context.ownerId),
     getOwnerNotifications(context.ownerType, context.ownerId),
+    getOwnerSaleSummaries(context.ownerType, context.ownerId),
   ]);
 
   return (
@@ -43,12 +45,14 @@ export async function OwnerHomePage({ base }: { base: string }) {
       base={base}
       firstName={user.name.split(" ")[0]}
       units={units}
+      projects={projects}
       primaryProject={projects.find((p) => p.id === units[0]?.projectId) ?? null}
       outstanding={outstanding}
       nextInstallment={nextInstallment}
       progress={progress}
       documents={documents}
       notifications={notifications}
+      saleSummaries={saleSummaries}
     />
   );
 }

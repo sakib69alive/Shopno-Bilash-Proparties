@@ -10,14 +10,14 @@ type Stage = "idle" | "curtain" | "loader" | "exit";
 
 // Stage 1 — "Entering {destination}" curtain.
 const CURTAIN_MS = 1100;
+// Phones get the same ceremony, tuned shorter — the full ~2.4s on every tap is too slow on a handset.
+const PHONE_TIMING = { curtain: 560, minLoader: 260, hold: 100, fade: 360 };
+const DESKTOP_TIMING = { curtain: CURTAIN_MS, minLoader: 500, hold: 180, fade: 600 };
 // The "Entering …" mark's own 500ms transition-delay lives directly in
 // its Tailwind class below (`delay-[500ms]`) — Tailwind's JIT scanner
 // needs a literal class string, not one built from this constant.
 // Stage 2 — the breathing-glow + progress loader — see globals.css's
 // `.portal-loader-*` utilities.
-const MIN_LOADER_MS = 500;
-const HOLD_AFTER_FULL_MS = 180;
-const FADE_MS = 600;
 const MAX_WAIT_MS = 2500;
 const POLL_MS = 60;
 
@@ -48,6 +48,7 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
   const [curtainActive, setCurtainActive] = useState(false);
   const [title, setTitle] = useState("");
   const [fill, setFill] = useState(0);
+  const [compact, setCompact] = useState(false);
   const runningRef = useRef(false);
   const pathnameRef = useRef(pathname);
 
@@ -83,6 +84,9 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
       if (runningRef.current) return;
       runningRef.current = true;
 
+      const phone = window.matchMedia("(max-width: 1023.98px)").matches;
+      const timing = phone ? PHONE_TIMING : DESKTOP_TIMING;
+      setCompact(phone);
       const destPath = url.pathname;
       const destHref = destPath + url.search + url.hash;
 
@@ -93,7 +97,7 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
       requestAnimationFrame(() => requestAnimationFrame(() => setCurtainActive(true)));
 
       (async () => {
-        await wait(CURTAIN_MS);
+        await wait(timing.curtain);
 
         markCeremonyHandledNextEntrance();
         router.push(destHref);
@@ -107,12 +111,12 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
         }
 
         const elapsed = Date.now() - loaderStartedAt;
-        await wait(Math.max(0, MIN_LOADER_MS - elapsed));
+        await wait(Math.max(0, timing.minLoader - elapsed));
         setFill(100);
-        await wait(HOLD_AFTER_FULL_MS);
+        await wait(timing.hold);
 
         setStage("exit");
-        await wait(FADE_MS);
+        await wait(timing.fade);
         setStage("idle");
         runningRef.current = false;
       })();
@@ -132,7 +136,7 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
       aria-hidden="true"
       className={cn(
         "bg-bg pointer-events-none fixed inset-0 z-[200] overflow-hidden transition-opacity ease-[cubic-bezier(0.65,0,0.35,1)]",
-        stage === "exit" ? "opacity-0 duration-[600ms]" : "opacity-100 duration-[1100ms]",
+        stage === "exit" ? (compact ? "opacity-0 duration-[360ms]" : "opacity-0 duration-[600ms]") : compact ? "opacity-100 duration-[560ms]" : "opacity-100 duration-[1100ms]",
       )}
     >
       {/* The scale transform lives on this inner, non-fixed wrapper rather
@@ -144,7 +148,8 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
           every public page, so it must avoid the pattern too. */}
       <div
         className={cn(
-          "flex h-full w-full flex-col items-center justify-center transition-transform duration-[1100ms] ease-[cubic-bezier(0.65,0,0.35,1)]",
+          "flex h-full w-full flex-col items-center justify-center transition-transform ease-[cubic-bezier(0.65,0,0.35,1)]",
+          compact ? "duration-[560ms]" : "duration-[1100ms]",
           inCurtain && !curtainActive ? "scale-[1.08]" : "scale-100",
         )}
       >
@@ -152,8 +157,9 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
         {inCurtain && (
           <div
             className={cn(
-              "absolute flex flex-col items-center text-center transition-all duration-[600ms] ease-out",
-              markVisible ? "translate-y-0 opacity-100 delay-[500ms]" : "translate-y-2.5 opacity-0",
+              "absolute flex flex-col items-center text-center transition-all ease-out",
+              compact ? "duration-[360ms]" : "duration-[600ms]",
+              markVisible ? (compact ? "translate-y-0 opacity-100 delay-[200ms]" : "translate-y-0 opacity-100 delay-[500ms]") : "translate-y-2.5 opacity-0",
             )}
           >
             <p className="text-fg-subtle text-xs tracking-[0.3em] uppercase">Entering</p>

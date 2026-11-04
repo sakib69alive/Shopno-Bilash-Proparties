@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -16,6 +16,8 @@ export interface DocumentFormProps {
   /** Presets & locks Owner Type/ID when arriving from that record's own page (e.g. a Unit's Documents tab). */
   defaultOwnerType?: DocumentOwnerType;
   defaultOwnerId?: string;
+  /** Named people to pick from instead of typing an id: customers, shareholders, landowners. */
+  people?: { customer?: { value: string; label: string }[]; shareholder?: { value: string; label: string }[]; landowner?: { value: string; label: string }[] };
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -45,10 +47,10 @@ const STATUS_OPTIONS = [
 ];
 
 const VISIBILITY_OPTIONS = [
-  { value: "public", label: "Public" },
-  { value: "private", label: "Private" },
-  { value: "internal", label: "Internal" },
-  { value: "restricted", label: "Restricted" },
+  { value: "private", label: "Show to the client in their portal" },
+  { value: "internal", label: "Staff only — the client does not see it" },
+  { value: "restricted", label: "Restricted — senior staff only" },
+  { value: "public", label: "Public — also usable on the website" },
 ];
 
 /**
@@ -60,8 +62,10 @@ const VISIBILITY_OPTIONS = [
  * `public/uploads/documents/`) — required on create, optional on edit
  * (leave empty to keep the existing file).
  */
-export function DocumentForm({ action, document, submitLabel, defaultOwnerType, defaultOwnerId }: DocumentFormProps) {
+export function DocumentForm({ action, document, submitLabel, defaultOwnerType, defaultOwnerId, people = {} }: DocumentFormProps) {
   const [state, formAction] = useActionState(action, {});
+  const [ownerType, setOwnerType] = useState<string>(document?.ownerType ?? defaultOwnerType ?? "");
+  const personOptions = (people as Record<string, { value: string; label: string }[] | undefined>)[ownerType];
   const ownerLocked = !document && !!defaultOwnerType && !!defaultOwnerId;
 
   return (
@@ -95,22 +99,35 @@ export function DocumentForm({ action, document, submitLabel, defaultOwnerType, 
             name="ownerType"
             required
             options={OWNER_TYPE_OPTIONS}
-            defaultValue={document?.ownerType ?? defaultOwnerType}
+            value={ownerType}
+            onChange={(e) => setOwnerType(e.target.value)}
             placeholder="Choose an owner type"
           />
-          <Input
-            label="Owner ID"
-            name="ownerId"
-            required
-            defaultValue={document?.ownerId ?? defaultOwnerId}
-            placeholder="Copy the id from that record's page"
-          />
+          {personOptions && personOptions.length > 0 ? (
+            <Select
+              key={ownerType}
+              label={ownerType === "customer" ? "Customer" : ownerType === "shareholder" ? "Shareholder" : "Landowner"}
+              name="ownerId"
+              required
+              options={personOptions}
+              defaultValue={document?.ownerType === ownerType ? document.ownerId : defaultOwnerId}
+              placeholder="Choose who this is for"
+            />
+          ) : (
+            <Input
+              label="Owner ID"
+              name="ownerId"
+              required
+              defaultValue={document?.ownerId ?? defaultOwnerId}
+              placeholder="Copy the id from that record's page"
+            />
+          )}
         </div>
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Select label="Status" name="status" required options={STATUS_OPTIONS} defaultValue={document?.status} placeholder="Choose a status" />
-        <Select label="Visibility" name="visibility" required options={VISIBILITY_OPTIONS} defaultValue={document?.visibility} placeholder="Choose a visibility" />
+        <Select label="Visibility" name="visibility" required options={VISIBILITY_OPTIONS} defaultValue={document?.visibility ?? "private"} placeholder="Choose a visibility" />
       </div>
 
       <Input
@@ -122,7 +139,7 @@ export function DocumentForm({ action, document, submitLabel, defaultOwnerType, 
         helperText={
           document
             ? `Currently: ${document.fileUrl.split("/").pop()} — leave empty to keep it.`
-            : "PDF, JPG, PNG, WEBP, DOC or DOCX, up to 15MB."
+            : "PDF, JPG, PNG, WEBP, DOC or DOCX, up to 15MB. The client opens or downloads it from Documents in their portal."
         }
       />
 

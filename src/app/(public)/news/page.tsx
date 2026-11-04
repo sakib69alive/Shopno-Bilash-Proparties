@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { NewsM } from "@/components/mobile/NewsM";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
@@ -29,6 +31,8 @@ export default async function NewsPage() {
   if (!featured) {
     return (
       <>
+        <NewsM articles={newsArticles} />
+        <DesktopOnly>
         <NewsHero />
         <Section spacing="lg">
           <Container size="narrow" className="text-center">
@@ -41,16 +45,20 @@ export default async function NewsPage() {
           </Container>
         </Section>
         <NewsClosingCTA />
+        </DesktopOnly>
       </>
     );
   }
 
   return (
     <>
+      <NewsM articles={newsArticles} />
+      <DesktopOnly>
       <NewsHero />
       <FeaturedStory article={featured} />
       <StoryDiscovery articles={rest} />
       <NewsClosingCTA />
+      </DesktopOnly>
     </>
   );
 }

@@ -8,7 +8,7 @@ import { IconButton } from "@/components/ui/IconButton";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { buttonVariants } from "@/components/ui/Button";
 import { deleteTeamMember } from "@/features/teamMembers/actions";
-import type { TeamMember } from "@/types/teamMember";
+import { TEAM_GROUP_LABEL, teamGroupOf, type TeamMember } from "@/types/teamMember";
 import { cn } from "@/lib/utils";
 
 export interface TeamMemberAdminGridProps {
@@ -50,6 +50,9 @@ export function TeamMemberAdminGrid({ members, canDelete }: TeamMemberAdminGridP
             <div className="min-w-0">
               <p className="text-body-sm text-fg truncate font-medium">{member.name}</p>
               <p className="text-caption text-fg-subtle truncate">{member.title}</p>
+              <p className="bg-accent-soft text-accent mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold">
+                {TEAM_GROUP_LABEL[teamGroupOf(member)].one}
+              </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
               <Link href={`/admin/content/team/${member.id}/edit`}>

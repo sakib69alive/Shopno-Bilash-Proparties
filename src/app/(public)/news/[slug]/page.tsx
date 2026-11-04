@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { NewsArticleM } from "@/components/mobile/NewsArticleM";
+import { projectContentRepository } from "@/features/projectContent/repository";
 import { Container } from "@/components/ui/Container";
 import { Divider } from "@/components/ui/Divider";
 import { Media } from "@/components/ui/Media";
@@ -47,7 +50,9 @@ export default async function NewsArticlePage({ params }: PageProps) {
 
   if (!article) notFound();
 
-  const project = article.projectSlug ? projects.find((p) => p.slug === article.projectSlug) : undefined;
+  const liveProjects = await projectContentRepository.list();
+  const project = article.projectSlug ? liveProjects.find((p) => p.slug === article.projectSlug) : undefined;
+  const staticProject = article.projectSlug ? projects.find((p) => p.slug === article.projectSlug) : undefined;
   const allArticles = await newsRepository.list();
   const related = allArticles
     .filter((a) => a.id !== article.id && a.category === article.category)
@@ -55,6 +60,8 @@ export default async function NewsArticlePage({ params }: PageProps) {
 
   return (
     <>
+      <NewsArticleM article={article} project={project} related={related} />
+      <DesktopOnly>
       <Section spacing="md">
         <Container size="narrow">
           <Reveal as="p" className="mb-6">
@@ -108,17 +115,17 @@ export default async function NewsArticlePage({ params }: PageProps) {
             </div>
           )}
 
-          {project && (
+          {staticProject && (
             <Reveal className="mt-16">
               <Divider />
               <Link
-                href={`/projects/${project.slug}`}
+                href={`/projects/${staticProject.slug}`}
                 className="group flex items-center justify-between gap-6 py-8"
               >
                 <span>
                   <span className="text-label text-fg-subtle uppercase">Related Project</span>
                   <span className="text-h3 mt-1 block transition-colors duration-200 group-hover:text-accent">
-                    {project.name}
+                    {staticProject.name}
                   </span>
                 </span>
                 <ArrowRight
@@ -165,6 +172,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
           </Container>
         </Section>
       )}
+      </DesktopOnly>
     </>
   );
 }

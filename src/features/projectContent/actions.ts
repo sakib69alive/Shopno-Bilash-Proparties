@@ -7,7 +7,15 @@ import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectContentRepository, slugifyProjectName } from "@/features/projectContent/repository";
-import type { ProjectStatus } from "@/content/projects";
+import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { PLACEHOLDER_IMAGE, resolveCoverAndGallery } from "@/lib/photoUploads";
+import {
+  BLUEPRINT_KIND_LABEL,
+  BLUEPRINT_KIND_ORDER,
+  type BlueprintKind,
+  type ProjectBlueprint,
+  type ProjectStatus,
+} from "@/content/projects";
 
 export interface ProjectContentFormState {
   error?: string;
@@ -37,6 +45,57 @@ function toOptionalNumber(raw: string): number | undefined {
   if (!raw.trim()) return undefined;
   const n = Number(raw);
   return Number.isFinite(n) ? n : undefined;
+}
+
+const BLUEPRINT_FIELD: Record<BlueprintKind, { file: string; remove: string; label?: string }> = {
+  garage: { file: "blueprintGarage", remove: "removeBlueprintGarage" },
+  floor: { file: "blueprintFloor", remove: "removeBlueprintFloor", label: "blueprintFloorLabel" },
+  roof: { file: "blueprintRoof", remove: "removeBlueprintRoof" },
+};
+
+function getBlueprintFile(formData: FormData, name: string): File | null {
+  const file = formData.get(name);
+  return file instanceof File && file.size > 0 ? file : null;
+}
+
+/**
+ * Applies the three blueprint inputs (garage / floor / roof) on top of
+ * whatever the project already has: a new file replaces (and deletes) the
+ * old one, the "remove" box drops it, otherwise the saved one is kept.
+ * Returned in garage → floor → roof order, which is the order the public
+ * page swipes through them.
+ */
+async function resolveBlueprints(
+  formData: FormData,
+  existing: ProjectBlueprint[] | undefined,
+  projectName: string,
+): Promise<{ blueprints?: ProjectBlueprint[]; error?: string }> {
+  const result: ProjectBlueprint[] = [];
+
+  for (const kind of BLUEPRINT_KIND_ORDER) {
+    const field = BLUEPRINT_FIELD[kind];
+    const current = existing?.find((b) => b.kind === kind);
+    const customLabel = field.label ? String(formData.get(field.label) ?? "").trim() : "";
+    const label = customLabel || BLUEPRINT_KIND_LABEL[kind];
+    const file = getBlueprintFile(formData, field.file);
+
+    if (file) {
+      let saved;
+      try {
+        saved = await saveUploadedFile(file, "blueprints");
+      } catch (err) {
+        return { error: err instanceof Error ? err.message : "Couldn't save that blueprint." };
+      }
+      if (current) await deleteUploadedFile(current.image.src);
+      result.push({ kind, label, image: { src: saved.url, alt: `${BLUEPRINT_KIND_LABEL[kind]} blueprint of ${projectName}` } });
+    } else if (current && formData.get(field.remove) === "on") {
+      await deleteUploadedFile(current.image.src);
+    } else if (current) {
+      result.push({ ...current, label });
+    }
+  }
+
+  return { blueprints: result.length > 0 ? result : undefined };
 }
 
 async function requireContentPermission(permission: "content.create" | "content.update" | "content.delete") {
@@ -120,6 +179,12 @@ export async function createProjectContent(
     slug = `${slug}-${existing.length + 1}`;
   }
 
+  const blueprintResult = await resolveBlueprints(formData, undefined, fields.name);
+  if (blueprintResult.error) return { error: blueprintResult.error };
+
+  const photoResult = await resolveCoverAndGallery(formData, undefined, fields.name, "projects");
+  if (photoResult.error) return { error: photoResult.error };
+
   const id = randomUUID();
   await projectContentRepository.create({
     id,
@@ -145,8 +210,9 @@ export async function createProjectContent(
     availableParkingBike: fields.availableParkingBike,
     floors: fields.floors,
     featured: fields.featured,
-    coverImage: { src: "/placeholder-image.png", alt: fields.name },
-    gallery: [{ src: "/placeholder-image.png", alt: fields.name }],
+    coverImage: photoResult.coverImage ?? { src: PLACEHOLDER_IMAGE, alt: fields.name },
+    gallery: photoResult.gallery?.length ? photoResult.gallery : [{ src: PLACEHOLDER_IMAGE, alt: fields.name }],
+    blueprints: blueprintResult.blueprints,
   });
 
   await recordAuditEvent({
@@ -185,6 +251,12 @@ export async function updateProjectContent(
   const existingProject = await projectContentRepository.findById(id);
   if (!existingProject) return { error: "This project no longer exists." };
 
+  const blueprintResult = await resolveBlueprints(formData, existingProject.blueprints, fields.name);
+  if (blueprintResult.error) return { error: blueprintResult.error };
+
+  const photoResult = await resolveCoverAndGallery(formData, existingProject, fields.name, "projects");
+  if (photoResult.error) return { error: photoResult.error };
+
   const updated = await projectContentRepository.update(id, {
     name: fields.name,
     location: fields.location,
@@ -207,6 +279,9 @@ export async function updateProjectContent(
     availableParkingBike: fields.availableParkingBike,
     floors: fields.floors,
     featured: fields.featured,
+    blueprints: blueprintResult.blueprints,
+    coverImage: photoResult.coverImage,
+    gallery: photoResult.gallery,
   });
   if (!updated) return { error: "This project no longer exists." };
 

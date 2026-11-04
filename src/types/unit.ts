@@ -30,7 +30,10 @@ export interface Unit extends AuditFields {
   balconies: number;
   parkingSpaces: number;
   facing?: UnitFacing;
+  /** A custom blueprint for this one flat — wins over its type's shared plan. */
   layoutImage?: string;
+  /** Explicit choice of a project `UnitType`; when unset the type is matched automatically from the flat number. */
+  unitTypeId?: ID;
   /** This unit's own gallery — a design/finish can differ unit to unit, not just building to building. */
   galleryImages?: string[];
 

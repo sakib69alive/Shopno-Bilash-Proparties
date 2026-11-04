@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Media } from "@/components/ui/Media";
+import { UnitTypesField } from "@/components/admin/projects/UnitTypesField";
 import type { Project } from "@/types/project";
 import type { ProjectFormState } from "@/features/projects/actions";
 
@@ -169,6 +170,8 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
           }
         />
       </div>
+
+      <UnitTypesField initial={project?.unitTypes} />
 
       <h2 className="text-label text-fg-subtle -mb-2 uppercase">Commercial</h2>
       <Input

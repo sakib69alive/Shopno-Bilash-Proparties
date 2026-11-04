@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { ConstructionOverviewM } from "@/components/mobile/ConstructionM";
 import { ConstructionOverviewClosingCTA } from "@/components/construction/ConstructionOverviewClosingCTA";
 import { ConstructionOverviewGrid } from "@/components/construction/ConstructionOverviewGrid";
 import { ConstructionOverviewIntro } from "@/components/construction/ConstructionOverviewIntro";
@@ -29,11 +31,17 @@ export default async function ConstructionOverviewPage() {
     })
     .filter((item): item is { project: Project; progress: (typeof constructionProgress)[number] } => item !== null);
 
+  // Projects under construction by status, shown on the phone page only while no construction updates have been published yet.
+  const underway = projects.filter((p) => p.status === "ongoing" || p.status === "near-completion");
+
   return (
     <>
+      <ConstructionOverviewM items={items} underway={underway} />
+      <DesktopOnly>
       <ConstructionOverviewIntro />
       <ConstructionOverviewGrid items={items} />
       <ConstructionOverviewClosingCTA />
+      </DesktopOnly>
     </>
   );
 }

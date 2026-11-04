@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { GalleryM } from "@/components/mobile/GalleryM";
 import { GalleryClosingCTA } from "@/components/gallery/GalleryClosingCTA";
 import { GalleryExplorer } from "@/components/gallery/GalleryExplorer";
 import { GalleryIntro } from "@/components/gallery/GalleryIntro";
@@ -16,9 +18,12 @@ export default async function GalleryPage() {
 
   return (
     <>
-      <GalleryIntro />
-      <GalleryExplorer items={items} projects={projects} />
-      <GalleryClosingCTA />
+      <GalleryM items={items} projects={projects} />
+      <DesktopOnly>
+        <GalleryIntro />
+        <GalleryExplorer items={items} projects={projects} />
+        <GalleryClosingCTA />
+      </DesktopOnly>
     </>
   );
 }

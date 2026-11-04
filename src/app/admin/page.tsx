@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, FileText, Newspaper, PlusCircle, ReceiptText, UserPlus, UsersRound, ArrowRight } from "lucide-react";
+import { Building2, FileText, Images, ListPlus, Newspaper, PlusCircle, ReceiptText, UserCog, UserPlus, UsersRound, ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -271,6 +271,18 @@ export default async function AdminDashboardPage() {
             <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Activity</h2>
             <div className="border-border bg-surface-raised rounded-lg border p-2 sm:p-4">
               <RecentActivity activity={activity} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase">Website Content</h2>
+            <div className="border-border bg-surface-raised flex flex-col gap-1 rounded-lg border p-2">
+              <QuickAction label="New Article" icon={Newspaper} href={canCreateContent ? "/admin/content/news/new" : undefined} comingSoon={!canCreateContent} />
+              <QuickAction label="Add Photos to Gallery" icon={Images} href={canCreateContent ? "/admin/content/gallery/bulk" : undefined} comingSoon={!canCreateContent} />
+              <QuickAction label="New Website Project" icon={Building2} href={canCreateContent ? "/admin/content/projects/new" : undefined} comingSoon={!canCreateContent} />
+              <QuickAction label="New Property" icon={PlusCircle} href={canCreateContent ? "/admin/content/properties/new" : undefined} comingSoon={!canCreateContent} />
+              <QuickAction label="Add Properties in Bulk" icon={ListPlus} href={canCreateContent ? "/admin/content/properties/bulk" : undefined} comingSoon={!canCreateContent} />
+              <QuickAction label="Add Team / Partner" icon={UserCog} href={canCreateContent ? "/admin/content/team/new" : undefined} comingSoon={!canCreateContent} />
             </div>
           </section>
 

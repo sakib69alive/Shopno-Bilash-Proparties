@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Receipt } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -86,6 +86,10 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
         secondaryActions={
           canManage && (
             <div className="flex items-center gap-2">
+              <Link href={`/admin/statements?paymentId=${payment.id}`} className={buttonVariants({ variant: "primary", size: "sm" })}>
+                <Receipt aria-hidden className="size-3.5" />
+                Create receipt
+              </Link>
               <Link href={`/admin/sales/payments/${payment.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
                 Edit

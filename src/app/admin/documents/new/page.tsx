@@ -5,6 +5,16 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { DocumentForm } from "@/components/admin/documents/DocumentForm";
 import { createDocument } from "@/features/documents/actions";
 import type { DocumentOwnerType } from "@/types/document";
+import { customerRepository } from "@/features/customers/repository";
+import { shareholderRepository } from "@/features/shareholders/repository";
+import { landownerRepository } from "@/features/landowners/repository";
+
+async function loadPeople() {
+  const [customers, shareholders, landowners] = await Promise.all([customerRepository.list(), shareholderRepository.list(), landownerRepository.list()]);
+  const opt = (xs: { id: string; name: string }[]) => xs.map((x) => ({ value: x.id, label: x.name })).sort((a, b) => a.label.localeCompare(b.label));
+  return { customer: opt(customers), shareholder: opt(shareholders), landowner: opt(landowners) };
+}
+
 
 const OWNER_TYPES: DocumentOwnerType[] = ["company", "project", "unit", "customer", "shareholder", "landowner", "vendor", "transaction"];
 
@@ -35,6 +45,7 @@ export default async function NewDocumentPage({ searchParams }: PageProps) {
           submitLabel="Add Document"
           defaultOwnerType={defaultOwnerType}
           defaultOwnerId={ownerId}
+          people={await loadPeople()}
         />
       </div>
     </>

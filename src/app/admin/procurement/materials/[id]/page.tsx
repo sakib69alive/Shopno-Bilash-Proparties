@@ -148,7 +148,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
           {projects.length === 0 ? (
             <EmptyState title="No activity yet" description="No purchases or stock movements recorded for this material in any visible project." />
           ) : (
-            <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
@@ -213,7 +213,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
           {priceHistory.length === 0 ? (
             <EmptyState title="No purchases yet" description="Every purchase of this material preserves the price actually paid at the time." />
           ) : (
-            <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
@@ -280,7 +280,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
           {ledger.length === 0 ? (
             <EmptyState title="No movements yet" description="Every stock movement across every visible project will appear here." />
           ) : (
-            <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">

@@ -5,6 +5,7 @@ import { STAFF_ROLES, getPortalHomePath } from "@/config/roles";
 import { ArchitecturalMotif } from "@/components/ui/ArchitecturalMotif";
 import { Logo } from "@/components/navigation/Logo";
 import { AuthTabs } from "@/components/auth/AuthTabs";
+import { LoginM } from "@/components/mobile/LoginM";
 import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 
 const NAV_WORDS = ["Projects", "Properties", "Customers", "Finance"];
@@ -31,6 +32,9 @@ export default async function LoginPage() {
 
   return (
     <main className="flex min-h-screen">
+      <LoginM
+        logo={<Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} className="h-16 sm:h-16" />}
+      />
       <div className="bg-fg relative hidden overflow-hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between lg:p-12 xl:p-16">
         <ArchitecturalMotif
           fit="cover"
@@ -54,11 +58,8 @@ export default async function LoginPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
+      <div className="hidden flex-1 items-center justify-center p-6 sm:p-10 lg:flex">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden">
-            <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} />
-          </div>
           <p className="text-label text-fg-subtle mb-2 uppercase tracking-wide">Welcome back</p>
           <h2 className="text-h2 mb-1">Sign in</h2>
           <p className="text-body-sm text-fg-muted mb-6">Property owners and staff, in one place.</p>

@@ -20,7 +20,7 @@ import {
 import { documentRepository } from "@/features/documents/repository";
 import { notificationRepository } from "@/features/notifications/repository";
 import { userRepository } from "@/features/users/repository";
-import { saleRepository, bookingRepository } from "@/features/sales/repository";
+import { saleRepository, bookingRepository, installmentRepository } from "@/features/sales/repository";
 import {
   constructionPhaseRepository,
   constructionTaskRepository,
@@ -33,6 +33,8 @@ import { getProjectWorkspaceStats } from "@/features/projects/workspaceStats";
 import { computeContributionState, computeInstallmentObligationState } from "@/lib/contributionStatus";
 import { derivePhaseProgress, computeOverallProgress, deriveScheduleDelay } from "@/lib/constructionProgress";
 import { isOwnerVisible } from "@/lib/documentVisibility";
+import { summarizeSale } from "@/lib/salePayments";
+import { liveInstallmentStatus, type LiveInstallmentStatus } from "@/lib/installmentStatus";
 import type { OwnerType } from "@/types/finance/costAllocation";
 import type { OwnershipRecord } from "@/types/ownership";
 import type { Sale, Booking } from "@/types/sales";
@@ -434,7 +436,7 @@ export async function getOwnerPaymentHistory(ownerType: OwnerType, ownerId: ID, 
           .map((p) => ({
             id: p.id,
             category: "property" as const,
-            label: "Property Payment",
+            label: p.category || "Property Payment",
             date: p.date,
             amount: p.amount.amount,
             method: p.method,
@@ -445,6 +447,102 @@ export async function getOwnerPaymentHistory(ownerType: OwnerType, ownerId: ID, 
       : [];
 
   return [...construction, ...property].sort((a, b) => b.date.localeCompare(a.date));
+}
+
+export interface OwnerSaleSummary {
+  saleId: ID;
+  unitId: ID;
+  unitNumber: string;
+  projectName: string;
+  /** The flat's price, what has been received against it, and what is left — all computed from the real sale and the payments the admin recorded. */
+  price: number;
+  paid: number;
+  remaining: number;
+  percentPaid: number;
+  /** Every payment received for this flat, newest first, with the full detail the admin entered. */
+  payments: OwnerPaymentHistoryEntry[];
+  /** The price originally agreed, and any later changes the office made (negative = the price came down). */
+  agreedPrice: number;
+  adjustments: { id: ID; date: string; amount: number; reason: string }[];
+  /** The scheduled installments of this flat, in due order, each with its live status (paid / overdue / due soon / upcoming). */
+  installments: { id: ID; number: number; dueDate: string; amount: number; status: LiveInstallmentStatus; paidDate?: string }[];
+  /** False when the office has switched this flat's money details off for the owner: every figure above is then blank, never sent to the page. */
+  visible: boolean;
+}
+
+/**
+ * The flat-purchase side of an owner's money (customers only): per sale, the
+ * price, the total received and the remaining balance, plus the full list of
+ * payments behind it. Separate from the construction contribution figures —
+ * buying the flat and contributing to construction are different obligations.
+ */
+export async function getOwnerSaleSummaries(ownerType: OwnerType, ownerId: ID): Promise<OwnerSaleSummary[]> {
+  if (ownerType !== "customer") return [];
+  const [allSales, payments, units, projects, documents, allInstallments] = await Promise.all([
+    saleRepository.list(),
+    customerPaymentRepository.list(),
+    unitRepository.list(),
+    projectRepository.list(),
+    documentRepository.list(),
+    installmentRepository.list(),
+  ]);
+  const ownSales = allSales.filter((x) => x.customerId === ownerId && x.status !== "cancelled");
+
+  return ownSales
+    .map((sale) => {
+      const unit = units.find((u) => u.id === sale.unitId);
+      const summary = summarizeSale(sale, ownSales, payments);
+      if (sale.hideFromOwner) {
+        // Switched off by the office: nothing about the money leaves the server.
+        return {
+          saleId: sale.id,
+          unitId: sale.unitId,
+          unitNumber: unit?.unitNumber ?? "—",
+          projectName: projects.find((pr) => pr.id === sale.projectId)?.name ?? "—",
+          price: 0,
+          paid: 0,
+          remaining: 0,
+          percentPaid: 0,
+          payments: [],
+          agreedPrice: 0,
+          adjustments: [],
+          installments: [],
+          visible: false,
+        };
+      }
+      return {
+        agreedPrice: summary.agreedPrice,
+        adjustments: [...(sale.priceAdjustments ?? [])].sort((a, b) => b.date.localeCompare(a.date)),
+        installments: allInstallments
+          .filter((i) => i.saleId === sale.id || (!i.saleId && i.contractId === sale.id))
+          .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.installmentNumber - b.installmentNumber)
+          .map((i) => ({ id: i.id, number: i.installmentNumber, dueDate: i.dueDate, amount: i.amount.amount, status: liveInstallmentStatus(i), paidDate: i.paidDate })),
+        visible: true,
+        saleId: sale.id,
+        unitId: sale.unitId,
+        unitNumber: unit?.unitNumber ?? "—",
+        projectName: projects.find((pr) => pr.id === sale.projectId)?.name ?? "—",
+        price: summary.price,
+        paid: summary.paid,
+        remaining: summary.remaining,
+        percentPaid: summary.percentPaid,
+        payments: summary.payments.map((pay) => {
+          const doc = documents.find((d) => d.ownerType === "transaction" && d.ownerId === pay.id && isOwnerVisible(d));
+          return {
+            id: pay.id,
+            category: "property" as const,
+            label: pay.category || "Property Payment",
+            date: pay.date,
+            amount: pay.amount.amount,
+            method: pay.method,
+            reference: pay.reference,
+            receiptNumber: pay.receiptNumber,
+            ...(doc ? { receiptUrl: doc.fileUrl, receiptName: doc.name } : {}),
+          };
+        }),
+      };
+    })
+    .sort((a, b) => a.unitNumber.localeCompare(b.unitNumber));
 }
 
 export interface OwnerProjectProgress {

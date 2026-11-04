@@ -94,6 +94,19 @@
   }
 }
 
+/* ---- Mobile shell tokens (src/components/mobile/) ----
+   Scoped to the phone-first components, not the site-wide scale: the radii
+   below are deliberately larger than --radius-lg, which DESIGN_SYSTEM.md §6
+   keeps restrained for the desktop look. Only components under
+   components/mobile/ reference them, and everything from `lg` up keeps the
+   original geometry. */
+:root {
+  --m-radius-card: 20px;
+  --m-radius-hero: 28px;
+  --m-topbar-h: 4.25rem;
+  --m-bar-h: 4.75rem;
+}
+
 /* ---- Dark theme ----
    Applies automatically via prefers-color-scheme, or manually via
    data-theme="dark" / data-theme="light" on <html> (for a future
@@ -209,6 +222,9 @@
     system-ui, sans-serif;
   --font-display: var(--font-manrope), var(--font-noto-sans-bengali),
     ui-sans-serif, system-ui, sans-serif;
+  /* Hero and lead lines only (docs/mobile-first-plan.md) — everything else stays Manrope/Inter. */
+  --font-serif-display: var(--font-instrument-serif), var(--font-noto-sans-bengali),
+    ui-serif, Georgia, serif;
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -607,3 +623,52 @@
     display: none;
   }
 }
+
+/* ---- Mobile shell utilities ---- */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility font-serif-display {
+  font-family: var(--font-serif-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Route-change entrance on phones ----
+   A 200ms plain fade instead of the 400ms rise: with the curtain gone below
+   `lg` (SitePageLoader), this is the only transition between pages. */
+@layer utilities {
+  @keyframes page-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (max-width: 1023.98px) {
+    .page-enter {
+      animation: page-fade 200ms var(--ease-standard);
+    }
+  }
+}
+
+/* ---- Bottom tab bar: the active tab's name fades in (opacity only — no layout animation) ---- */
+@layer utilities {
+  @keyframes tab-label-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .tab-label-in {
+    animation: tab-label-in 220ms var(--ease-standard) 60ms both;
+  }
+}
+

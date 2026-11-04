@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/ui/Gallery";
+import { ProjectBlueprints } from "@/components/project/ProjectBlueprints";
 import { ProjectDesignStory } from "@/components/project/ProjectDesignStory";
 import { ProjectEnquiryCTA } from "@/components/project/ProjectEnquiryCTA";
 import { ProjectFacts } from "@/components/project/ProjectFacts";
@@ -53,6 +54,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
       <ProjectHero project={project} />
       <ProjectIntroduction project={project} />
       <ProjectFacts project={project} />
+      <ProjectBlueprints blueprints={project.blueprints} />
       <ProjectDesignStory project={project} />
       <ProjectLocation project={project} />
       <Gallery images={project.gallery} label="Gallery" />

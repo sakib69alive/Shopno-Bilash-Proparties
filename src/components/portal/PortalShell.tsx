@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, LogOut, LayoutDashboard, Home, Wallet, HardHat, FileText, UserCircle, type LucideIcon } from "lucide-react";
@@ -60,6 +61,21 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
   const profileItem = navItems.find((i) => i.label === "Profile");
   const tabBarItems = navItems.filter((i) => i.label !== "Notifications" && i.label !== "Profile").slice(0, 5);
 
+  const [scrolled, setScrolled] = useState(false);
+  // Optimistic highlight: the capsule moves the instant a tab is tapped, not after the next page has loaded.
+  const [tapped, setTapped] = useState<{ href: string; from: string } | null>(null);
+  const pending = tapped && tapped.from === pathname ? tapped.href : null;
+
+  useEffect(() => {
+    function onScroll() {
+      const next = window.scrollY > 4;
+      setScrolled((c) => (c === next ? c : next));
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   function isActive(href: string) {
     return href === homeHref ? pathname === href : pathname.startsWith(href);
   }
@@ -69,7 +85,7 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
       <PortalPageLoader navItems={navItems} />
 
       {/* Desktop sidebar */}
-      <aside className="border-border bg-gradient-to-b from-surface to-surface-raised sticky top-0 hidden h-screen w-72 shrink-0 flex-col border-r lg:flex">
+      <aside className="border-border bg-gradient-to-b from-surface to-surface-raised fixed inset-y-0 left-0 z-20 hidden h-screen w-72 flex-col border-r lg:flex">
         <div className="border-premium/40 flex h-20 shrink-0 items-center border-b px-6">
           <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} />
         </div>
@@ -125,57 +141,64 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
         </form>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile top bar */}
-        <header className="border-border bg-bg/80 sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b px-4 backdrop-blur-md lg:hidden">
-          <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} />
-          <div className="flex items-center gap-1">
-            {notificationsItem && (
-              <Link href={notificationsItem.href} aria-label="Notifications" className="text-fg-muted hover:text-fg hover:bg-surface-raised relative flex size-10 items-center justify-center rounded-full transition-colors">
-                <Bell aria-hidden className="size-5" />
-                {unreadNotifications > 0 && (
-                  <span aria-hidden className="bg-accent border-bg absolute top-1.5 right-1.5 size-2.5 rounded-full border-2" />
-                )}
-              </Link>
-            )}
-            {profileItem && (
-              <Link href={profileItem.href} aria-label="Profile" className="ml-1">
-                <span className="bg-accent text-accent-foreground text-label flex size-9 items-center justify-center rounded-full shadow-sm">
-                  {initials(ownerName)}
-                </span>
-              </Link>
-            )}
-          </div>
+      <div className="flex min-w-0 flex-1 flex-col lg:pl-72">
+        {/* Phone top bar — fixed (never sticky), solid; a soft shadow fades in once content scrolls under it. */}
+        <header
+          className={cn(
+            "bg-bg fixed inset-x-0 top-0 z-30 flex h-[calc(4.25rem+env(safe-area-inset-top))] items-center gap-3 px-[var(--gutter)] pt-[env(safe-area-inset-top)] transition-shadow duration-300 lg:hidden",
+            scrolled && "shadow-[0_10px_24px_-10px_rgb(var(--shadow-color)/0.16)]",
+          )}
+        >
+          <Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} className="h-11 sm:h-11" />
+          <span aria-hidden className="bg-border-strong h-8 w-px shrink-0" />
+          <p className="font-serif-display text-fg min-w-0 flex-1 truncate text-[1.375rem] leading-[1.05]">Owner portal</p>
+          {notificationsItem && (
+            <Link
+              href={notificationsItem.href}
+              aria-label={unreadNotifications > 0 ? `Notifications, ${unreadNotifications} unread` : "Notifications"}
+              className="bg-surface text-fg active:bg-border relative flex size-10 shrink-0 items-center justify-center rounded-full transition-[transform,background-color] duration-150 active:scale-90"
+            >
+              <Bell aria-hidden className="size-[18px]" />
+              {unreadNotifications > 0 && (
+                <span aria-hidden className="bg-accent border-surface absolute top-2 right-2.5 size-2.5 rounded-full border-2" />
+              )}
+            </Link>
+          )}
+          {profileItem && (
+            <Link href={profileItem.href} aria-label="Profile" className="shrink-0 transition-transform duration-150 active:scale-90">
+              <span className="bg-accent text-accent-foreground text-label flex size-10 items-center justify-center rounded-full">
+                {initials(ownerName)}
+              </span>
+            </Link>
+          )}
         </header>
 
-        <main className="flex-1 pb-24 lg:pb-0">{children}</main>
+        <main className="flex-1 pt-[calc(4.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-0 lg:pb-0">{children}</main>
 
-        {/* Mobile bottom tab bar */}
-        <nav
-          aria-label="Portal"
-          className="border-border bg-surface/90 fixed inset-x-0 bottom-0 z-30 flex h-[4.75rem] items-stretch rounded-t-2xl border-t shadow-[0_-8px_24px_rgb(var(--shadow-color)/0.08)] backdrop-blur-md pb-[env(safe-area-inset-bottom)] lg:hidden"
-        >
-          {tabBarItems.map((item) => {
-            const Icon = NAV_ICONS[item.label];
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex flex-1 flex-col items-center justify-center gap-1"
-              >
-                <span
+        {/* Phone bottom navigation — floating capsule; the current tab grows into a green pill showing its name. */}
+        <nav aria-label="Portal" className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 lg:hidden">
+          <div className="bg-bg border-border flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]">
+            {tabBarItems.map((item) => {
+              const Icon = NAV_ICONS[item.label];
+              const active = (pending ?? tabBarItems.find((i) => isActive(i.href))?.href) === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  aria-label={item.label}
+                  onClick={() => setTapped({ href: item.href, from: pathname })}
                   className={cn(
-                    "flex items-center justify-center rounded-full px-3.5 py-1 transition-all duration-200 ease-[var(--ease-standard)]",
-                    active ? "bg-accent-soft" : "",
+                    "relative flex h-12 min-w-0 touch-manipulation items-center justify-center gap-2 overflow-hidden rounded-full text-sm font-semibold [-webkit-tap-highlight-color:transparent] transition-[flex-grow,background-color,color] duration-200 ease-[var(--ease-standard)]",
+                    active ? "bg-accent text-accent-foreground grow-[2.4] px-3" : "text-fg-muted grow active:bg-surface",
                   )}
                 >
-                  {Icon && <Icon aria-hidden className={cn("size-5", active ? "text-accent" : "text-fg-subtle")} />}
-                </span>
-                <span className={cn("text-caption transition-colors", active ? "text-accent font-medium" : "text-fg-subtle")}>{item.label}</span>
-              </Link>
-            );
-          })}
+                  {Icon && <Icon aria-hidden className="size-[22px] shrink-0" strokeWidth={active ? 2.25 : 1.75} />}
+                  <span className={cn("whitespace-nowrap", active ? "tab-label-in" : "sr-only")}>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       </div>
     </div>

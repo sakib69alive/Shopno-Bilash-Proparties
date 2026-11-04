@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { LandownersM } from "@/components/mobile/LandownersM";
+import { projectContentRepository } from "@/features/projectContent/repository";
 import { DocumentsNeeded } from "@/components/partnership/DocumentsNeeded";
 import { InvestmentSection } from "@/components/partnership/InvestmentSection";
 import { JVProcess } from "@/components/partnership/JVProcess";
@@ -16,9 +19,13 @@ export const metadata: Metadata = {
     "Property development partnerships with Shopno Bilash Properties — for landowners considering a joint venture, and investors or development partners interested in real, project-specific opportunities.",
 };
 
-export default function LandownersPage() {
+export default async function LandownersPage() {
+  const projects = await projectContentRepository.list();
+
   return (
     <>
+      <LandownersM projects={projects} />
+      <DesktopOnly>
       <PartnershipHero />
       <PartnershipStatement />
       <TwoPaths />
@@ -29,6 +36,7 @@ export default function LandownersPage() {
       <TrustTransparency />
       <DocumentsNeeded />
       <PartnershipEnquiry />
+      </DesktopOnly>
     </>
   );
 }

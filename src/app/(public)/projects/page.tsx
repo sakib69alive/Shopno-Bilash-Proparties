@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { ProjectsM } from "@/components/mobile/ProjectsM";
 import { ProjectResults } from "@/components/project/ProjectResults";
 import { ProjectsBridge } from "@/components/project/ProjectsBridge";
 import { ProjectsEmptyState } from "@/components/project/ProjectsEmptyState";
 import { ProjectsIntro } from "@/components/project/ProjectsIntro";
 import { projectContentRepository } from "@/features/projectContent/repository";
+import { unitContentRepository } from "@/features/unitContent/repository";
 
 export const metadata: Metadata = {
   title: "Projects",
@@ -20,7 +23,7 @@ export const metadata: Metadata = {
  * static file, a deliberate, documented gap.
  */
 export default async function ProjectsPage() {
-  const projects = await projectContentRepository.list();
+  const [projects, units] = await Promise.all([projectContentRepository.list(), unitContentRepository.list()]);
 
   const bridgeStats = {
     developmentCount: projects.length,
@@ -30,6 +33,8 @@ export default async function ProjectsPage() {
 
   return (
     <>
+      <ProjectsM projects={projects} units={units} />
+      <DesktopOnly>
       <ProjectsIntro />
       <ProjectsBridge stats={bridgeStats} />
 
@@ -40,6 +45,7 @@ export default async function ProjectsPage() {
           <ProjectResults projects={projects} />
         </Suspense>
       )}
+      </DesktopOnly>
     </>
   );
 }

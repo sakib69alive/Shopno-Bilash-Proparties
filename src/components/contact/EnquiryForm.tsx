@@ -14,25 +14,25 @@ import type { EnquiryContext, EnquiryProjectOption } from "./ContactExperience";
 type Status = "idle" | "loading" | "success" | "error";
 type Errors = Partial<Record<"name" | "email" | "message", string>>;
 
-const CONTACT_METHOD_OPTIONS = [
+export const CONTACT_METHOD_OPTIONS = [
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
 ];
 
-const PROPERTY_TYPE_OPTIONS = [
+export const PROPERTY_TYPE_OPTIONS = [
   { value: "Apartment", label: "Apartment" },
   { value: "Duplex", label: "Duplex" },
   { value: "Commercial Unit", label: "Commercial Unit" },
   { value: "Plot", label: "Plot" },
 ];
 
-const DEVELOPMENT_INTENTION_OPTIONS = [
+export const DEVELOPMENT_INTENTION_OPTIONS = [
   { value: "joint-venture", label: "Joint Venture" },
   { value: "outright-sale", label: "Outright Sale" },
   { value: "not-sure", label: "Not Sure Yet" },
 ];
 
-const INVESTMENT_INTEREST_OPTIONS = [
+export const INVESTMENT_INTEREST_OPTIONS = [
   { value: "capital-partner", label: "Capital Partner" },
   { value: "development-partner", label: "Development Partner" },
   { value: "not-sure", label: "Not Sure Yet" },
@@ -44,7 +44,7 @@ const INVESTMENT_INTEREST_OPTIONS = [
  * around it below is real and wired to the error UI, even though nothing
  * can actually fail yet.
  */
-async function submitEnquiry(): Promise<void> {
+export async function submitEnquiry(): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, 700));
 }
 

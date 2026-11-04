@@ -12,6 +12,8 @@ export interface AdminImageFieldProps {
   removeName?: string;
   currentSrc?: string;
   helperText?: string;
+  /** Also accept SVG (blueprints and other line drawings). */
+  allowSvg?: boolean;
 }
 
 /**
@@ -22,7 +24,7 @@ export interface AdminImageFieldProps {
  * so choosing/replacing/removing a photo feels like a real image manager,
  * not a bare `<input type="file">`.
  */
-export function AdminImageField({ label, name, removeName, currentSrc, helperText }: AdminImageFieldProps) {
+export function AdminImageField({ label, name, removeName, currentSrc, helperText, allowSvg = false }: AdminImageFieldProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const shown = preview ?? currentSrc;
 
@@ -43,7 +45,7 @@ export function AdminImageField({ label, name, removeName, currentSrc, helperTex
           label={label}
           name={name}
           type="file"
-          accept=".jpg,.jpeg,.png,.webp"
+          accept={allowSvg ? ".jpg,.jpeg,.png,.webp,.svg" : ".jpg,.jpeg,.png,.webp"}
           helperText={helperText}
           onChange={(e) => {
             const file = e.target.files?.[0];

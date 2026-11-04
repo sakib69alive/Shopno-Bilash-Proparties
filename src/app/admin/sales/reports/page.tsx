@@ -94,7 +94,7 @@ export default async function SalesReportsPage() {
           <h2 className="text-label text-fg-subtle mb-3 uppercase">
             Leads / Conversion {conversion.conversionRatePct !== null && `— ${conversion.conversionRatePct}% win rate`}
           </h2>
-          <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+          <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
@@ -127,7 +127,7 @@ export default async function SalesReportsPage() {
           {performance.length === 0 ? (
             <p className="text-body-sm text-fg-subtle">No leads or sales assigned to a salesperson yet.</p>
           ) : (
-            <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+            <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">

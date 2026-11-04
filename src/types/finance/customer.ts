@@ -8,6 +8,8 @@ export interface CustomerPayment extends FinancialRecordBase {
   customerId: ID;
   contractId?: ID;
   installmentId?: ID;
+  /** The flat sale this money is for — what lets the portal and the sale page show paid / remaining per flat. */
+  saleId?: ID;
   method: PaymentMethod;
   receiptNumber?: string;
 }

@@ -10,6 +10,7 @@ import { InstallmentScheduleList } from "@/components/portal/InstallmentSchedule
 import { PaymentHistoryList } from "@/components/portal/PaymentHistoryList";
 import { AdjustmentsList } from "@/components/portal/AdjustmentsList";
 import { formatBDT } from "@/lib/format";
+import { SalePaymentsSection } from "@/components/portal/SalePaymentsSection";
 import {
   getOwnerUnits,
   getOwnerProjects,
@@ -18,6 +19,7 @@ import {
   getOwnerInstallmentSchedule,
   getOwnerAdjustments,
   getOwnerPaymentHistory,
+  getOwnerSaleSummaries,
 } from "@/features/ownerPortal/queries";
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -40,12 +42,24 @@ export async function OwnerPaymentsPage({ base }: { base: string }) {
   if (!context) {
     return (
       <div className="p-4 sm:p-6 lg:p-10">
-        <EmptyState title="No property is currently connected to your account." description="Please contact Shopno Bilash Properties Ltd. for assistance." />
+        <EmptyState
+          title="No property is currently connected to your account."
+          description="Please contact Shopno Bilash Properties Ltd. for assistance."
+        />
       </div>
     );
   }
 
-  const [units, projects, outstanding, nextInstallment, schedule, adjustments, payments] = await Promise.all([
+  const [
+    units,
+    projects,
+    outstanding,
+    nextInstallment,
+    schedule,
+    adjustments,
+    payments,
+    saleSummaries,
+  ] = await Promise.all([
     getOwnerUnits(context.ownerType, context.ownerId),
     getOwnerProjects(context.ownerType, context.ownerId),
     getOwnerOutstanding(context.ownerType, context.ownerId),
@@ -53,7 +67,13 @@ export async function OwnerPaymentsPage({ base }: { base: string }) {
     getOwnerInstallmentSchedule(context.ownerType, context.ownerId),
     getOwnerAdjustments(context.ownerType, context.ownerId),
     getOwnerPaymentHistory(context.ownerType, context.ownerId),
+    getOwnerSaleSummaries(context.ownerType, context.ownerId),
   ]);
+  // The flat payments are shown in full by the section above; the history below is the construction side only.
+  const constructionPayments =
+    saleSummaries.length > 0
+      ? payments.filter((p) => p.category === "construction")
+      : payments;
 
   const projectsById = new Map(projects.map((p) => [p.id, p]));
   const unitsByProject = new Map<string, typeof units>();
@@ -63,85 +83,123 @@ export async function OwnerPaymentsPage({ base }: { base: string }) {
     unitsByProject.set(unit.projectId, list);
   }
   const propertyGroups = await Promise.all(
-    Array.from(unitsByProject.entries()).map(async ([projectId, projectUnits]) => ({
-      projectId,
-      projectName: projectsById.get(projectId)?.name ?? "—",
-      units: projectUnits,
-      outstanding: await getOwnerOutstanding(context.ownerType, context.ownerId, projectId),
-    })),
+    Array.from(unitsByProject.entries()).map(
+      async ([projectId, projectUnits]) => ({
+        projectId,
+        projectName: projectsById.get(projectId)?.name ?? "—",
+        units: projectUnits,
+        outstanding: await getOwnerOutstanding(
+          context.ownerType,
+          context.ownerId,
+          projectId,
+        ),
+      }),
+    ),
   );
 
   const hasAnyPlan = outstanding.totalPayable > 0;
+  const hasAnything = hasAnyPlan || saleSummaries.length > 0;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-10 p-4 pb-16 sm:p-6 lg:p-10">
       <div>
         <p className="text-label text-fg-subtle uppercase">Payments</p>
         <h1 className="text-display-m text-fg mt-2">Financial Overview</h1>
-        <p className="text-body text-fg-muted mt-1">All properties, combined.</p>
+        <p className="text-body text-fg-muted mt-1">
+          All properties, combined.
+        </p>
       </div>
 
-      {!hasAnyPlan ? (
-        <EmptyState title="No payment plan is active yet" description="Once a payment plan is set up for your property, it will appear here." />
+      {!hasAnything ? (
+        <EmptyState
+          title="No payment plan is active yet"
+          description="Once a payment plan is set up for your property, it will appear here."
+        />
       ) : (
         <>
-          <Reveal>
-            <PaymentProgressHero
-              totalPayable={outstanding.totalPayable}
-              totalPaid={outstanding.totalPaid}
-              totalOutstanding={outstanding.totalOutstanding}
-              overdueAmount={outstanding.overdueCount > 0 ? schedule.filter((s) => s.status === "overdue").reduce((sum, s) => sum + s.outstanding, 0) : undefined}
-            />
-          </Reveal>
+          <SalePaymentsSection summaries={saleSummaries} />
 
-          <Reveal>
-            <SectionHeading>Next Payment</SectionHeading>
-            <NextPaymentCard installment={nextInstallment} />
-          </Reveal>
+          {hasAnyPlan && (
+            <>
+              <Reveal>
+                <PaymentProgressHero
+                  totalPayable={outstanding.totalPayable}
+                  totalPaid={outstanding.totalPaid}
+                  totalOutstanding={outstanding.totalOutstanding}
+                  overdueAmount={
+                    outstanding.overdueCount > 0
+                      ? schedule
+                          .filter((s) => s.status === "overdue")
+                          .reduce((sum, s) => sum + s.outstanding, 0)
+                      : undefined
+                  }
+                />
+              </Reveal>
 
-          {propertyGroups.length > 1 && (
-            <Reveal>
-              <SectionHeading>My Properties</SectionHeading>
-              <ul className="border-border bg-surface-raised divide-border divide-y overflow-hidden rounded-2xl border shadow-sm">
-                {propertyGroups.map((group) => (
-                  <li key={group.projectId}>
-                    <Link
-                      href={`${base}/payments/${group.units[0].id}`}
-                      className="hover:bg-surface flex items-center justify-between gap-3 p-5 transition-colors"
-                    >
-                      <div>
-                        <p className="text-body text-fg font-medium">{group.projectName}</p>
-                        <p className="text-body-sm text-fg-muted mt-0.5">
-                          {group.units.map((u) => u.unitNumber).join(", ")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-body text-fg font-medium">{formatBDT(group.outstanding.totalOutstanding)}</p>
-                        <ChevronRight aria-hidden className="text-fg-subtle size-4" />
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
+              <Reveal>
+                <SectionHeading>Next Payment</SectionHeading>
+                <NextPaymentCard installment={nextInstallment} />
+              </Reveal>
+
+              {propertyGroups.length > 1 && (
+                <Reveal>
+                  <SectionHeading>My Properties</SectionHeading>
+                  <ul className="border-border bg-surface-raised divide-border divide-y overflow-hidden rounded-2xl border shadow-sm">
+                    {propertyGroups.map((group) => (
+                      <li key={group.projectId}>
+                        <Link
+                          href={`${base}/payments/${group.units[0].id}`}
+                          className="hover:bg-surface flex items-center justify-between gap-3 p-5 transition-colors"
+                        >
+                          <div>
+                            <p className="text-body text-fg font-medium">
+                              {group.projectName}
+                            </p>
+                            <p className="text-body-sm text-fg-muted mt-0.5">
+                              {group.units.map((u) => u.unitNumber).join(", ")}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-body text-fg font-medium">
+                              {formatBDT(group.outstanding.totalOutstanding)}
+                            </p>
+                            <ChevronRight
+                              aria-hidden
+                              className="text-fg-subtle size-4"
+                            />
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </Reveal>
+              )}
+
+              <Reveal>
+                <SectionHeading>Installment Schedule</SectionHeading>
+                <InstallmentScheduleList installments={schedule} />
+              </Reveal>
+
+              {adjustments.length > 0 && (
+                <Reveal>
+                  <SectionHeading>Adjustments</SectionHeading>
+                  <AdjustmentsList adjustments={adjustments} />
+                </Reveal>
+              )}
+
+              {(constructionPayments.length > 0 ||
+                saleSummaries.length === 0) && (
+                <Reveal>
+                  <SectionHeading>
+                    {saleSummaries.length > 0
+                      ? "Construction payments"
+                      : "Payment History"}
+                  </SectionHeading>
+                  <PaymentHistoryList payments={constructionPayments} />
+                </Reveal>
+              )}
+            </>
           )}
-
-          <Reveal>
-            <SectionHeading>Installment Schedule</SectionHeading>
-            <InstallmentScheduleList installments={schedule} />
-          </Reveal>
-
-          {adjustments.length > 0 && (
-            <Reveal>
-              <SectionHeading>Adjustments</SectionHeading>
-              <AdjustmentsList adjustments={adjustments} />
-            </Reveal>
-          )}
-
-          <Reveal>
-            <SectionHeading>Payment History</SectionHeading>
-            <PaymentHistoryList payments={payments} />
-          </Reveal>
         </>
       )}
     </div>

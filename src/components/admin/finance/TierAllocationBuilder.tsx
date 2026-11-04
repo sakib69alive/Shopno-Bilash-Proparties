@@ -263,7 +263,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
         </div>
       </div>
 
-      <div className="border-border overflow-x-auto rounded-lg border">
+      <div className="border-border overflow-x-auto scrollbar-none rounded-lg border">
         <table className="w-full text-left">
           {groupBySize ? (
             <>
@@ -365,7 +365,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
       {parkingSpaces.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-label text-fg-subtle uppercase">Parking (independent — doesn&apos;t affect unit tiers)</h3>
-          <div className="border-border overflow-x-auto rounded-lg border">
+          <div className="border-border overflow-x-auto scrollbar-none rounded-lg border">
             <table className="w-full text-left">
               <tbody>
                 {parkingSpaces.map((p) => (

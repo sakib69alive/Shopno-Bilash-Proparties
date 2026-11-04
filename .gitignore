@@ -54,3 +54,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local test owner (phone + PIN) used only for checking the portal on this machine
+/scripts/demo-owner-login.txt

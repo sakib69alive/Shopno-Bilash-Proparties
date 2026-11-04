@@ -8,10 +8,20 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
+import { ProjectGalleryField } from "./ProjectGalleryField";
+import { AdminImageField } from "@/components/admin/settings/AdminImageField";
 import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
 import type { ProjectContentFormState } from "@/features/projectContent/actions";
 
+export interface ProjectUnitStats {
+  listed: number;
+  available: number;
+  manageHref: string;
+  bulkHref: string;
+}
+
 export interface ProjectContentFormProps {
+  unitStats?: ProjectUnitStats;
   action: (state: ProjectContentFormState, formData: FormData) => Promise<ProjectContentFormState>;
   project?: Project;
   submitLabel: string;
@@ -36,10 +46,10 @@ const PROJECT_TYPE_OPTIONS = [
 /**
  * Shared by the create and edit admin pages — same shape as CMS Step 1's
  * `NewsArticleForm`. Only the fields worth editing by hand are exposed
- * (no image upload, matching News); `coverImage`/`gallery`/`concept`/
- * `nearbyPlaces` are set once on create and left alone on edit.
+ * (`concept`/`nearbyPlaces` are set once on create and left alone on edit).
+ * Cover, gallery photos and building blueprints are uploaded here.
  */
-export function ProjectContentForm({ action, project, submitLabel }: ProjectContentFormProps) {
+export function ProjectContentForm({ action, project, submitLabel, unitStats }: ProjectContentFormProps) {
   const [state, formAction] = useActionState(action, {});
 
   return (
@@ -48,6 +58,23 @@ export function ProjectContentForm({ action, project, submitLabel }: ProjectCont
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
           <p className="text-body-sm">{state.error}</p>
+        </div>
+      )}
+
+      {unitStats && (
+        <div className="bg-accent-soft border-border flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
+          <p className="text-body-sm">
+            <span className="font-semibold">{unitStats.listed}</span> {unitStats.listed === 1 ? "unit" : "units"} listed ·{" "}
+            <span className="font-semibold">{unitStats.available}</span> available
+          </p>
+          <div className="flex gap-4">
+            <a href={unitStats.manageHref} className="text-button text-accent">
+              Manage units
+            </a>
+            <a href={unitStats.bulkHref} className="text-button text-accent">
+              Add units in bulk
+            </a>
+          </div>
         </div>
       )}
 
@@ -110,7 +137,7 @@ export function ProjectContentForm({ action, project, submitLabel }: ProjectCont
           placeholder="e.g. 2027"
         />
         <Input label="Total Units" name="totalUnits" type="number" defaultValue={project?.totalUnits} />
-        <Input label="Available Units" name="availableUnits" type="number" defaultValue={project?.availableUnits} />
+        <Input label="Available Units (fallback)" name="availableUnits" helperText="Used only until you add units — after that, availability is counted from the units themselves." type="number" defaultValue={project?.availableUnits} />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-4">
@@ -157,6 +184,52 @@ export function ProjectContentForm({ action, project, submitLabel }: ProjectCont
         defaultValue={project?.locationDescription}
         placeholder="A sentence about the neighborhood."
       />
+
+      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+        <legend className="text-label px-1.5">Photos</legend>
+        <AdminImageField
+          label={project ? "Replace cover photo (optional)" : "Cover photo"}
+          name="coverImage"
+          currentSrc={project?.coverImage.src}
+          helperText="The main image on the Projects list and the top of the project page."
+        />
+        <ProjectGalleryField images={project?.gallery ?? []} />
+      </fieldset>
+
+      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+        <legend className="text-label px-1.5">Building blueprints (optional)</legend>
+        <p className="text-body-sm text-fg-muted -mt-1">
+          Shown on the project page as a swipeable set: garage first, then floor, then roof. Add only the ones you have.
+        </p>
+        <AdminImageField
+          label="Garage blueprint"
+          name="blueprintGarage"
+          removeName="removeBlueprintGarage"
+          currentSrc={project?.blueprints?.find((b) => b.kind === "garage")?.image.src}
+          helperText="JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
+          allowSvg
+        />
+        <AdminImageField
+          label="Floor blueprint"
+          name="blueprintFloor"
+          removeName="removeBlueprintFloor"
+          currentSrc={project?.blueprints?.find((b) => b.kind === "floor")?.image.src}
+          helperText="A typical floor, or the plan most floors share. JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
+          allowSvg
+        />
+        <Input
+          label="Floor label (optional)"
+          name="blueprintFloorLabel"
+          defaultValue={project?.blueprints?.find((b) => b.kind === "floor")?.label}
+          placeholder="e.g. Typical floor (2–9)"
+        />
+        <AdminImageField
+          label="Roof blueprint"
+          name="blueprintRoof"
+          removeName="removeBlueprintRoof"
+          currentSrc={project?.blueprints?.find((b) => b.kind === "roof")?.image.src}
+        />
+      </fieldset>
 
       <Switch
         name="featured"

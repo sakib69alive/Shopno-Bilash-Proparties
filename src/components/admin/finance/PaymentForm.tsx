@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -16,7 +16,19 @@ export interface PaymentFormProps {
   payment?: CustomerPayment;
   customers: Customer[];
   projects: Project[];
+  /** Every flat sale, so a payment can be filed against the exact flat it pays for. */
+  sales?: PaymentFormSale[];
+  /** Prefill when arriving from a sale's page. */
+  defaultCustomerId?: string;
+  defaultSaleId?: string;
   submitLabel: string;
+}
+
+export interface PaymentFormSale {
+  id: string;
+  customerId: string;
+  /** e.g. "A-502 — Meridian Residences · price ৳14,500,000". */
+  label: string;
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -36,8 +48,10 @@ const METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
   { value: "card", label: "Card" },
 ];
 
-export function PaymentForm({ action, payment, customers, projects, submitLabel }: PaymentFormProps) {
+export function PaymentForm({ action, payment, customers, projects, sales = [], defaultCustomerId, defaultSaleId, submitLabel }: PaymentFormProps) {
   const [state, formAction] = useActionState(action, {});
+  const [customerId, setCustomerId] = useState(payment?.customerId ?? defaultCustomerId ?? "");
+  const customerSales = sales.filter((x) => x.customerId === customerId);
 
   return (
     <form action={formAction} className="flex max-w-2xl flex-col gap-5">
@@ -54,7 +68,8 @@ export function PaymentForm({ action, payment, customers, projects, submitLabel 
           name="customerId"
           required
           options={customers.map((c) => ({ value: c.id, label: c.name }))}
-          defaultValue={payment?.customerId}
+          value={customerId}
+          onChange={(e) => setCustomerId(e.target.value)}
           placeholder={customers.length > 0 ? "Choose a customer" : "No customers yet — add one first"}
         />
         <Select
@@ -65,6 +80,17 @@ export function PaymentForm({ action, payment, customers, projects, submitLabel 
           placeholder={projects.length > 0 ? "Not linked to a project" : "No projects yet"}
         />
       </div>
+
+      {customerSales.length > 0 && (
+        <Select
+          key={customerId}
+          label="Which flat is this payment for?"
+          name="saleId"
+          options={customerSales.map((x) => ({ value: x.id, label: x.label }))}
+          defaultValue={payment?.saleId ?? defaultSaleId ?? (customerSales.length === 1 ? customerSales[0].id : undefined)}
+          placeholder="Not linked to a specific flat"
+        />
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Amount (BDT)" name="amount" type="number" required defaultValue={payment?.amount.amount} />

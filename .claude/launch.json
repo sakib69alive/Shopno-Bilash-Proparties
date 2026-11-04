@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "dev-local",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set DATABASE_URL=file:./dev.db&& set NEXT_PUBLIC_ENABLE_DEV_LOGIN=true&& npm run dev"],
+      "port": 3000
     }
   ]
 }

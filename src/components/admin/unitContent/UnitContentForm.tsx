@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
+import { AdminImageField } from "@/components/admin/settings/AdminImageField";
+import { ProjectGalleryField } from "@/components/admin/projectContent/ProjectGalleryField";
 import { UNIT_STATUS_LABEL, type Unit } from "@/content/units";
 import type { UnitContentFormState } from "@/features/unitContent/actions";
 import type { Project } from "@/content/projects";
@@ -114,6 +116,25 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
         defaultValue={unit?.features?.join(", ")}
         placeholder="e.g. Open Kitchen Layout, Private Balcony"
       />
+
+      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+        <legend className="text-label px-1.5">Photos &amp; floor plan</legend>
+        <AdminImageField
+          label={unit ? "Replace cover photo (optional)" : "Cover photo"}
+          name="coverImage"
+          currentSrc={unit?.coverImage.src}
+          helperText="The main image on the Properties list and the top of the unit page."
+        />
+        <ProjectGalleryField images={unit?.gallery ?? []} />
+        <AdminImageField
+          label="Floor plan"
+          name="floorPlan"
+          removeName="removeFloorPlan"
+          currentSrc={unit?.floorPlan?.src}
+          helperText="The blueprint shown beside Beds / Baths / Size / Price. JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
+          allowSvg
+        />
+      </fieldset>
 
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />

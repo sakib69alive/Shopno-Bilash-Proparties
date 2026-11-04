@@ -101,8 +101,8 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn("border-border overflow-x-auto rounded-lg border", className)}>
-      <table className="w-full min-w-max border-collapse text-left">
+    <div className={cn("border-border overflow-x-auto scrollbar-none rounded-lg border", className)}>
+      <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-border bg-surface border-b">
             {selectable && (
@@ -114,7 +114,7 @@ export function DataTable<T>({
               <th
                 key={col.key}
                 className={cn(
-                  "text-label text-fg-subtle px-4 py-3 whitespace-nowrap uppercase",
+                  "text-label text-fg-subtle px-3 py-3 whitespace-nowrap uppercase",
                   col.align === "right" && "text-right",
                   col.className,
                 )}
@@ -174,7 +174,7 @@ export function DataTable<T>({
                   <td
                     key={col.key}
                     className={cn(
-                      "text-body-sm px-4 py-3 whitespace-nowrap text-fg",
+                      "text-body-sm px-3 py-3 whitespace-nowrap text-fg",
                       col.align === "right" && "text-right tabular-nums",
                       col.className,
                     )}

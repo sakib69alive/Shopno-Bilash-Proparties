@@ -7,6 +7,7 @@ const MIME_TYPES: Record<string, string> = {
   jpeg: "image/jpeg",
   png: "image/png",
   webp: "image/webp",
+  svg: "image/svg+xml",
   doc: "application/msword",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
@@ -36,6 +37,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       "Content-Type": contentType,
       "Content-Length": String(data.length),
       "Cache-Control": "public, max-age=31536000, immutable",
+      // An SVG opened on its own address may never run scripts or load anything else.
+      ...(extension === "svg" ? { "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox" } : {}),
     },
   });
 }

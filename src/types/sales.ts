@@ -34,6 +34,19 @@ export interface Booking extends AuditFields {
 export type SaleStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type DiscountType = "flat" | "percentage";
 
+/**
+ * A later change to what the customer owes for the flat — the agreed price
+ * went up or down after the sale. `amount` is signed: negative lowers the
+ * price (a discount), positive raises it. The flat's effective price is
+ * `salePrice` plus every adjustment (see `lib/salePayments.ts`).
+ */
+export interface SalePriceAdjustment {
+  id: ID;
+  date: string;
+  amount: number;
+  reason: string;
+}
+
 export interface Sale extends AuditFields {
   id: ID;
   projectId: ID;
@@ -56,6 +69,10 @@ export interface Sale extends AuditFields {
   status: SaleStatus;
   /** Set when this sale originated from a converted `Booking`. */
   bookingId?: ID;
+  /** Price changes after the sale; the effective price is `salePrice` + these. */
+  priceAdjustments?: SalePriceAdjustment[];
+  /** When true the owner portal shows nothing about this flat's price, payments or balance. Unset = shown. */
+  hideFromOwner?: boolean;
 }
 
 export type ContractStatus = "draft" | "sent" | "signed" | "void";
@@ -73,6 +90,8 @@ export type InstallmentStatus = "pending" | "due-soon" | "paid" | "overdue";
 
 export interface Installment extends AuditFields {
   id: ID;
+  /** The flat sale this installment belongs to — what lets the owner portal and the sale page list it. */
+  saleId?: ID;
   contractId: ID;
   installmentNumber: number;
   dueDate: string;

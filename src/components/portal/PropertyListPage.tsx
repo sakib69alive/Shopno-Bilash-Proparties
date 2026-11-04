@@ -6,6 +6,7 @@ import { Media } from "@/components/ui/Media";
 import { StatusBadge } from "@/components/ui/Badge";
 import { getOwnerUnits } from "@/features/ownerPortal/queries";
 import { projectRepository } from "@/features/projects/repository";
+import { resolveUnitPlan } from "@/lib/unitPlan";
 
 /**
  * "My Properties" (Prompt 1 §"if one owner owns multiple properties…").
@@ -53,7 +54,7 @@ export async function PropertyListPage({ base }: { base: string }) {
               href={`${base}/property/${unit.id}`}
               className="border-border bg-surface-raised hover:border-fg-subtle group overflow-hidden rounded-2xl border transition-colors"
             >
-              <Media src={unit.layoutImage ?? "/placeholder-image.png"} alt={unit.unitNumber} ratio="standard" />
+              <Media src={resolveUnitPlan(unit, projectsById.get(unit.projectId)).src ?? "/placeholder-image.png"} alt={unit.unitNumber} ratio="standard" />
               <div className="flex items-center justify-between gap-3 p-5">
                 <div>
                   <p className="text-h4 text-fg">{unit.unitNumber}</p>

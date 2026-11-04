@@ -18,7 +18,7 @@ export function CookieNotice() {
   if (dismissed) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 px-4 pb-4 sm:px-6 sm:pb-6">
+    <div className="fixed inset-x-0 bottom-[calc(var(--m-bar-h)+env(safe-area-inset-bottom))] z-30 px-4 pb-3 sm:px-6 lg:bottom-0 lg:pb-6">
       <div className="bg-fg text-bg mx-auto flex max-w-xl items-center gap-4 rounded-lg px-5 py-4 shadow-sm">
         <p className="text-body-sm flex-1 text-white/80">
           This site keeps recent searches and saved properties in your browser only — nothing is

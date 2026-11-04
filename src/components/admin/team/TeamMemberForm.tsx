@@ -5,9 +5,10 @@ import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { AdminImageField } from "@/components/admin/settings/AdminImageField";
-import type { TeamMember } from "@/types/teamMember";
+import { TEAM_GROUPS, TEAM_GROUP_LABEL, teamGroupOf, type TeamMember } from "@/types/teamMember";
 import type { TeamMemberFormState } from "@/features/teamMembers/actions";
 
 export interface TeamMemberFormProps {
@@ -42,6 +43,17 @@ export function TeamMemberForm({ action, member, submitLabel }: TeamMemberFormPr
         <Input label="Name" name="name" required defaultValue={member?.name} placeholder="e.g. Nusrat Jahan" />
         <Input label="Title / Role" name="title" required defaultValue={member?.title} placeholder="e.g. Partner & Director of Sales" />
       </div>
+
+      <Select
+        label="Group"
+        name="group"
+        required
+        defaultValue={member ? teamGroupOf(member) : "partner"}
+        options={TEAM_GROUPS.map((g) => ({ value: g, label: TEAM_GROUP_LABEL[g].one }))}
+      />
+      <p className="text-body-sm text-fg-muted -mt-3">
+        Decides which tab of the public Founder page they appear under — Partners, Shareholders or Our team.
+      </p>
 
       <AdminImageField
         label={member?.photo ? "Replace Photo (optional)" : "Photo (optional)"}

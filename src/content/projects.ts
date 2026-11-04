@@ -35,6 +35,24 @@ export const PROJECT_STATUS_TONE: Record<ProjectStatus, string> = {
 
 export type ProjectImage = ImageAsset;
 
+/** Which part of the building a blueprint shows — also the order they are swiped in: garage, then floor, then roof. */
+export type BlueprintKind = "garage" | "floor" | "roof";
+
+export const BLUEPRINT_KIND_ORDER: BlueprintKind[] = ["garage", "floor", "roof"];
+
+export const BLUEPRINT_KIND_LABEL: Record<BlueprintKind, string> = {
+  garage: "Garage",
+  floor: "Floor",
+  roof: "Roof",
+};
+
+export interface ProjectBlueprint {
+  kind: BlueprintKind;
+  /** Shown on the tab and caption — defaults to the kind's label, but a floor plan is often "Typical floor (2–9)". */
+  label: string;
+  image: ProjectImage;
+}
+
 export interface NearbyPlace {
   label: string;
   /** Only set when a real, verified distance/time is known — never estimated. */
@@ -57,6 +75,8 @@ export interface Project {
   concept?: string;
   coverImage: ProjectImage;
   gallery: ProjectImage[];
+  /** Building blueprints uploaded from Admin → Website → Projects. Each kind is optional; shown garage → floor → roof. */
+  blueprints?: ProjectBlueprint[];
   completionYear?: number;
   totalUnits?: number;
   availableUnits?: number;

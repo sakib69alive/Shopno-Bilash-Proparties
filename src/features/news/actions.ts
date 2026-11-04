@@ -9,6 +9,7 @@ import { recordAuditEvent } from "@/features/audit/repository";
 import { newsRepository, slugifyTitle } from "@/features/news/repository";
 import { NEWS_CATEGORIES, type NewsCategory } from "@/content/news";
 import { projects } from "@/content/projects";
+import { PLACEHOLDER_IMAGE, resolveCoverAndGallery } from "@/lib/photoUploads";
 
 export interface NewsFormState {
   error?: string;
@@ -61,6 +62,28 @@ function parseArticleFields(formData: FormData) {
   } as const;
 }
 
+/**
+ * Cover photo + extra in-article photos, through the same shared helper the
+ * project and unit forms use (the article's `images` play the part of the
+ * gallery). A cover left alone keeps its current file; extra photos append,
+ * and ticked ones are removed.
+ */
+async function resolveNewsPhotos(
+  formData: FormData,
+  existing: { coverImage: { src: string; alt: string }; images?: { src: string; alt: string }[] } | undefined,
+  alt: string,
+) {
+  const result = await resolveCoverAndGallery(
+    formData,
+    existing ? { coverImage: existing.coverImage, gallery: existing.images ?? [] } : undefined,
+    alt,
+    "news",
+  );
+  if (result.error) return { error: result.error };
+  const gallery = (result.gallery ?? []).filter((g) => g.src !== PLACEHOLDER_IMAGE);
+  return { coverImage: result.coverImage, images: gallery.length > 0 ? gallery : undefined };
+}
+
 export async function createNewsArticle(_prevState: NewsFormState, formData: FormData): Promise<NewsFormState> {
   const user = await requireContentPermission("content.create");
 
@@ -74,6 +97,9 @@ export async function createNewsArticle(_prevState: NewsFormState, formData: For
     slug = `${slug}-${existing.length + 1}`;
   }
 
+  const photos = await resolveNewsPhotos(formData, undefined, fields.coverImageAlt);
+  if (photos.error) return { error: photos.error };
+
   const id = randomUUID();
   await newsRepository.create({
     id,
@@ -82,7 +108,8 @@ export async function createNewsArticle(_prevState: NewsFormState, formData: For
     category: fields.category,
     date: fields.date,
     excerpt: fields.excerpt,
-    coverImage: { src: "/placeholder-image.png", alt: fields.coverImageAlt },
+    coverImage: { src: photos.coverImage?.src ?? PLACEHOLDER_IMAGE, alt: fields.coverImageAlt },
+    images: photos.images,
     content: fields.content,
     projectSlug: fields.projectSlug,
     featured: fields.featured,
@@ -116,12 +143,16 @@ export async function updateNewsArticle(
   const existingArticle = await newsRepository.findById(id);
   if (!existingArticle) return { error: "This article no longer exists." };
 
+  const photos = await resolveNewsPhotos(formData, existingArticle, fields.coverImageAlt);
+  if (photos.error) return { error: photos.error };
+
   const updated = await newsRepository.update(id, {
     title: fields.title,
     category: fields.category,
     date: fields.date,
     excerpt: fields.excerpt,
-    coverImage: { src: existingArticle.coverImage.src, alt: fields.coverImageAlt },
+    coverImage: { src: photos.coverImage?.src ?? existingArticle.coverImage.src, alt: fields.coverImageAlt },
+    images: photos.images,
     content: fields.content,
     projectSlug: fields.projectSlug,
     featured: fields.featured,

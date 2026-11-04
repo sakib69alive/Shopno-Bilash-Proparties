@@ -62,3 +62,53 @@ export function getRouteTitle(pathname: string, data: RouteTitleData, hash?: str
   if (segments.length === 0) return "HOME";
   return titleCaseFromSlug(segments[segments.length - 1]);
 }
+
+const MOBILE_STATIC_TITLES: Record<string, string> = {
+  "/about": "About",
+  "/projects": "Projects",
+  "/properties": "Properties",
+  "/services": "Services",
+  "/landowners": "Landowners & JV",
+  "/gallery": "Gallery",
+  "/news": "News",
+  "/contact": "Enquire",
+  "/saved": "Saved",
+  "/founder": "Founder",
+  "/construction": "Construction",
+  "/privacy": "Privacy Policy",
+  "/terms": "Terms & Conditions",
+  "/cookies": "Cookie Policy",
+  "/disclaimer": "Property Disclaimer",
+  "/policy": "Company Policy",
+  "/sitemap": "Sitemap",
+};
+
+/**
+ * Title shown in the phone layout's top bar — same lookups as
+ * `getRouteTitle`, but as readable mixed case ("Meridian Residences", not
+ * "MERIDIAN RESIDENCES") because it sits in the page chrome rather than a
+ * full-screen ceremony. Never invents a name for a slug that matches nothing.
+ */
+export function getMobileTitle(pathname: string, data: RouteTitleData, hash?: string): string {
+  if (hash === "#investment" && pathname === "/landowners") return "Investment";
+  const normalized = pathname.replace(/\/$/, "") || "/";
+  if (MOBILE_STATIC_TITLES[normalized]) return MOBILE_STATIC_TITLES[normalized];
+
+  const segments = normalized.split("/").filter(Boolean);
+
+  if (segments[0] === "projects" && segments[1]) {
+    const project = data.projects.find((p) => p.slug === segments[1]);
+    if (segments[2] === "units" && segments[3]) {
+      const unit = data.units.find((u) => u.slug === segments[3] && u.projectSlug === segments[1]);
+      return unit?.name ?? "Property";
+    }
+    if (segments[2] === "construction") return "Construction";
+    return project?.name ?? "Project";
+  }
+
+  if (segments[0] === "news" && segments[1]) {
+    return data.newsArticles.find((a) => a.slug === segments[1])?.title ?? "News";
+  }
+
+  return "";
+}

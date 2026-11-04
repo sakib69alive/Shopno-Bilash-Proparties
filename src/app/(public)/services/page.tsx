@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { ServicesM } from "@/components/mobile/ServicesM";
 import { ServiceChapter } from "@/components/services/ServiceChapter";
 import { ServiceIndex } from "@/components/services/ServiceIndex";
 import { ServicesEnquiryCTA } from "@/components/services/ServicesEnquiryCTA";
@@ -22,6 +24,8 @@ export default function ServicesPage() {
   return (
     <>
       <ServicesHero />
+      <ServicesM />
+      <DesktopOnly>
       <ServiceIndex />
 
       {propertyDevelopment && (
@@ -36,6 +40,7 @@ export default function ServicesPage() {
 
       <ServicesPathways />
       <ServicesEnquiryCTA />
+      </DesktopOnly>
     </>
   );
 }

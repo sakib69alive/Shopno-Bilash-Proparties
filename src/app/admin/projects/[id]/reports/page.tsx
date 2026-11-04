@@ -146,7 +146,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
 
       <section>
         <h2 className="text-label text-fg-subtle mb-3 uppercase">Actual Cost Breakdown</h2>
-        <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+        <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">
@@ -195,7 +195,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
             description="Every generated contribution for this project has been fully paid."
           />
         ) : (
-          <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+          <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
@@ -244,7 +244,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
             View full cash flow →
           </Link>
         </div>
-        <div className="border-border bg-surface-raised overflow-x-auto rounded-lg border">
+        <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">

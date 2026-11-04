@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { FeaturedBandM } from "@/components/mobile/FeaturedBandM";
 import { buttonVariants } from "@/components/ui/Button";
+import type { Project } from "@/content/projects";
 import { Container } from "@/components/ui/Container";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
@@ -17,8 +20,11 @@ import { featuredProject } from "@/content/home";
  *    and this section becomes the project preview with no code changes
  *    beyond that data.
  */
-export function FeaturedDevelopment() {
+export function FeaturedDevelopment({ project }: { project?: Project }) {
   return (
+    <>
+      <FeaturedBandM project={project} />
+      <DesktopOnly>
     <section data-header-tone="dark" className="bg-fg relative overflow-hidden py-24 sm:py-32 lg:py-40">
       <svg
         aria-hidden
@@ -85,5 +91,7 @@ export function FeaturedDevelopment() {
         )}
       </Container>
     </section>
+      </DesktopOnly>
+    </>
   );
 }

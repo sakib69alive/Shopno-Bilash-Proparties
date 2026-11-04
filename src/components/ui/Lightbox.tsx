@@ -19,6 +19,8 @@ export interface LightboxProps {
   onClose: () => void;
   onNavigate: (index: number) => void;
   label?: string;
+  /** "light" seats the image on an ivory panel — for drawings (floor plans, blueprints) whose dark lines vanish on the black backdrop. */
+  surface?: "dark" | "light";
 }
 
 /**
@@ -28,9 +30,10 @@ export interface LightboxProps {
  * single-image viewers (e.g. a floor plan) that don't want the grid, and
  * by the Gallery page for its richer per-image caption/project link.
  */
-export function Lightbox({ images, index, onClose, onNavigate, label = "Image viewer" }: LightboxProps) {
+export function Lightbox({ images, index, onClose, onNavigate, label = "Image viewer", surface = "dark" }: LightboxProps) {
   const open = index !== null;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -52,6 +55,22 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
 
   const current = open ? images[index] : null;
 
+  // Swipe to move between photos on a touch screen: a mostly-horizontal drag of 50px or more.
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || images.length < 2 || index === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    onNavigate(dx < 0 ? (index + 1) % images.length : (index - 1 + images.length) % images.length);
+  }
+
   return (
     <div
       role="dialog"
@@ -59,6 +78,8 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
       aria-label={label}
       aria-hidden={!open}
       inert={!open || undefined}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       className={cn(
         "fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 px-4 transition-opacity duration-300 ease-[var(--ease-standard)]",
         open ? "opacity-100" : "pointer-events-none opacity-0",
@@ -100,7 +121,10 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
         <img
           src={current.src}
           alt={current.alt}
-          className="max-h-[75svh] max-w-[90vw] object-contain"
+          className={cn(
+            "max-h-[75svh] max-w-[90vw] object-contain",
+            surface === "light" && "bg-bg max-h-[72svh] max-w-[92vw] rounded-lg p-3 sm:p-5",
+          )}
         />
       )}
 

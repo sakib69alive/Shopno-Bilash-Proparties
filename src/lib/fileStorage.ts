@@ -2,9 +2,10 @@ import "server-only";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { writeToStore, removeFromStore, type StoreKind } from "@/lib/uploadStore";
+import { sanitizeSvg } from "@/lib/svgSanitize";
 
 const MAX_FILE_SIZE_BYTES = 15 * 1024 * 1024; // 15MB — comfortably above a scanned deed/agreement, well under the 20MB Server Action body limit set in next.config.ts.
-const ALLOWED_EXTENSIONS = new Set(["pdf", "jpg", "jpeg", "png", "webp", "doc", "docx"]);
+const ALLOWED_EXTENSIONS = new Set(["pdf", "jpg", "jpeg", "png", "webp", "svg", "doc", "docx"]);
 
 export interface SavedFile {
   url: string;
@@ -40,16 +41,22 @@ export async function saveUploadedFile(file: File, subdir: string): Promise<Save
 
   const extension = getExtension(file.name);
   if (!ALLOWED_EXTENSIONS.has(extension)) {
-    throw new Error("Unsupported file type — allowed: PDF, JPG, PNG, WEBP, DOC, DOCX.");
+    throw new Error("Unsupported file type — allowed: PDF, JPG, PNG, WEBP, SVG, DOC, DOCX.");
   }
 
   const fileName = `${randomUUID()}-${sanitizeFileName(file.name)}`;
   const relativePath = `${subdir}/${fileName}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
+  let buffer = Buffer.from(await file.arrayBuffer());
+  if (extension === "svg") {
+    // An SVG is code as much as a picture: keep the drawing, strip anything that could run or call out.
+    const clean = sanitizeSvg(buffer.toString("utf8"));
+    if (!clean) throw new Error("That SVG file couldn't be read. Export it again as a plain SVG, or upload a PNG / JPG instead.");
+    buffer = Buffer.from(clean, "utf8");
+  }
   const kind = await writeToStore(relativePath, buffer);
 
   const urlPrefix = kind === "blob" ? "/api/uploads" : "/uploads";
-  return { url: `${urlPrefix}/${relativePath}`, size: file.size, extension };
+  return { url: `${urlPrefix}/${relativePath}`, size: buffer.length, extension };
 }
 
 /** Best-effort cleanup — a missing file (already deleted, or a path from before this store existed) is not an error. */

@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectRepository } from "@/features/projects/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { generateProjectStructure, parseStructureSpec } from "@/features/projects/structureGenerator";
 import type { ProjectStatus, UnitType } from "@/types/project";
 
 export interface ProjectFormState {
@@ -218,6 +219,20 @@ export async function createProject(_prevState: ProjectFormState, formData: Form
   const builtTypes = await buildUnitTypes(formData);
   if ("error" in builtTypes) return { error: builtTypes.error };
 
+  // Optional: build the floors, flats and parking spaces from a few numbers. Checked before anything is saved.
+  const structure = parseStructureSpec(formData);
+  if (structure && "error" in structure) return { error: structure.error };
+  const canBuildFlats = hasPermission(user.role, "unit.manage");
+  const canBuildParking = hasPermission(user.role, "parking.manage");
+  const structureSpec =
+    structure && "spec" in structure
+      ? {
+          ...structure.spec,
+          floors: canBuildFlats ? structure.spec.floors : 0,
+          parkingSpaces: canBuildParking ? structure.spec.parkingSpaces : 0,
+        }
+      : null;
+
   const id = randomUUID();
   const now = new Date().toISOString();
 
@@ -257,8 +272,22 @@ export async function createProject(_prevState: ProjectFormState, formData: Form
 
   await recordAuditEvent({ actorUserId: user.id, action: "project.create", entityType: "Project", entityId: id });
 
+  let builtStructure = false;
+  if (structureSpec && (structureSpec.floors > 0 || structureSpec.parkingSpaces > 0)) {
+    const built = await generateProjectStructure(id, user.id, structureSpec);
+    // The summary counts on the project follow what was really created.
+    await projectRepository.update(id, {
+      buildingCount: built.buildings,
+      floorCount: built.floors,
+      unitCount: built.units,
+      parkingCount: built.parking,
+    });
+    await recordAuditEvent({ actorUserId: user.id, action: "project.generateStructure", entityType: "Project", entityId: id, newValue: built });
+    builtStructure = true;
+  }
+
   revalidatePath("/admin/projects");
-  redirect("/admin/projects");
+  redirect(builtStructure ? `/admin/projects/${id}/distribute` : "/admin/projects");
 }
 
 export async function updateProject(

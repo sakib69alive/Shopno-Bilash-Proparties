@@ -140,7 +140,10 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
       const customParkingAmounts = Object.fromEntries(Object.entries(parkingAmounts).map(([k, v]) => [k, Number(v) || 0]));
       const result = await generateContributions(costAllocationId, {}, customParkingAmounts);
       if (result.error) setError(result.error);
-      else router.refresh();
+      else {
+        router.replace(`?notified=${result.notified ?? 0}&withoutApp=${result.withoutApp ?? 0}`);
+        router.refresh();
+      }
     });
   }
 

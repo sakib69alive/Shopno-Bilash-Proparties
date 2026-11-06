@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { FileText, Megaphone, Pencil, Wallet } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -13,6 +13,8 @@ import { PortalAccessPanel } from "@/components/admin/users/PortalAccessPanel";
 import { formatDate } from "@/lib/format";
 import { customerRepository } from "@/features/customers/repository";
 import { userRepository } from "@/features/users/repository";
+import { toPortalAccessView } from "@/features/users/portalAccessView";
+import { PortalLinkControls } from "@/components/admin/users/PortalLinkControls";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -62,6 +64,8 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
   const canUpdate = hasPermission(user.role, "customer.update");
   const canDelete = hasPermission(user.role, "customer.delete");
   const canManagePortalAccess = hasPermission(user.role, "users.manage");
+  const canRecordPayment = hasPermission(user.role, "finance.manage");
+  const canMakeDocuments = hasPermission(user.role, "reports.view");
   const linkedUser = customer.userId ? await userRepository.findById(customer.userId) : null;
 
   return (
@@ -72,6 +76,16 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
         secondaryActions={
           <div className="flex items-center gap-2">
             <StatusBadge status={customer.status} />
+            {canManagePortalAccess && (
+              <PortalLinkControls
+                variant="compact"
+                ownerType="customer"
+                ownerId={customer.id}
+                ownerName={customer.name}
+                phone={customer.phone}
+                summary={toPortalAccessView(linkedUser)?.link}
+              />
+            )}
             {canUpdate && (
               <Link href={`/admin/customers/${customer.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
@@ -84,6 +98,29 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
       />
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
+        {(canRecordPayment || canMakeDocuments) && (
+          <div className="flex flex-wrap items-center gap-2 lg:col-span-2">
+            {canRecordPayment && (
+              <Link href={`/admin/sales/payments/new?customerId=${customer.id}`} className={buttonVariants({ variant: "primary", size: "sm" })}>
+                <Wallet aria-hidden className="size-3.5" />
+                {customer.name.split(" ")[0]} paid money
+              </Link>
+            )}
+            {canRecordPayment && (
+              <Link href={`/admin/statements?customerId=${customer.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                <FileText aria-hidden className="size-3.5" />
+                Payment statement
+              </Link>
+            )}
+            {canMakeDocuments && (
+              <Link href="/admin/statements" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                <Megaphone aria-hidden className="size-3.5" />
+                Write a notice
+              </Link>
+            )}
+          </div>
+        )}
+
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
           <h2 className="text-label text-fg-subtle uppercase">Contact</h2>
           <div className="grid grid-cols-2 gap-4">
@@ -101,7 +138,9 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
             <PortalAccessPanel
               ownerType="customer"
               ownerId={customer.id}
-              linkedUser={linkedUser ? { id: linkedUser.id, status: linkedUser.status } : null}
+              ownerName={customer.name}
+              phone={customer.phone}
+              linkedUser={toPortalAccessView(linkedUser)}
             />
           )}
 

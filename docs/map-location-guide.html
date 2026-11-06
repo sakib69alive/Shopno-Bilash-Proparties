@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>Shopno Bilash Properties — প্রজেক্টের লোকেশন ম্যাপ গাইড</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body { font-family: "Nirmala UI", "Segoe UI", sans-serif; color: #1c1b19; font-size: 11.5pt; line-height: 1.65; }
+  h1 { font-size: 21pt; margin: 0 0 4px; color: #1f3d33; }
+  .sub { color: #6b6860; margin-bottom: 18px; }
+  h2 { font-size: 14pt; color: #1f3d33; border-bottom: 2px solid #1f3d33; padding-bottom: 3px; margin: 24px 0 8px; break-after: avoid; }
+  h3 { font-size: 12pt; margin: 14px 0 4px; break-after: avoid; }
+  p { margin: 6px 0; }
+  ol, ul { margin: 6px 0 6px 22px; padding: 0; }
+  li { margin: 3px 0; }
+  code { background: #f1eee7; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 10pt; }
+  pre { background: #f1eee7; padding: 8px 10px; border-radius: 6px; font-family: Consolas, monospace; font-size: 9.5pt; white-space: pre-wrap; word-break: break-all; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 10.5pt; }
+  th, td { border: 1px solid #cfc9bb; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #1f3d33; color: #fff; }
+  .box { border: 1px solid #cfc9bb; border-left: 5px solid #1f3d33; background: #faf8f4; padding: 8px 12px; margin: 10px 0; break-inside: avoid; }
+  .warn { border-left-color: #b3541e; }
+  tr, li { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1>প্রজেক্টের লোকেশন ম্যাপ — সম্পূর্ণ গাইড</h1>
+<div class="sub">Shopno Bilash Properties · Admin ও Developer-এর জন্য · ফিচারটি ইতিমধ্যে ওয়েবসাইটে যোগ করা আছে</div>
+
+<h2>১. এটা কী এবং কী পরিবর্তন হয়েছে</h2>
+<p>আগে প্রজেক্ট পেজের "Location" অংশে শুধু একটি ফাঁকা বক্স (পিন আইকন ও এলাকার নাম) দেখা যেত। এখন Admin Panel থেকে প্রতিটি প্রজেক্টে একটি <b>Google Maps link</b> দেওয়া যায়। লিংক দিলে ওই বক্সের জায়গায় <b>আসল লাইভ ম্যাপ</b> আসে, আর তার নিচে <b>"Open in Google Maps"</b> বাটন থাকে, যাতে ক্লায়েন্ট সরাসরি ফোনের Maps অ্যাপে রাস্তা (directions) দেখতে পারে।</p>
+<ul>
+  <li><b>কোনো খরচ নেই, কোনো API key লাগে না।</b> Google-এর সাধারণ embed ব্যবহার হয়; আমাদের server-এ কিছু আপলোড বা জমা হয় না, শুধু পেস্ট করা লিংকটুকু প্রজেক্টের সাথে সেভ হয়।</li>
+  <li>লিংক না দিলে আগের মতো সাধারণ বক্স (placeholder) দেখাবে। কোনো ভুয়া ম্যাপ বা ভুয়া দূরত্ব দেখানো হয় না।</li>
+  <li>নতুন কোনো database migration লাগেনি, তাই deploy করলেই কাজ করে।</li>
+</ul>
+
+<h2>২. ম্যাপ যোগ করার ধাপ (Admin)</h2>
+<h3>ধাপ ১ — Google Maps থেকে লিংক নিন</h3>
+<ol>
+  <li>ফোনে বা কম্পিউটারে <b>Google Maps</b> খুলুন।</li>
+  <li>সার্চ বক্সে প্রজেক্টের জায়গা খুঁজুন। যদি ঠিক জায়গাটি না আসে, ম্যাপে আঙুল দিয়ে বা ক্লিক করে ঠিক বিল্ডিংয়ের জায়গায় <b>পিন (Drop pin)</b> বসান।</li>
+  <li><b>Share</b> চাপুন। এখানে তিনটি উপায় আছে (নিচের টেবিলে কোনটা সবচেয়ে ভালো দেখুন):</li>
+</ol>
+<table>
+  <tr><th>উপায়</th><th>কীভাবে</th><th>ফল</th></tr>
+  <tr><td><b>A. Embed code (সবচেয়ে ভালো)</b></td><td>Share → <b>Embed a map</b> ট্যাব → <b>COPY HTML</b>। (এই অপশন কম্পিউটারের Google Maps-এ পাওয়া যায়।)</td><td>পেজে লাইভ ম্যাপ + Open বাটন</td></tr>
+  <tr><td><b>B. সাধারণ লিংক</b></td><td>ব্রাউজারের address bar থেকে পুরো লিংক কপি করুন (যেমন <code>https://www.google.com/maps/place/…/@23.79,90.40,15z</code>)।</td><td>লাইভ ম্যাপ + Open বাটন</td></tr>
+  <tr><td><b>C. Coordinates</b></td><td>ম্যাপে পিনের ওপর রাইট-ক্লিক করলে উপরে সংখ্যা দেখা যায়, সেটি কপি করুন, যেমন <code>23.7925, 90.4078</code></td><td>লাইভ ম্যাপ + Open বাটন</td></tr>
+  <tr><td><b>D. ছোট Share লিংক</b></td><td>ফোনে Share করলে যে <code>https://maps.app.goo.gl/…</code> লিংক আসে।</td><td>পেজের ভেতরে ম্যাপ দেখা যায় না (Google অনুমতি দেয় না), শুধু <b>Open in Google Maps</b> বাটন আসে</td></tr>
+</table>
+<div class="box"><b>পরামর্শ:</b> সবচেয়ে ঠিকঠাক ফল চাইলে কম্পিউটারে A (Embed code) ব্যবহার করুন। ফোন থেকে করলে B বা C নিন; D শুধু তখনই, যখন আর কিছু পাওয়া যাচ্ছে না।</div>
+
+<h3>ধাপ ২ — Admin Panel-এ পেস্ট করুন</h3>
+<ol>
+  <li>Admin → <b>Website → Projects</b> খুলুন।</li>
+  <li>নতুন প্রজেক্ট বানানোর সময় অথবা বিদ্যমান প্রজেক্টের <b>Edit</b>-এ যান।</li>
+  <li>"Location Description"-এর ঠিক নিচে <b>"Google Maps link (optional)"</b> বক্সে কপি করা লিংক/কোড পেস্ট করুন।</li>
+  <li><b>Save</b> চাপুন।</li>
+</ol>
+
+<h3>ধাপ ৩ — পাবলিক পেজে যাচাই করুন</h3>
+<ol>
+  <li>ওয়েবসাইটে ওই প্রজেক্টের পেজ খুলে নিচে স্ক্রল করে <b>Location</b> অংশে যান।</li>
+  <li>ম্যাপটি ঠিক জায়গায় পিন দেখাচ্ছে কি না দেখুন, এবং <b>Open in Google Maps</b> চেপে দেখুন সঠিক জায়গা খোলে কি না।</li>
+  <li>ভুল জায়গা দেখালে Google Maps-এ পিনটি সরিয়ে আবার লিংক নিন ও পেস্ট করুন।</li>
+</ol>
+
+<h2>৩. ম্যাপ সরানো বা বদলানো</h2>
+<ul>
+  <li><b>বদলাতে:</b> Edit-এ গিয়ে বক্সে নতুন লিংক পেস্ট করে Save করুন।</li>
+  <li><b>সরাতে:</b> বক্সটি পুরো খালি করে Save করুন। পেজে আগের সাধারণ বক্স ফিরে আসবে।</li>
+</ul>
+
+<h2>৪. কোন ধরনের লিংক গ্রহণযোগ্য, আর কেন ভুল আসতে পারে</h2>
+<p>নিরাপত্তার জন্য শুধু Google Maps-এর লিংক গ্রহণ করা হয়। অন্য কোনো ওয়েবসাইটের লিংক, <code>http://</code> (https ছাড়া) লিংক বা কোড-জাতীয় কিছু পেস্ট করলে Save-এর সময় লাল বার্তা আসবে এবং কিছু সেভ হবে না।</p>
+<table>
+  <tr><th>সমস্যা</th><th>কারণ ও সমাধান</th></tr>
+  <tr><td>Save-এ "That map link isn't one we can use" দেখাচ্ছে</td><td>লিংকটি Google Maps-এর নয়, অথবা অসম্পূর্ণ কপি হয়েছে। আবার Share থেকে কপি করুন। Coordinates হলে দুই সংখ্যার মাঝে কমা দিন (যেমন <code>23.7925, 90.4078</code>)।</td></tr>
+  <tr><td>শুধু বাটন আসছে, ম্যাপ আসছে না</td><td>ছোট <code>maps.app.goo.gl</code> লিংক দিলে এমন হয়। পদ্ধতি A, B বা C দিয়ে আবার চেষ্টা করুন।</td></tr>
+  <tr><td>ম্যাপ ভুল জায়গা দেখাচ্ছে</td><td>পিনটি ঠিক জায়গায় ছিল না। Google Maps-এ পিন ঠিক করে নতুন লিংক নিন।</td></tr>
+  <tr><td>ম্যাপের জায়গায় এখনো সাধারণ বক্স</td><td>বক্সটি খালি আছে, অথবা Save হয়নি। সম্ভব হলে পেজ রিফ্রেশ করে দেখুন।</td></tr>
+</table>
+<div class="box warn"><b>মনে রাখুন:</b> ওয়েবসাইট এখনো beta। কিছু ঠিকঠাক না চললে বা ভুল দেখালে সমস্যাটি Developer-কে জানান।</div>
+
+<h2>৫. Developer সেকশন — কোথায় কী আছে ও ভবিষ্যতে কীভাবে বাড়াবেন</h2>
+<h3>যেসব ফাইল তৈরি/বদলানো হয়েছে</h3>
+<table>
+  <tr><th>ফাইল</th><th>কাজ</th></tr>
+  <tr><td><code>src/lib/mapLinks.ts</code></td><td><b>মূল লজিক।</b> <code>parseMapInput()</code> পেস্ট করা যেকোনো জিনিসকে <code>{ embedUrl?, openUrl }</code>-এ রূপান্তর করে। <code>checkMapField()</code> Admin-এ সেভের আগে যাচাই করে এবং iframe কোড থেকে শুধু <code>src</code> রেখে দেয়। শুধু https ও Google হোস্ট গ্রহণ করে।</td></tr>
+  <tr><td><code>src/components/ui/LocationMap.tsx</code></td><td>পুনর্ব্যবহারযোগ্য UI কম্পোনেন্ট: <code>&lt;LocationMap mapUrl="…" label="…" /&gt;</code>। লিংক থাকলে iframe + Open বাটন; না থাকলে placeholder।</td></tr>
+  <tr><td><code>src/components/project/ProjectLocation.tsx</code></td><td>প্রজেক্ট পেজের Location অংশ; এখন <code>LocationMap</code> ব্যবহার করে।</td></tr>
+  <tr><td><code>src/content/projects.ts</code></td><td><code>Project</code> টাইপে নতুন ঐচ্ছিক ফিল্ড <code>mapUrl?: string</code>।</td></tr>
+  <tr><td><code>src/components/admin/projectContent/ProjectContentForm.tsx</code></td><td>Admin ফর্মে "Google Maps link" ইনপুট (<code>name="mapUrl"</code>)।</td></tr>
+  <tr><td><code>src/features/projectContent/actions.ts</code></td><td>create ও update — দুই জায়গাতেই <code>checkMapField</code> দিয়ে যাচাই করে <code>mapUrl</code> সেভ করে।</td></tr>
+  <tr><td><code>src/content/adminGuide.ts</code></td><td>Admin Panel-এর ভেতরের Help পেজে (<code>/admin/help</code>) এই ফিচারের নির্দেশনা।</td></tr>
+</table>
+
+<h3>ভবিষ্যতে যেমন বাড়াবেন</h3>
+<p><b>(ক) আরেকটি রেকর্ডে ম্যাপ চাইলে (যেমন Unit, Landowner সাইট):</b></p>
+<ol>
+  <li>ওই রেকর্ডের টাইপে <code>mapUrl?: string</code> যোগ করুন (যেমন <code>projects.ts</code>-এ করা হয়েছে)।</li>
+  <li>তার Admin ফর্মে ঠিক একই <code>Input name="mapUrl"</code> বসান।</li>
+  <li>তার save action-এ <code>checkMapField(String(formData.get("mapUrl") ?? ""))</code> কল করে <code>map.value</code> সেভ করুন; error থাকলে ফেরত দিন।</li>
+  <li>পাবলিক পেজে <code>&lt;LocationMap mapUrl={record.mapUrl} label={…} /&gt;</code> বসান। আর কিছু লাগবে না।</li>
+</ol>
+<p><b>(খ) নতুন ধরনের লিংক সাপোর্ট করতে (যেমন Apple Maps, OpenStreetMap):</b> শুধু <code>parseMapInput()</code>-এ একটি নতুন শাখা যোগ করুন, যা <code>{ embedUrl, openUrl }</code> ফেরত দেয়। বাকি সব (ফর্ম, সেভ, পেজ) অপরিবর্তিত থাকে। iframe-এ নতুন হোস্ট যোগ করার আগে নিরাপত্তা হিসাব করুন: শুধু বিশ্বস্ত হোস্টের embed URL ফেরত দিন।</p>
+<p><b>(গ) একই পেজে একাধিক ম্যাপ বা Nearby places-এর পিন:</b> এখন একটি ম্যাপ। একাধিক হলে <code>mapUrl</code>-কে তালিকা (<code>mapUrls: string[]</code>) বানিয়ে <code>LocationMap</code>-কে লুপে ব্যবহার করুন।</p>
+<p><b>(ঘ) নিজস্ব স্টাইলের ইন্টারঅ্যাক্টিভ ম্যাপ (পিন, রঙ, একাধিক মার্কার):</b> তখন Google Maps JavaScript API বা Mapbox/Leaflet লাগবে; এতে API key ও কিছু ক্ষেত্রে বিলিং আসে। সেক্ষেত্রে <code>LocationMap</code> কম্পোনেন্টের ভেতরটা বদলান; ফর্ম ও ডেটা মডেলে <code>latitude/longitude</code> আলাদা ফিল্ড হিসাবে যোগ করা সুবিধাজনক।</p>
+
+<h3>নিরাপত্তা ও সীমাবদ্ধতা</h3>
+<ul>
+  <li>কোনো কাঁচা HTML সেভ বা রেন্ডার হয় না। iframe কোড পেস্ট করলে শুধু তার <code>src</code> URL রাখা হয়, এবং সেটি Google-এর embed হলেই গ্রহণ করা হয়।</li>
+  <li><code>javascript:</code>, <code>data:</code>, <code>http:</code> এবং অন্য ডোমেইন বাতিল হয়।</li>
+  <li>সাইটে Content-Security-Policy এখনো নেই (দেখুন <code>next.config.ts</code>)। ভবিষ্যতে CSP যোগ করলে <code>frame-src</code>-এ <code>https://www.google.com</code> ও <code>https://maps.google.com</code> অনুমতি দিতে হবে, নইলে ম্যাপ ফাঁকা হয়ে যাবে।</li>
+  <li>Embed code-এর ক্ষেত্রে "Open in Google Maps" বাটন embed লিংক থেকে বানানো হয়; কিছু ক্ষেত্রে সরাসরি সার্চ-পিনের মতো না-ও খুলতে পারে। সবচেয়ে নির্ভুল Open বাটন চাইলে পদ্ধতি B বা C ব্যবহার করুন।</li>
+  <li>এই ফিচারটি লোকাল ডেভ সার্ভারে পরীক্ষা করা হয়েছে (লিংক-পার্সার সহ); লাইভ সাইটে ম্যাপের iframe লোড হওয়া ডিপ্লয়ের পর আরেকবার দেখে নিন।</li>
+</ul>
+
+<h2>৬. এক নজরে (চেকলিস্ট)</h2>
+<ol>
+  <li>Google Maps-এ ঠিক জায়গায় পিন → Share → Embed a map → COPY HTML (বা সাধারণ লিংক/coordinates)।</li>
+  <li>Admin → Website → Projects → Edit → "Google Maps link" বক্সে পেস্ট → Save।</li>
+  <li>পাবলিক পেজে Location অংশে ম্যাপ ও Open বাটন যাচাই।</li>
+  <li>সরাতে চাইলে বক্স খালি করে Save।</li>
+</ol>
+
+</body>
+</html>

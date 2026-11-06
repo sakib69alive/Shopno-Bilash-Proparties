@@ -18,6 +18,7 @@ export function UnitPlanCard({ unit }: { unit: Unit }) {
   const facts = [
     unit.bedrooms !== undefined ? { label: "Beds", value: String(unit.bedrooms) } : null,
     unit.bathrooms !== undefined ? { label: "Baths", value: String(unit.bathrooms) } : null,
+    unit.balconies !== undefined ? { label: "Balconies", value: String(unit.balconies) } : null,
     unit.area ? { label: "Size", value: unit.area } : null,
     { label: "Price", value: unit.price ?? "On request" },
   ].filter((f): f is { label: string; value: string } => f !== null);

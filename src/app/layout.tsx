@@ -60,9 +60,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-theme="light"
-      className={`${inter.variable} ${manrope.variable} ${instrumentSerif.variable} ${notoSansBengali.variable} antialiased overflow-x-hidden`}
+      className={`${inter.variable} ${manrope.variable} ${instrumentSerif.variable} ${notoSansBengali.variable} antialiased overflow-x-clip`}
     >
       {/*
+        (Now `overflow-x-clip`: same effect, but unlike `hidden` it keeps
+        `position: sticky` working for the whole app.)
         `overflow-x-hidden` here is a deliberate safety net, not a fix for
         one specific element: decorative "bleed" motifs (e.g. Values.tsx's
         two side graphics, positioned outside their narrow container into
@@ -74,7 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         never the page — this just enforces that at the root instead of
         chasing every current/future decorative element's exact math.
       */}
-      <body className="min-h-screen flex flex-col overflow-x-hidden bg-bg text-fg">
+      <body className="min-h-screen flex flex-col overflow-x-clip bg-bg text-fg">
         {children}
       </body>
     </html>

@@ -53,7 +53,7 @@ export function SaveButton({ id, name, variant = "icon", className }: SaveButton
       aria-pressed={saved}
       aria-label={label}
       className={cn(
-        "bg-bg/90 text-fg flex size-9 items-center justify-center rounded-full backdrop-blur-sm transition-colors hover:bg-bg",
+        "bg-bg/90 text-fg flex size-9 items-center justify-center rounded-full transition-colors hover:bg-bg",
         className,
       )}
     >

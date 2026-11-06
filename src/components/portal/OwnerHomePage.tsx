@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { resolveOwnerContext } from "@/lib/ownerContext";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { OwnerDashboard } from "@/components/portal/OwnerDashboard";
+import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import {
   getOwnerUnits,
   getOwnerProjects,
@@ -29,6 +30,8 @@ export async function OwnerHomePage({ base }: { base: string }) {
     );
   }
 
+  const settings = await companySettingsRepository.findById(COMPANY_SETTINGS_ID);
+
   const [units, projects, outstanding, nextInstallment, progress, documents, notifications, saleSummaries] = await Promise.all([
     getOwnerUnits(context.ownerType, context.ownerId),
     getOwnerProjects(context.ownerType, context.ownerId),
@@ -43,6 +46,8 @@ export async function OwnerHomePage({ base }: { base: string }) {
   return (
     <OwnerDashboard
       base={base}
+      blueBlueprint={settings?.portalHomeBlueBlueprint !== false}
+      contactPhone={settings?.phone || undefined}
       firstName={user.name.split(" ")[0]}
       units={units}
       projects={projects}

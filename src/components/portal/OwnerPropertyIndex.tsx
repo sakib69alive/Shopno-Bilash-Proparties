@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { resolveOwnerContext } from "@/lib/ownerContext";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { PropertyListPage } from "@/components/portal/PropertyListPage";
-import { getOwnerUnits } from "@/features/ownerPortal/queries";
+import { getOwnerUnits, getOwnerParking } from "@/features/ownerPortal/queries";
 
 /**
  * `/portal/property` — an owner with exactly one unit is sent straight to
@@ -25,8 +25,9 @@ export async function OwnerPropertyIndex({ base }: { base: string }) {
     );
   }
 
-  const units = await getOwnerUnits(context.ownerType, context.ownerId);
-  if (units.length === 1) {
+  const [units, parking] = await Promise.all([getOwnerUnits(context.ownerType, context.ownerId), getOwnerParking(context.ownerType, context.ownerId)]);
+  // One flat and no parking: straight to the flat. With parking (or several flats) show the list, so the parking is seen too.
+  if (units.length === 1 && parking.length === 0) {
     redirect(`${base}/property/${units[0].id}`);
   }
 

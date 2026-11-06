@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { findCredentialsByEmail } from "@/lib/auth/credentials";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
-import { isRateLimited, recordFailedAttempt, clearAttempts } from "@/lib/auth/rateLimiter";
+import { takeAttempt, clearAttempts } from "@/lib/auth/rateLimiter";
 import { createSessionToken, verifySessionToken, SESSION_COOKIE_NAME, SESSION_COOKIE_OPTIONS } from "@/lib/auth/session";
 import { findUserByEmail, userRepository } from "@/features/users/repository";
 import { recordAuditEvent } from "@/features/audit/repository";
@@ -47,11 +47,13 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   if (!email || !password) {
     return { error: "Enter your email and password." };
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  // Cap input length: an enormous "password" would just make the server burn time hashing it.
+  if (email.length > 254 || password.length > 256 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Invalid email or password." };
   }
 
-  if (await isRateLimited(email)) {
+  // Reserves an attempt BEFORE the (slow) password check, so a burst of parallel guesses can't all slip through.
+  if (!(await takeAttempt(email))) {
     return { error: "Too many attempts. Try again in a few minutes." };
   }
 
@@ -59,13 +61,11 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
   const passwordValid = await verifyPassword(password, credentials?.passwordHash ?? (await DUMMY_HASH_PROMISE));
 
   if (!credentials || !passwordValid) {
-    await recordFailedAttempt(email);
     return { error: "Invalid email or password." };
   }
 
   const user = await findUserByEmail(email);
   if (!user || user.status !== "active") {
-    await recordFailedAttempt(email);
     return { error: "Invalid email or password." };
   }
 

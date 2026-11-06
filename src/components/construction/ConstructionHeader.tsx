@@ -45,7 +45,7 @@ export function ConstructionHeader({
       </Container>
 
       <Reveal delay={240} className="mt-14">
-        <Media ratio="hero" src={project.coverImage.src} alt={project.coverImage.alt} priority sizes="100vw" />
+        <Media ratio="hero" src={project.coverImage.src} alt={project.coverImage.alt} sizes="100vw" />
       </Reveal>
     </Section>
   );

@@ -5,9 +5,19 @@ import type { ID } from "@/types/common";
 export const SESSION_COOKIE_NAME = "sbp_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
+/** Sessions started from a client's personal link (`/go/<token>`) stay signed in for a year — those clients are not expected to ever type a password or PIN. */
+export const LONG_SESSION_DURATION_SECONDS = 60 * 60 * 24 * 365;
+
 export interface SessionPayload extends JWTPayload {
   sub: ID;
   role: RoleName;
+  /**
+   * Only on sessions that began from a personal link: the link generation
+   * this session belongs to. `getCurrentUser` rejects the session the moment
+   * the user's current link no longer matches, so making a new link (or
+   * switching the link off) signs that client's old devices out.
+   */
+  lk?: string;
 }
 
 /**
@@ -23,22 +33,32 @@ export interface SessionPayload extends JWTPayload {
  * below) — a hardcoded fallback would itself be a secret committed to
  * source, which is exactly what this file must never do.
  */
-function getSecretKey(): Uint8Array {
+export function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 32) {
     throw new Error(
       "AUTH_SECRET is not set (or is shorter than 32 characters). Set it in .env.local — see .env.example.",
     );
   }
-  return new TextEncoder().encode(secret);
+  return secret;
 }
 
-export async function createSessionToken(payload: { userId: ID; role: RoleName }): Promise<string> {
-  return new SignJWT({ role: payload.role })
+function getSecretKey(): Uint8Array {
+  return new TextEncoder().encode(getAuthSecret());
+}
+
+export async function createSessionToken(payload: {
+  userId: ID;
+  role: RoleName;
+  /** Personal-link sessions only — see `SessionPayload.lk`. Also switches the session to the long duration. */
+  linkId?: string;
+}): Promise<string> {
+  const duration = payload.linkId ? LONG_SESSION_DURATION_SECONDS : SESSION_DURATION_SECONDS;
+  return new SignJWT({ role: payload.role, ...(payload.linkId ? { lk: payload.linkId } : {}) })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.userId)
     .setIssuedAt()
-    .setExpirationTime(`${SESSION_DURATION_SECONDS}s`)
+    .setExpirationTime(`${duration}s`)
     .sign(getSecretKey());
 }
 
@@ -59,4 +79,10 @@ export const SESSION_COOKIE_OPTIONS = {
   sameSite: "lax" as const,
   path: "/",
   maxAge: SESSION_DURATION_SECONDS,
+};
+
+/** Cookie options for a personal-link session — same flags as above, just a year instead of a week. */
+export const LONG_SESSION_COOKIE_OPTIONS = {
+  ...SESSION_COOKIE_OPTIONS,
+  maxAge: LONG_SESSION_DURATION_SECONDS,
 };

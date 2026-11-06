@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
+import { MediaLinksFields } from "@/components/admin/shared/MediaLinksFields";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
@@ -135,6 +136,8 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
           allowSvg
         />
       </fieldset>
+
+      <MediaLinksFields subject="unit" videoUrl={unit?.videoUrl} tour360Url={unit?.tour360Url} />
 
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />

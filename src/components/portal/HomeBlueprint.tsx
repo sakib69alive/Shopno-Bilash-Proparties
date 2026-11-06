@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Compass, Maximize2, X } from "lucide-react";
+import { Check, ChevronDown, Compass, Maximize2, X } from "lucide-react";
+import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { cn } from "@/lib/utils";
+import { useHomeFlat } from "@/components/portal/HomeFlatSelection";
+import { BLUEPRINT_LIGHT_LINE_STYLE, BLUEPRINT_LIGHT_STYLE } from "@/components/portal/BlueprintPaper";
 
 export interface HomeBlueprintUnit {
   id: string;
@@ -11,18 +14,17 @@ export interface HomeBlueprintUnit {
   layoutImage?: string;
   bedrooms: number;
   bathrooms: number;
+  balconies: number;
   sizeSqft: number;
   facing?: string;
 }
-
-const FACING_LABEL = (f?: string) => (f ? f.replace("-", " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "—");
 
 function Facts({ unit, className }: { unit: HomeBlueprintUnit; className?: string }) {
   const facts = [
     { label: "Beds", value: String(unit.bedrooms) },
     { label: "Baths", value: String(unit.bathrooms) },
+    { label: "Balconies", value: String(unit.balconies) },
     { label: "Size sqft", value: unit.sizeSqft.toLocaleString("en-US") },
-    { label: "Facing", value: FACING_LABEL(unit.facing) },
   ];
   return (
     <dl className={className}>
@@ -52,10 +54,32 @@ const PAPER = "bg-[#f3efe5]";
  * flats, swipe between flats). Only real data is shown; a flat with no
  * uploaded plan still gets its numbers and a note instead of a blank.
  */
-export function HomeBlueprint({ units, firstName, className }: { units: HomeBlueprintUnit[]; firstName?: string; className?: string }) {
+export function HomeBlueprint({ units, firstName, className, blue = false }: { units: HomeBlueprintUnit[]; firstName?: string; className?: string; blue?: boolean }) {
   const [open, setOpen] = useState(false);
-  const [page, setPage] = useState(0);
+  const { selectedId, select } = useHomeFlat();
+  const selectedIndex = Math.max(0, units.findIndex((u) => u.id === selectedId));
+  const [page, setPage] = useState(selectedIndex);
   const pagerRef = useRef<HTMLDivElement>(null);
+
+  // Several flats: swipe the plan sideways to move between them, or tap the flat number to pick from a list.
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [dir, setDir] = useState(1);
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const swiped = useRef(false);
+  function go(delta: number) {
+    const n = units.length;
+    if (n < 2) return;
+    setDir(delta);
+    select(units[(selectedIndex + delta + n) % n].id);
+  }
+
+  // Opening the full-screen viewer starts on the flat chosen at the top.
+  useEffect(() => {
+    if (!open) return;
+    const el = pagerRef.current;
+    if (el) el.scrollTo({ left: selectedIndex * el.clientWidth });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -72,13 +96,14 @@ export function HomeBlueprint({ units, firstName, className }: { units: HomeBlue
   }, [open]);
 
   if (units.length === 0) return null;
-  const first = units[0];
+  const first = units[selectedIndex] ?? units[0];
 
   function onScroll() {
     const el = pagerRef.current;
     if (!el) return;
     const next = Math.round(el.scrollLeft / el.clientWidth);
     setPage((c) => (c === next ? c : next));
+    if (units[next]) select(units[next].id);
   }
 
   return (
@@ -86,7 +111,7 @@ export function HomeBlueprint({ units, firstName, className }: { units: HomeBlue
       <section className={cn("flex min-h-0 flex-col lg:hidden", className)}>
         <div className="flex min-h-0 flex-1 gap-4">
           {/* Left column: who, which flat, and its numbers. The plan beside it rises all the way to the top of the screen. */}
-          <div className="flex w-[7.25rem] shrink-0 flex-col justify-between gap-6">
+          <div key={first.id} style={{ "--swap-from": `${dir * -16}px` } as React.CSSProperties} className="flat-swap flex w-[7.25rem] shrink-0 flex-col justify-between gap-6">
             <div>
               {firstName && (
                 <>
@@ -95,9 +120,18 @@ export function HomeBlueprint({ units, firstName, className }: { units: HomeBlue
                 </>
               )}
               <p className={cn("text-accent text-[0.625rem] font-semibold tracking-[0.22em] uppercase", firstName && "mt-6")}>
-                {units.length > 1 ? `Residence 1 of ${units.length}` : "Your residence"}
+                {units.length > 1 ? `Residence ${selectedIndex + 1} of ${units.length}` : "Your residence"}
               </p>
-              <p className="font-serif-display text-fg mt-1 text-[2rem] leading-none">{first.unitNumber}</p>
+              {units.length > 1 ? (
+                <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-label={`Unit ${first.unitNumber}. Choose another residence`} className="group mt-1 flex items-center gap-1.5 text-left">
+                  <span className="font-serif-display text-fg text-[2rem] leading-none">{first.unitNumber}</span>
+                  <span className="bg-surface text-fg-muted flex size-6 items-center justify-center rounded-full transition-transform group-active:scale-90">
+                    <ChevronDown aria-hidden className="size-3.5" />
+                  </span>
+                </button>
+              ) : (
+                <p className="font-serif-display text-fg mt-1 text-[2rem] leading-none">{first.unitNumber}</p>
+              )}
             </div>
             <div>
               <Facts unit={first} className="flex flex-col gap-5" />
@@ -111,28 +145,91 @@ export function HomeBlueprint({ units, firstName, className }: { units: HomeBlue
           {/* The plan runs off the right edge of the screen (the page gutter is cancelled on this side); tap for full screen. */}
           <button
             type="button"
-            onClick={() => setOpen(true)}
+            style={blue ? BLUEPRINT_LIGHT_STYLE : undefined}
+            onClick={() => {
+              if (swiped.current) {
+                swiped.current = false;
+                return;
+              }
+              setOpen(true);
+            }}
+            onTouchStart={(e) => {
+              touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+              swiped.current = false;
+            }}
+            onTouchEnd={(e) => {
+              const start = touchStart.current;
+              touchStart.current = null;
+              if (!start) return;
+              const dx = e.changedTouches[0].clientX - start.x;
+              const dy = e.changedTouches[0].clientY - start.y;
+              if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+                swiped.current = true;
+                go(dx < 0 ? 1 : -1);
+              }
+            }}
             aria-label={`Open the blueprint of unit ${first.unitNumber} full screen`}
             className={cn(
-              "relative -mr-[var(--gutter)] min-h-[26rem] min-w-0 flex-1 overflow-hidden rounded-l-[2rem] transition-transform duration-150 active:scale-[0.99]",
-              PAPER,
+              "relative isolate -mr-[var(--gutter)] min-h-[26rem] min-w-0 flex-1 overflow-hidden rounded-l-[2rem] transition-transform duration-150 active:scale-[0.99]",
+              !blue && PAPER,
             )}
           >
+            <div key={first.id} style={{ "--swap-from": `${dir * 36}px` } as React.CSSProperties} className="flat-swap absolute inset-0">
             {first.layoutImage ? (
               // eslint-disable-next-line @next/next/no-img-element -- plain img: it is deliberately wider than the panel, so only part of the plan shows
-              <img src={first.layoutImage} alt={`Floor plan of unit ${first.unitNumber}`} draggable={false} className="absolute inset-y-0 left-0 h-full w-[170%] max-w-none object-contain p-4 select-none" />
+              <img src={first.layoutImage} alt={`Floor plan of unit ${first.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-y-0 left-0 h-full w-[170%] max-w-none object-contain p-4 select-none", blue && "mix-blend-screen")} />
             ) : (
-              <span className="flex h-full items-center justify-center px-8 text-center text-sm text-[#6b6660]">
+              <span className={cn("flex h-full items-center justify-center px-8 text-center text-sm", blue ? "text-[#cfe0f5]/80" : "text-[#6b6660]")}>
                 Your floor plan will appear here once it is uploaded.
               </span>
             )}
-            <span className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-[#1f3d33] py-2 pr-3.5 pl-3 text-xs font-semibold text-white">
+            </div>
+            {units.length > 1 && (
+              <span aria-hidden className="absolute top-4 left-5 flex items-center gap-1.5">
+                {units.map((u) => (
+                  <span key={u.id} className={cn("h-1 rounded-full transition-all duration-300", u.id === first.id ? "w-5" : "w-1.5", blue ? (u.id === first.id ? "bg-white" : "bg-white/40") : u.id === first.id ? "bg-fg" : "bg-fg/25")} />
+                ))}
+              </span>
+            )}
+            <span className={cn("absolute bottom-4 left-4 flex items-center gap-2 rounded-full py-2 pr-3.5 pl-3 text-xs font-semibold text-white", blue ? "border border-white/25 bg-black/25 backdrop-blur-sm" : "bg-[#1f3d33]")}>
               <Maximize2 aria-hidden className="size-3.5" />
               View full plan
             </span>
           </button>
         </div>
       </section>
+
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Your residences" className="lg:hidden" textured>
+        <ul className="bg-surface-raised border-border divide-border divide-y overflow-hidden rounded-[var(--m-radius-card)] border">
+          {units.map((u, i) => {
+            const active = u.id === first.id;
+            return (
+              <li key={u.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDir(i >= selectedIndex ? 1 : -1);
+                    select(u.id);
+                    setSheetOpen(false);
+                  }}
+                  aria-current={active}
+                  className="active:bg-surface flex w-full items-center gap-4 px-5 py-4 text-left transition-colors"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="font-serif-display text-fg block text-[1.75rem] leading-none">{u.unitNumber}</span>
+                    <span className="text-fg-subtle mt-1.5 block truncate text-xs">
+                      {u.projectName} · {u.bedrooms} bed · {u.sizeSqft.toLocaleString("en-US")} sqft
+                    </span>
+                  </span>
+                  <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-full transition-colors", active ? "bg-accent text-accent-foreground" : "border-border-strong border")}>
+                    {active && <Check aria-hidden className="size-4" />}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
 
       {/* Full-screen viewer. The fixed layer never animates its own transform (Header.tsx documents why); only its opacity fades. */}
       <div
@@ -166,12 +263,12 @@ export function HomeBlueprint({ units, firstName, className }: { units: HomeBlue
           {units.map((unit) => (
             <div key={unit.id} className="flex w-full shrink-0 snap-center px-[var(--gutter)]">
               {/* Full screen: the whole plan, fitted to the screen. Pinch to zoom in on a room. */}
-              <div className={cn("relative my-1 min-w-0 flex-1 overflow-hidden rounded-3xl", PAPER)}>
+              <div style={blue ? BLUEPRINT_LIGHT_STYLE : undefined} className={cn("relative isolate my-1 min-w-0 flex-1 overflow-hidden rounded-3xl", !blue && PAPER)}>
                 {unit.layoutImage ? (
                   // eslint-disable-next-line @next/next/no-img-element -- plain img, fitted to the sheet
-                  <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} className="absolute inset-0 size-full touch-pinch-zoom object-contain p-5 select-none" />
+                  <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-0 size-full touch-pinch-zoom object-contain p-5 select-none", blue && "mix-blend-screen")} />
                 ) : (
-                  <p className="flex h-full items-center justify-center px-8 text-center text-sm text-[#6b6660]">
+                  <p className={cn("flex h-full items-center justify-center px-8 text-center text-sm", blue ? "text-[#cfe0f5]/80" : "text-[#6b6660]")}>
                     Your floor plan has not been uploaded yet. Please contact us if you need a copy.
                   </p>
                 )}

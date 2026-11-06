@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+// Stays a Client Component on purpose: `AdminSidebar` hands the nav config (which carries icon
+// components) straight to `AdminSidebarNav`, and that only works when both sit on the client side.
 import type { ReactNode } from "react";
 import type { User } from "@/types/user";
 import type { CompanySettings } from "@/types/settings";
 import { AdminSidebar } from "./AdminSidebar";
-import { AdminMobileSidebar } from "./AdminMobileSidebar";
 import { AdminHeader } from "./AdminHeader";
+import { AdminPhoneChrome } from "./AdminPhoneChrome";
 
 export interface AdminShellProps {
   user: User;
@@ -25,28 +26,25 @@ export interface AdminShellProps {
  * `PageTransition`/`SitePageLoader` (brief §22) — plain instant
  * route swaps, since admin users prioritize speed over ceremony.
  *
- * Both `AdminSidebar` and `AdminHeader` are `position: fixed` (see their
- * own comments for why), so neither occupies space in this flex row —
- * the content column gets `lg:pl-64` for the sidebar's width and
- * `<main>` gets `pt-16` for the header's height instead, so nothing
- * renders underneath either.
+ * From `lg` up: fixed sidebar + fixed header. Below `lg` (phones and
+ * tablets) both are hidden and `AdminPhoneChrome` takes over — a slim top
+ * bar, a floating bottom tab capsule and a Menu sheet. Both desktop pieces
+ * are `position: fixed` (see their own comments for why), so neither
+ * occupies space in this flex row — the content column gets `lg:pl-64` for
+ * the sidebar and `<main>` gets top padding for whichever bar is showing,
+ * plus bottom padding on phones so the tab capsule never covers content.
  */
 export function AdminShell({ user, children, incompleteHrefs, settings }: AdminShellProps) {
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
   return (
-    <div className="bg-bg flex min-h-screen">
+    <div data-admin-shell className="bg-bg flex min-h-screen">
       <AdminSidebar role={user.role} incompleteHrefs={incompleteHrefs} settings={settings} />
-      <AdminMobileSidebar
-        open={mobileNavOpen}
-        onClose={() => setMobileNavOpen(false)}
-        role={user.role}
-        incompleteHrefs={incompleteHrefs}
-      />
+      <AdminPhoneChrome user={user} incompleteHrefs={incompleteHrefs} settings={settings} />
 
       <div className="min-w-0 flex-1 print:pl-0 lg:pl-64">
-        <AdminHeader user={user} onOpenMobileNav={() => setMobileNavOpen(true)} />
-        <main className="min-w-0 pt-16 print:pt-0">{children}</main>
+        <AdminHeader user={user} />
+        <main className="min-w-0 pt-[calc(4.25rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] print:pt-0 print:pb-0 lg:pt-16 lg:pb-0">
+          {children}
+        </main>
       </div>
     </div>
   );

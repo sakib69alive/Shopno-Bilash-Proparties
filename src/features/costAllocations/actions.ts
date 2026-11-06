@@ -14,6 +14,11 @@ import {
   unitTierRepository,
 } from "@/features/costAllocations/repository";
 import { projectRepository } from "@/features/projects/repository";
+import { notificationRepository } from "@/features/notifications/repository";
+import { customerRepository } from "@/features/customers/repository";
+import { shareholderRepository } from "@/features/shareholders/repository";
+import { landownerRepository } from "@/features/landowners/repository";
+import { formatBDT, formatDate } from "@/lib/format";
 import { unitRepository } from "@/features/units/repository";
 import { landownerAllocationRepository } from "@/features/landowners/repository";
 import { parkingRepository } from "@/features/parking/repository";
@@ -58,13 +63,14 @@ async function requireFinancePermission() {
 async function parseCostAllocationFields(formData: FormData) {
   const projectId = String(formData.get("projectId") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim();
+  // Simple form: only the project, a name, the total and the last date are required — the rest default sensibly.
+  const category = String(formData.get("category") ?? "").trim() || title;
   const totalAmountRaw = String(formData.get("totalAmount") ?? "");
-  const allocationDate = String(formData.get("allocationDate") ?? "").trim();
+  const allocationDate = String(formData.get("allocationDate") ?? "").trim() || new Date().toISOString().slice(0, 10);
   const dueDate = String(formData.get("dueDate") ?? "").trim();
-  const fineType = String(formData.get("fineType") ?? "");
-  const fineValueRaw = String(formData.get("fineValue") ?? "");
-  const allocationMethodRaw = String(formData.get("allocationMethod") ?? "sqft");
+  const fineType = String(formData.get("fineType") ?? "").trim() || "percentage";
+  const fineValueRaw = String(formData.get("fineValue") ?? "").trim() || "0";
+  const allocationMethodRaw = String(formData.get("allocationMethod") ?? "").trim() || "custom";
   const includeParkingInAllocation = formData.get("includeParkingInAllocation") === "on";
 
   if (!projectId) return { error: "Choose a project." } as const;
@@ -219,12 +225,42 @@ async function computeRawShares(
 
   if ("error" in shares) return shares;
 
-  if (allocation.includeParkingInAllocation && (method === "fixed-unit" || method === "custom" || method === "tier")) {
+  if ((allocation.includeParkingInAllocation || Object.values(customParkingAmounts).some((v) => v > 0)) && (method === "fixed-unit" || method === "custom" || method === "tier")) {
     const parkingSpaces = (await parkingRepository.list()).filter((p) => p.projectId === allocation.projectId);
     shares = foldInParkingContributions(shares, parkingSpaces, customParkingAmounts);
   }
 
   return shares;
+}
+
+/**
+ * Saves flat sizes typed in the Split Planner (a flat that is really bigger
+ * or smaller than what is on file), so the sizes the bills were worked out
+ * from are the sizes the flats actually have. Only flats of this allocation's
+ * project are touched.
+ */
+export async function updateUnitSizes(costAllocationId: string, sizes: Record<string, number>): Promise<{ error?: string }> {
+  const user = await requireFinancePermission();
+
+  const allocation = await costAllocationRepository.findById(costAllocationId);
+  if (!allocation) return { error: "This allocation no longer exists." };
+
+  for (const [unitId, sizeSqft] of Object.entries(sizes)) {
+    if (!Number.isFinite(sizeSqft) || sizeSqft <= 0 || sizeSqft > 100000) return { error: "Enter a flat size between 1 and 100,000 sqft." };
+    const unit = await unitRepository.findById(unitId);
+    if (!unit || unit.projectId !== allocation.projectId) return { error: "One of those flats isn't in this project." };
+    if (unit.sizeSqft === sizeSqft) continue;
+    await unitRepository.update(unitId, { sizeSqft });
+    await recordAuditEvent({
+      actorUserId: user.id,
+      action: "unit.resize",
+      entityType: "Unit",
+      entityId: unitId,
+      previousValue: { sizeSqft: unit.sizeSqft },
+      newValue: { sizeSqft },
+    });
+  }
+  return {};
 }
 
 export interface AllocationPreviewRow {
@@ -306,7 +342,7 @@ export async function generateContributions(
   costAllocationId: string,
   customUnitAmounts: Record<string, number> = {},
   customParkingAmounts: Record<string, number> = {},
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; notified?: number; withoutApp?: number }> {
   const user = await requireFinancePermission();
 
   const allocation = await costAllocationRepository.findById(costAllocationId);
@@ -332,6 +368,7 @@ export async function generateContributions(
     method === "sqft" ? [...unitsByOwner.values()].reduce((sum, entry) => sum + entry.units.reduce((s, u) => s + u.sizeSqft, 0), 0) : undefined;
 
   const now = new Date().toISOString();
+  const issued: { ownerType: OwnerKey["ownerType"]; ownerId: string; contributionId: string; amount: number }[] = [];
 
   for (const share of rawShares) {
     const payableAmount = reconciled.get(share.key) ?? 0;
@@ -355,6 +392,7 @@ export async function generateContributions(
       updatedAt: now,
       createdBy: user.id,
     });
+    issued.push({ ownerType: share.ownerKey.ownerType, ownerId: share.ownerKey.ownerId, contributionId, amount: payableAmount });
 
     // Unit-level breakdown — an immutable read-model row per unit, reconciled within the owner's own total so the per-unit amounts sum exactly to `payableAmount`.
     if (share.unitAmounts.length > 0) {
@@ -392,8 +430,40 @@ export async function generateContributions(
     entityId: allocation.id,
   });
 
+  // Tell every owner who has an app account what they now owe and by when — it shows in their Payments page too.
+  let notified = 0;
+  let withoutApp = 0;
+  const daysLeft = Math.ceil((new Date(allocation.dueDate).getTime() - Date.now()) / 86_400_000);
+  const dueText = `${formatDate(new Date(allocation.dueDate))}${daysLeft > 0 ? ` (${daysLeft} day${daysLeft === 1 ? "" : "s"} from now)` : ""}`;
+  for (const item of issued) {
+    const repo = item.ownerType === "customer" ? customerRepository : item.ownerType === "shareholder" ? shareholderRepository : landownerRepository;
+    const userId = (await repo.findById(item.ownerId))?.userId;
+    if (!userId || item.amount <= 0) {
+      withoutApp += 1;
+      continue;
+    }
+    const base = item.ownerType === "customer" ? "/portal" : `/portal/${item.ownerType}`;
+    await notificationRepository.create({
+      id: randomUUID(),
+      recipientUserId: userId,
+      event: "payment.due",
+      channel: "in-app",
+      title: `New payment due — ${allocation.title}`,
+      body: `You need to pay ${formatBDT(item.amount)} for "${allocation.title}" by ${dueText}.`,
+      relatedEntityId: item.contributionId,
+      category: "finance",
+      priority: "high",
+      projectId: allocation.projectId,
+      actionHref: `${base}/payments`,
+      actorUserId: user.id,
+      createdAt: now,
+    });
+    notified += 1;
+  }
+
   revalidatePath(`/admin/finance/cost-allocations/${allocation.id}`);
-  return {};
+  revalidatePath("/admin/notifications");
+  return { notified, withoutApp };
 }
 
 /** Marks a fully-collected goal as explicitly closed out — a deliberate Admin action, never implied just by reaching 100% collection. */

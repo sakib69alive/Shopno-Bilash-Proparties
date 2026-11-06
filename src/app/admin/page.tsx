@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Building2, FileText, Images, ListPlus, Newspaper, PlusCircle, ReceiptText, UserCog, UserPlus, UsersRound, ArrowRight } from "lucide-react";
+import { Building2, FileText, HardHat, Images, Link2, ListPlus, Megaphone, Newspaper, PlusCircle, ReceiptText, SplitSquareVertical, UserCog, UserPlus, UsersRound, Wallet, ArrowRight } from "lucide-react";
+import { TaskTile } from "@/components/admin/dashboard/TaskTile";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -63,6 +64,8 @@ export default async function AdminDashboardPage() {
   const canCreateCustomer = hasPermission(user.role, "customer.create");
   const canManageFinance = hasPermission(user.role, "finance.manage");
   const canManageConstruction = hasPermission(user.role, "construction.manage");
+  const canSendNotice = hasPermission(user.role, "reports.view");
+  const canViewCustomers = hasPermission(user.role, "customer.view") && hasPermission(user.role, "users.manage");
 
   return (
     <>
@@ -72,6 +75,32 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="flex flex-col gap-8 p-4 sm:p-6">
+        {(canManageFinance || canSendNotice || canCreateCustomer || canViewCustomers) && (
+          <section>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase">What do you want to do?</h2>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {canManageFinance && (
+                <TaskTile title="A client paid money" help="Record the payment, then send them a receipt." icon={Wallet} href="/admin/sales/payments/new" />
+              )}
+              {canSendNotice && (
+                <TaskTile title="Send a notice or receipt" help="Write a notice, or make a receipt or statement on your letterhead." icon={Megaphone} href="/admin/statements" />
+              )}
+              {canManageFinance && (
+                <TaskTile title="New budget for everyone" help="Split a cost across all the owners of a project." icon={SplitSquareVertical} href="/admin/finance/cost-allocations/new" />
+              )}
+              {canViewCustomers && (
+                <TaskTile title="Copy a client's login link" help="Each client gets their own link to send on WhatsApp — no login needed." icon={Link2} href="/admin/customers" />
+              )}
+              {canCreateCustomer && (
+                <TaskTile title="Add a new client" help="Add the client first, then copy their link from the Customers list." icon={UserPlus} href="/admin/customers/new" />
+              )}
+              {canManageConstruction && (
+                <TaskTile title="Update construction progress" help="Mark a stage as moved forward or delayed." icon={HardHat} href="/admin/construction" />
+              )}
+            </div>
+          </section>
+        )}
+
         {alerts.length > 0 && (
           <section>
             <div className="mb-3 flex items-center justify-between">
@@ -177,7 +206,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/finance/reports/contractor-payments" className="block">
             <KpiCard label="Contractor Cost" value={data.contractorCost.value} formatValue={formatBDT} />
           </Link>
-          <Link href="/admin/finance/project-costs" className="block">
+          <Link href="/admin/finance/project-costs" className="col-span-2 block sm:col-span-1">
             <KpiCard
               label="Budget vs Actual"
               value={data.totalBudget.value}
@@ -287,7 +316,7 @@ export default async function AdminDashboardPage() {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Quick Actions</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase">More shortcuts</h2>
             <div className="border-border bg-surface-raised flex flex-col gap-1 rounded-lg border p-2">
               <QuickAction
                 label="Add Project"
@@ -302,34 +331,22 @@ export default async function AdminDashboardPage() {
                 comingSoon={!canManageUnits}
               />
               <QuickAction
-                label="Add Customer"
-                icon={UserPlus}
-                href={canCreateCustomer ? "/admin/customers/new" : undefined}
-                comingSoon={!canCreateCustomer}
-              />
-              <QuickAction
-                label="Record Payment"
-                icon={ReceiptText}
-                href={canManageFinance ? "/admin/sales/payments/new" : undefined}
-                comingSoon={!canManageFinance}
-              />
-              <QuickAction
                 label="Review Enquiries"
                 icon={UsersRound}
                 href={canViewLeads ? "/admin/leads" : undefined}
                 comingSoon={!canViewLeads}
               />
               <QuickAction
-                label="Update Construction"
-                icon={FileText}
-                href={canManageConstruction ? "/admin/construction" : undefined}
-                comingSoon={!canManageConstruction}
+                label="Payments received so far"
+                icon={ReceiptText}
+                href={hasPermission(user.role, "finance.view") ? "/admin/sales/payments" : undefined}
+                comingSoon={!hasPermission(user.role, "finance.view")}
               />
               <QuickAction
-                label="New Article"
-                icon={Newspaper}
-                href={canCreateContent ? "/admin/content/news/new" : undefined}
-                comingSoon={!canCreateContent}
+                label="Documents"
+                icon={FileText}
+                href={hasPermission(user.role, "documents.view") ? "/admin/documents" : undefined}
+                comingSoon={!hasPermission(user.role, "documents.view")}
               />
             </div>
           </section>

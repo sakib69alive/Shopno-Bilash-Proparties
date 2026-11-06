@@ -101,18 +101,22 @@ export function computeCustomShares(
   unitsByOwner: Map<string, OwnerUnitsEntry>,
   customUnitAmounts: Record<string, number>,
 ): RawOwnerShare[] {
-  return [...unitsByOwner.entries()].map(([key, entry]) => {
-    const unitAmounts = entry.units.map((unit) => ({ unit, rawAmount: customUnitAmounts[unit.id] ?? 0 }));
-    const rawAmount = unitAmounts.reduce((s, u) => s + u.rawAmount, 0);
-    return {
-      key,
-      ownerKey: entry.key,
-      units: entry.units,
-      basisLabel: `${entry.units.length} unit(s), custom amount`,
-      rawAmount,
-      unitAmounts,
-    };
-  });
+  return [...unitsByOwner.entries()]
+    .map(([key, entry]) => {
+      // Only flats that were given an amount count: an owner whose flats were all left out of the split (the Split Planner lets you pick which flats pay) gets no zero-taka bill.
+      const charged = entry.units.filter((unit) => (customUnitAmounts[unit.id] ?? 0) > 0);
+      const unitAmounts = charged.map((unit) => ({ unit, rawAmount: customUnitAmounts[unit.id] ?? 0 }));
+      const rawAmount = unitAmounts.reduce((s, u) => s + u.rawAmount, 0);
+      return {
+        key,
+        ownerKey: entry.key,
+        units: charged,
+        basisLabel: `${charged.length} unit(s), custom amount`,
+        rawAmount,
+        unitAmounts,
+      };
+    })
+    .filter((share) => share.units.length > 0);
 }
 
 /**

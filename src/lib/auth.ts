@@ -24,5 +24,10 @@ export async function getCurrentUser(): Promise<User | null> {
   const user = await userRepository.findById(session.sub);
   if (!user || user.status !== "active") return null;
 
+  // A session that began from a personal link only lives as long as that
+  // exact link does — a new link (or switching it off) signs the old
+  // devices out.
+  if (session.lk && user.portalLinkId !== session.lk) return null;
+
   return user;
 }

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Real Estate Finance App — Complete Feature & Logic Spec</title>
+<style>
+@page{size:A4;margin:16mm}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:10.5pt;line-height:1.45;color:#1b2b25}
+h1{font-size:22pt;color:#0f4a38;margin:0 0 4px}h2{font-size:14pt;color:#0f4a38;border-bottom:2px solid #0f4a38;padding-bottom:3px;margin-top:22px;break-after:avoid}
+h3{font-size:11.5pt;margin:12px 0 3px;color:#14624a;break-after:avoid}
+table{border-collapse:collapse;width:100%;margin:6px 0;font-size:9.5pt}th,td{border:1px solid #c9d6d0;padding:4px 6px;text-align:left;vertical-align:top}th{background:#e8f1ed}
+code{background:#eef3f0;padding:0 3px;border-radius:3px;font-size:9.5pt}
+.box{background:#f4f8f6;border-left:4px solid #0f4a38;padding:6px 10px;margin:8px 0}
+.warn{background:#fff6e5;border-left-color:#d58a00}
+ul{margin:3px 0 3px 18px;padding:0}.sub{color:#5b6b64}
+</style></head><body>
+<h1>Real Estate Finance App — A-to-Z Feature &amp; Logic Spec</h1>
+<div class="sub">Source: Shopno Bilash Properties admin panel (Next.js + Prisma). Purpose: give the Finance App everything the admin panel already does, so nothing is missed. Rules marked <b>MUST</b> are non-negotiable because wrong numbers = real money loss.</div>
+
+<h2>1. Big picture</h2>
+<p>The admin panel is a real-estate developer platform. Money flows in 3 directions, and the Finance App must cover all of them:</p>
+<table><tr><th>Flow</th><th>Who pays whom</th><th>Examples</th></tr>
+<tr><td>Money IN (sales)</td><td>Customers → Company</td><td>Booking money, down payment, installments, handover payments</td></tr>
+<tr><td>Money IN (funding)</td><td>Owners / Shareholders / Landowners → Company</td><td>Cost-allocation contributions per construction goal, with fines on delay</td></tr>
+<tr><td>Money OUT</td><td>Company → Contractors, Vendors, Staff, Govt.</td><td>Material purchases, contractor payments, project expenses, office/staff costs</td></tr></table>
+<p>Hierarchy: <code>Project → Building → Floor → Unit</code>. Every finance record carries an optional <code>projectId</code> so reports can be scoped per project or company-wide.</p>
+
+<h2>2. Roles &amp; permissions</h2>
+<table><tr><th>Role</th><th>Finance access</th></tr>
+<tr><td>Super Admin</td><td>Everything incl. roles/permissions</td></tr>
+<tr><td>Managing Director / Owner</td><td>Everything except roles/permissions management</td></tr>
+<tr><td>Finance Manager</td><td>All finance + reports; read-only on project/unit/customer</td></tr>
+<tr><td>Project / Construction Manager</td><td>Project, unit, construction; cost visibility per project</td></tr>
+<tr><td>Sales Manager / Executive</td><td>Leads, bookings, sales, customers; payments they record</td></tr>
+<tr><td>Procurement Manager</td><td>Materials, purchases, stock</td></tr>
+<tr><td>Document/Legal Manager</td><td>Documents only</td></tr>
+<tr><td>Customer / Shareholder / Landowner</td><td>Portal only: see <i>own</i> units, payments, contributions, agreements</td></tr></table>
+<p>Every create/edit/delete/login writes an append-only <b>audit log</b> (who, what, entity, time, IP). Finance App MUST keep this.</p>
+
+<h2>3. Modules &amp; features (complete list)</h2>
+
+<h3>3.1 Projects, Buildings, Floors, Units</h3>
+<ul><li>Project: name, location, status, dates; sub-pages: Units, Parking, Construction, Documents, Expenses, Materials, Owners, Payments, Reports, Settings.</li>
+<li>Building → Floor → Unit (flat/shop). Unit: size, price, status (available / booked / sold / owner-allocated / landowner-share).</li>
+<li>A unit belongs to <b>exactly one</b> of: Customer (sold/booked), Shareholder allocation, Landowner allocation — never two at once.</li>
+<li>Parking spaces (types, price, ownership assignment) and standalone Property listings (public website).</li></ul>
+
+<h3>3.2 CRM / Leads</h3>
+<ul><li>Lead: name, phone, interested project/unit, source, assigned salesperson, status; activity log (calls, visits, notes).</li>
+<li>Lead → Customer conversion; reminders and notifications for follow-ups.</li></ul>
+
+<h3>3.3 Customers</h3>
+<ul><li>Profile, NID/contact, linked units, documents, payment history, outstanding balance, portal login (phone-based).</li></ul>
+
+<h3>3.4 Sales workflow</h3>
+<ol><li><b>Booking</b> — reserve a unit with booking money (unit becomes “booked”).</li>
+<li><b>Sale / Contract</b> — agreed price, discounts, payment plan; unit becomes “sold”.</li>
+<li><b>Installments</b> — schedule of due dates and amounts per contract.</li>
+<li><b>Payments</b> — each receipt: amount, date, method, reference, receipt; allocated against installments.</li>
+<li><b>Cancellation</b> — cancelled bookings/sales are excluded from totals; unit returns to available.</li></ul>
+<table><tr><th>Sales reports</th><th>What it shows</th></tr>
+<tr><td>Sales dashboard</td><td>Customers, sales count, total sales value, leads/enquiries</td></tr>
+<tr><td>Receivables</td><td>Per customer: contract value, paid, outstanding, overdue installments</td></tr>
+<tr><td>Collection report</td><td>Payments received by period / project / method</td></tr></table>
+
+<h3>3.5 Shareholders &amp; Landowners</h3>
+<ul><li>Shareholder → Shareholdings per project (percentage/units) → contributions and payouts.</li>
+<li>Landowner → Agreements (e.g. developer–landowner ratio, e.g. 40:60) → Allocations of specific units, plus any cash/advance terms.</li></ul>
+
+<h3>3.6 Cost Allocation / Owner Contributions (“Construction Goals”)</h3>
+<p>When construction needs funding, admin creates a <b>Cost Allocation (Goal)</b> with total amount, date, fine rule and installments, then the system splits it across owners (by share/unit). Each owner gets an <b>Owner Contribution</b> (payable amount, due date, paid amount) and optional per-installment obligations. Admin can add <b>Adjustments</b> (waiver / discount / correction, ± amount) — the original payable is never changed.</p>
+
+<h3>3.7 Procurement &amp; Stock</h3>
+<ul><li>Vendors, Material categories, Materials (with low-stock threshold), Purchase orders &amp; Purchases (receipt, qty, rate, total).</li>
+<li>Stock ledger: every purchase = IN, every usage/transfer = OUT; current stock = sum of movements.</li></ul>
+
+<h3>3.8 Construction &amp; Contractors</h3>
+<ul><li>Phases (foundation, structure, finishing…) per project, Tasks per phase with progress %.</li>
+<li>Contractors: contract value, scope, payment schedule, <b>Contractor Payments</b> (advance / running bill / final).</li>
+<li>Construction progress % derived from tasks; phase actual cost derived from real transactions (see §4).</li></ul>
+
+<h3>3.9 Finance module (core of the Finance App)</h3>
+<table><tr><th>Screen</th><th>Purpose</th></tr>
+<tr><td>Accounts</td><td>Bank / cash / mobile-wallet accounts with balances; every transaction moves one account</td></tr>
+<tr><td>Expenses</td><td>Company &amp; project expenses with category, method, status, attachment</td></tr>
+<tr><td>Project Costs / Budgets</td><td>Budget per project and per phase; compare against live actual cost</td></tr>
+<tr><td>Cost Allocations</td><td>Owner funding goals (§3.6)</td></tr>
+<tr><td>Reports → Cash Flow</td><td>Money in vs out by period</td></tr>
+<tr><td>Reports → Categories</td><td>Spend by expense category</td></tr>
+<tr><td>Reports → Contractor Payments</td><td>Paid / due per contractor</td></tr>
+<tr><td>Reports → Owner Contributions</td><td>Payable, paid, outstanding, fines per owner &amp; goal</td></tr></table>
+<p><b>Payment methods:</b> Cash, Bank Transfer, Cheque, bKash, Nagad, Rocket, Card, Other.<br>
+<b>Transaction statuses:</b> draft, pending, submitted, verified, completed, cancelled, rejected.<br>
+<b>Default expense categories (free text allowed):</b> Construction, Labour, Contractor, Material, Equipment, Machinery, Transport, Site Work, Utilities, Office, Staff, Travel, Professional, Legal/Government, Miscellaneous.<br>
+Four finance families are kept <b>separate</b> (never one generic “transactions” table): Project (budget, expense), Customer (payment, invoice, receivable), Shareholder (contribution, payment), Company (income, expense, adjustment).</p>
+
+<h3>3.10 Documents, Approvals, Alerts, Reminders, Notifications</h3>
+<ul><li>Documents: attached to Company / Project / Unit / Customer / Shareholder / Landowner / Vendor / Transaction, with visibility rules (what portal users may see).</li>
+<li>Approvals: workflow for sensitive records; Alerts: budget overrun, overdue payments, low stock; Reminders &amp; Notifications: due dates, follow-ups.</li></ul>
+
+<h3>3.11 Portals (read-only views for outsiders)</h3>
+<ul><li><b>Customer portal:</b> own units, installment schedule, payments, documents, dues.</li>
+<li><b>Shareholder portal:</b> own holdings, contributions, outstanding, fines.</li>
+<li><b>Landowner portal:</b> own agreements and allocated units.</li></ul>
+
+<h3>3.12 Admin utilities</h3>
+<ul><li>Dashboard, Analytics, Activity feed, Audit log, Users &amp; Roles, Company settings, Backup/export, Help.</li></ul>
+
+<h2>4. Calculation rules (the “hisab-nikash”) — MUST follow exactly</h2>
+<div class="box warn"><b>Golden rule:</b> compute everything at <i>read time</i> from source transactions. Never store a total or status that can go stale. Always filter by status, and use adjusted (effective) values — never raw sums.</div>
+
+<table><tr><th>#</th><th>Quantity</th><th>Formula</th></tr>
+<tr><td>1</td><td>Counts toward actual cost</td><td>Include a transaction only if status is <code>verified</code>, <code>completed</code> or has no status. Exclude draft, pending, submitted, cancelled, rejected.</td></tr>
+<tr><td>2</td><td>Project / phase actual cost</td><td>Σ(Purchases) + Σ(Project Expenses) + Σ(Contractor Payments), each filtered by rule 1.</td></tr>
+<tr><td>3</td><td>Budget variance</td><td>Budgeted − Actual(live). Warn at 80% used, critical at 100% (per-row threshold overrides allowed). A manually typed “actual” field must be labelled “Actual (Manual)” — never show it as the real actual.</td></tr>
+<tr><td>4</td><td>Effective payable (owner)</td><td>payableAmount + Σ(adjustments). Original never mutated.</td></tr>
+<tr><td>5</td><td>Outstanding</td><td>max(0, effectivePayable − paidAmount)</td></tr>
+<tr><td>6</td><td>Overdue</td><td>outstanding &gt; 0 AND dueDate &lt; today</td></tr>
+<tr><td>7</td><td>Fine</td><td>If overdue: flat fine = fineValue; percent fine = outstanding × fineValue ÷ 100; else 0.</td></tr>
+<tr><td>8</td><td>Total due</td><td>outstanding + fine</td></tr>
+<tr><td>9</td><td>Contribution status</td><td>outstanding ≤ 0 → <b>paid</b>; else overdue → <b>overdue</b>; else paid &gt; 0 → <b>partially-paid</b>; else <b>pending</b>.</td></tr>
+<tr><td>10</td><td>Installment obligation status</td><td>outstanding ≤ 0 → paid; due date passed → overdue; some paid → partially-paid; due within 7 days → due; else upcoming.</td></tr>
+<tr><td>11</td><td>Total Payable (aggregates)</td><td>Σ <i>effectivePayable</i> (not raw payable), so Payable − Paid always equals Outstanding even with waivers.</td></tr>
+<tr><td>12</td><td>Goal collection %</td><td>Σ paid ÷ Σ effective payable × 100.</td></tr>
+<tr><td>13</td><td>Goal status</td><td>cancelled → archived → draft (admin decisions win) → completed (100% AND admin marked complete) → fully-funded (100%) → partially-funded (&gt;0%) → upcoming (start date in future) → active.</td></tr>
+<tr><td>14</td><td>Sales totals</td><td>Exclude cancelled / non-final bookings and sales (same status-filter idea as rule 1).</td></tr>
+<tr><td>15</td><td>Customer receivable</td><td>Contract value (after discounts) − Σ valid payments; overdue = unpaid installments past due date.</td></tr>
+<tr><td>16</td><td>Stock on hand</td><td>Σ IN − Σ OUT from the stock ledger; alert when below material threshold.</td></tr>
+<tr><td>17</td><td>Cash flow</td><td>Σ money-in (customer payments, owner contributions, other income) − Σ money-out (counted expenses, contractor payments, purchases) per period.</td></tr></table>
+<p><b>Self-check:</b> if the same real-world number appears on two screens and they differ, that is a bug — fix it, don’t ignore it.</p>
+
+<h2>5. Typical end-to-end flows</h2>
+<ol><li><b>Sale:</b> Lead → Customer → Booking (booking money) → Contract → Installment schedule → Payments → Receipt → Receivable reaches 0 → Handover document.</li>
+<li><b>Construction funding:</b> Create Cost Allocation → generate owner contributions → owners pay → system computes outstanding/fine each day → reminders → adjustments if waived → goal fully-funded → completed.</li>
+<li><b>Spending:</b> Budget set → Purchase order / Purchase or Expense or Contractor Payment (draft → submitted → verified) → counted in actual cost only when verified/completed → budget alert at 80% / 100%.</li>
+<li><b>Month end:</b> Cash-flow report, category report, contractor-payment report, owner-contribution report, receivables list; export for accountant.</li></ol>
+
+<h2>6. Data model summary</h2>
+<table><tr><th>Domain</th><th>Entities</th></tr>
+<tr><td>Identity</td><td>User, Credential, Role</td></tr>
+<tr><td>Property</td><td>Project, Building, Floor, Unit, Parking, Property</td></tr>
+<tr><td>CRM / Customer</td><td>Lead, LeadActivity, Customer</td></tr>
+<tr><td>Ownership</td><td>Shareholder, Shareholding, Landowner, Agreement, LandownerAllocation</td></tr>
+<tr><td>Sales</td><td>Booking, Sale, Contract, Installment, CustomerPayment, Invoice, Receivable</td></tr>
+<tr><td>Finance</td><td>FinanceAccount, ProjectBudget, ProjectExpense, CompanyIncome/Expense/Adjustment, CostAllocation, OwnerContribution, ContributionAdjustment, GoalInstallment, OwnerInstallmentObligation</td></tr>
+<tr><td>Procurement</td><td>Vendor, MaterialCategory, Material, PurchaseOrder, Purchase, StockMovement</td></tr>
+<tr><td>Construction</td><td>ConstructionPhase, ConstructionTask, Contractor, ContractorPayment</td></tr>
+<tr><td>System</td><td>Document, Notification, Reminder, Alert, Approval, AuditLog, CompanySettings</td></tr></table>
+<p class="sub">Each entity stores money as an amount (+ currency BDT) and carries created/updated by and timestamps.</p>
+
+<h2>7. What the Finance App should do first</h2>
+<ol><li>Implement §4 formulas as shared functions (one place), then build screens on top.</li>
+<li>Build in this order: Accounts → Expenses/Project costs → Customer payments &amp; installments → Owner contributions → Reports → Alerts.</li>
+<li>Keep roles, audit log and status workflow from §2 and §4 rule 1.</li></ol>
+</body></html>

@@ -13,5 +13,8 @@ export async function GET() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  return NextResponse.json({ user });
+  // The personal-link fields are account-management data, not something the portal client needs back.
+  const { portalLinkId: _id, portalLinkCreatedAt: _created, portalLinkLastUsedAt: _used, portalLinkUseCount: _count, ...safeUser } = user;
+  void [_id, _created, _used, _count];
+  return NextResponse.json({ user: safeUser });
 }

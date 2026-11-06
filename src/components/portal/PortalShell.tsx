@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Bell, LogOut, LayoutDashboard, Home, Wallet, HardHat, FileText, UserCircle, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/navigation/Logo";
@@ -79,6 +79,65 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
   function isActive(href: string) {
     return href === homeHref ? pathname === href : pathname.startsWith(href);
   }
+
+  // Swipe left/right anywhere on a phone to step to the next/previous tab (Home ↔ My Property ↔ Payments …),
+  // the same order as the bottom bar. Ignored when the finger starts on something that scrolls or pans
+  // sideways itself (photo strips, floor plans, tab rails), on a form field, near the screen edge (the
+  // phone's own back gesture), or while a sheet is open — so it never fights real content.
+  const router = useRouter();
+  const tabHrefs = tabBarItems.map((i) => i.href).join("|");
+  useEffect(() => {
+    const hrefs = tabHrefs.split("|");
+    const currentIndex = hrefs.findIndex((h) => (h === homeHref ? pathname === h : pathname.startsWith(h)));
+    if (currentIndex < 0) return;
+
+    let start: { x: number; y: number; t: number } | null = null;
+
+    function blocked(target: EventTarget | null): boolean {
+      if (document.body.style.position === "fixed") return true; // a bottom sheet / dialog is open
+      for (let el = target as HTMLElement | null; el && el !== document.body; el = el.parentElement) {
+        if (el.matches("input, textarea, select, [contenteditable], [data-no-swipe]")) return true;
+        const style = getComputedStyle(el);
+        if (style.touchAction !== "auto" && style.touchAction !== "manipulation") return true; // pan/zoom areas
+        if ((style.overflowX === "auto" || style.overflowX === "scroll") && el.scrollWidth > el.clientWidth + 2) return true;
+      }
+      return false;
+    }
+
+    function onStart(e: TouchEvent) {
+      start = null;
+      if (e.touches.length !== 1 || !window.matchMedia("(max-width: 1023.98px)").matches) return;
+      const t = e.touches[0];
+      if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
+      if (blocked(e.target)) return;
+      start = { x: t.clientX, y: t.clientY, t: Date.now() };
+    }
+    function onMove(e: TouchEvent) {
+      if (e.touches.length > 1) start = null; // a pinch, not a swipe
+    }
+    function onEnd(e: TouchEvent) {
+      if (!start) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      const quick = Date.now() - start.t < 700;
+      start = null;
+      if (!quick || Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx) * 0.5) return;
+      const next = hrefs[currentIndex + (dx < 0 ? 1 : -1)];
+      if (!next) return;
+      setTapped({ href: next, from: pathname });
+      router.push(next);
+    }
+
+    document.addEventListener("touchstart", onStart, { passive: true });
+    document.addEventListener("touchmove", onMove, { passive: true });
+    document.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      document.removeEventListener("touchstart", onStart);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+    };
+  }, [pathname, tabHrefs, homeHref, router]);
 
   return (
     <div className="bg-bg flex min-h-screen">

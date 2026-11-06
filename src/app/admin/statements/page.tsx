@@ -20,11 +20,11 @@ export const metadata = { title: "Statements & Notices" };
  * needs finance access.
  */
 interface PageProps {
-  searchParams: Promise<{ paymentId?: string }>;
+  searchParams: Promise<{ paymentId?: string; customerId?: string }>;
 }
 
 export default async function StatementsPage({ searchParams }: PageProps) {
-  const { paymentId } = await searchParams;
+  const { paymentId, customerId } = await searchParams;
   const user = await getCurrentUser();
   const canFinance = !!user && hasPermission(user.role, "finance.view");
   if (!user || (!canFinance && !hasPermission(user.role, "reports.view"))) {
@@ -39,6 +39,8 @@ export default async function StatementsPage({ searchParams }: PageProps) {
     ? await Promise.all([customerRepository.list(), projectRepository.list(), saleRepository.list(), unitRepository.list(), customerPaymentRepository.list()])
     : [[], [], [], [], []];
 
+  const allProjects = canFinance ? projects : await projectRepository.list();
+
   return (
     <>
       <AdminPageHeader
@@ -48,7 +50,12 @@ export default async function StatementsPage({ searchParams }: PageProps) {
       <StatementStudio
         allowFinance={canFinance}
         letterhead={await loadLetterhead()}
-        initial={{ paymentId }}
+        addresses={allProjects.map((p) => ({
+          value: p.id,
+          label: `${p.name} site — ${[p.address, p.area, p.city].filter(Boolean).join(", ")}`,
+          address: [p.address, p.area, p.city].filter(Boolean).join(", "),
+        }))}
+        initial={{ paymentId, customerId }}
         payments={[...payments]
           .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
           .map((p) => ({ value: p.id, customerId: p.customerId, label: `${formatDate(new Date(p.date))} · ${formatBDT(p.amount.amount)} · ${p.category}` }))}

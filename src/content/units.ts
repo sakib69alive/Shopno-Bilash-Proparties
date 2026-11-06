@@ -51,6 +51,10 @@ export interface Unit {
   floorPlan?: UnitImage;
   /** URL to a real downloadable floor-plan file, if one exists — never fabricated. */
   floorPlanFile?: string;
+  /** A YouTube / Vimeo / Facebook / .mp4 link. When empty, no video option shows anywhere on the public site. */
+  videoUrl?: string;
+  /** A 360° virtual-tour page link (Matterport, Kuula, …). When empty, no 360° option shows anywhere on the public site. */
+  tour360Url?: string;
   features?: string[];
 }
 

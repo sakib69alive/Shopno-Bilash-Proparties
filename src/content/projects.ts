@@ -77,6 +77,10 @@ export interface Project {
   gallery: ProjectImage[];
   /** Building blueprints uploaded from Admin → Website → Projects. Each kind is optional; shown garage → floor → roof. */
   blueprints?: ProjectBlueprint[];
+  /** A YouTube / Vimeo / Facebook / .mp4 link. When empty, no video option shows anywhere on the public site. */
+  videoUrl?: string;
+  /** A 360° virtual-tour page link (Matterport, Kuula, …). When empty, no 360° option shows anywhere on the public site. */
+  tour360Url?: string;
   completionYear?: number;
   totalUnits?: number;
   availableUnits?: number;
@@ -92,6 +96,8 @@ export interface Project {
   /** Short feature/amenity labels, e.g. "Rooftop Garden", "Underground Parking". */
   features?: string[];
   locationDescription?: string;
+  /** Pasted Google Maps link / embed src / "lat, lng" — parsed by `lib/mapLinks.ts`. Empty = placeholder box. */
+  mapUrl?: string;
   nearbyPlaces?: NearbyPlace[];
   featured: boolean;
 }

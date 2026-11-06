@@ -17,7 +17,10 @@ export function GenerateContributionsButton({ costAllocationId }: { costAllocati
     startTransition(async () => {
       const result = await generateContributions(costAllocationId);
       if (result.error) setError(result.error);
-      else router.refresh();
+      else {
+        router.replace(`?notified=${result.notified ?? 0}&withoutApp=${result.withoutApp ?? 0}`);
+        router.refresh();
+      }
     });
   }
 

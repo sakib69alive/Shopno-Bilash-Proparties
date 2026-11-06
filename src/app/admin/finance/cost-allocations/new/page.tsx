@@ -21,11 +21,11 @@ export default async function NewCostAllocationPage() {
   return (
     <>
       <AdminPageHeader
-        title="New Cost Allocation"
+        title="New budget"
         breadcrumbs={[{ label: "Cost Allocations", href: "/admin/finance/cost-allocations" }, { label: "New" }]}
       />
       <div className="p-4 sm:p-6">
-        <CostAllocationForm action={createCostAllocation} projects={projects} submitLabel="Create Allocation" />
+        <CostAllocationForm action={createCostAllocation} projects={projects} submitLabel="Next: choose who pays" />
       </div>
     </>
   );

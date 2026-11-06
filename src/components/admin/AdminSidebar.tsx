@@ -12,8 +12,8 @@ export interface AdminSidebarProps {
 
 /**
  * Persistent desktop sidebar (`lg` and up) — hidden entirely below that;
- * `AdminMobileSidebar` covers narrower viewports via a drawer instead of
- * this shrinking. No collapse-to-rail toggle — this stack's environment
+ * `AdminPhoneChrome` (top bar, tab capsule, menu sheet) covers narrower
+ * viewports instead of this shrinking. No collapse-to-rail toggle — this stack's environment
  * has a reproducible compositor bug where toggling the sidebar width
  * leaves it visually stuck, and a full-width, always-labelled sidebar is
  * simpler and more reliable anyway (`AdminSidebarNav`'s `collapsed` mode

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Gallery } from "@/components/ui/Gallery";
+import { MediaExperience } from "@/components/media/MediaExperience";
 import { ProjectBlueprints } from "@/components/project/ProjectBlueprints";
 import { ProjectDesignStory } from "@/components/project/ProjectDesignStory";
 import { ProjectEnquiryCTA } from "@/components/project/ProjectEnquiryCTA";
@@ -54,6 +55,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
       <ProjectHero project={project} />
       <ProjectIntroduction project={project} />
       <ProjectFacts project={project} />
+      <MediaExperience videoUrl={project.videoUrl} tour360Url={project.tour360Url} title={project.name} />
       <ProjectBlueprints blueprints={project.blueprints} />
       <ProjectDesignStory project={project} />
       <ProjectLocation project={project} />

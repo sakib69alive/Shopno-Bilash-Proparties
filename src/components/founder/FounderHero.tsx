@@ -43,7 +43,6 @@ export function FounderHero({ profile }: FounderHeroProps) {
               ratio="auto"
               src={profile.photo}
               alt={profile.name}
-              priority
               sizes="(min-width: 1024px) 54vw, 100vw"
               containerClassName="h-full"
               className="object-top"

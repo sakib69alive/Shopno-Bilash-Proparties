@@ -65,6 +65,8 @@ export const ADMIN_GUIDE: GuideGroup[] = [
           "Create a project first with its address, land info, and building/unit/parking counts before adding anything underneath it.",
           "Each project has its own workspace (tabs for Units, Owners, Parking, Construction, Payments, Materials, Reports, Settings) — everything you do inside a project stays scoped to it.",
           "Publish a project (toggle \"isPublished\") to make it visible on the public website; unpublished projects stay internal-only.",
+          "BLUEPRINT TYPES (on the project's Edit page): most buildings repeat a few flat designs. Add each design once — a name, the flat code that repeats on every floor (for example A for 1A, 2A, 3A…) and the blueprint image — and every matching flat shows that blueprint automatically, in the owner's portal too. Change a type's image later and all its flats update at once; nothing is copied onto each flat.",
+          "Blueprints can be an image (JPG, PNG, WEBP) or an SVG — either works. Upload only the layout drawing: no background, border or page colour. SVG files are cleaned on upload (anything that could run code is removed; the drawing itself is unchanged).",
         ],
       },
       {
@@ -76,6 +78,8 @@ export const ADMIN_GUIDE: GuideGroup[] = [
           "A unit belongs to one Building and one Floor within a Project — set its size, bedrooms/bathrooms, pricing and status here.",
           "Unit status (Available, Reserved, Booked, Under Agreement, Sold, Transferred, On Hold, etc.) drives what you can do with it elsewhere — e.g. only \"Available\" units can be booked or sold.",
           "Each unit's own page has tabs for Ownership, Sales & Bookings, Parking, Documents and Financial history — the complete record for that one unit.",
+          "BLUEPRINT of a flat (Design section of its Edit page): by default it uses its project's blueprint type, matched automatically by the flat code (3A → the type with code A). You can pick a different type from the list, or upload a CUSTOM blueprint for this one flat — a custom one always wins. Tick \\\"Remove the custom blueprint\\\" to go back to the type. The unit's page says which one is in use.",
+          "Bulk Structure Generator (a project's Units tab): creates floors and flats in one go, numbered like 1A, 2A, 3A… — exactly the pattern blueprint types match on.",
         ],
       },
       {
@@ -137,6 +141,9 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         details: [
           "A customer can have Leads, Bookings, Sales, Units and Payments linked to them — their own page ties all of it together.",
           "Status (Active/Inactive/Archived) is for your own record-keeping, not a login account — see Users for portal access.",
+          "Client login link: every row has a link button (and a WhatsApp button), and the customer's own page has a \"Client link\" box. Press Copy link and send it to the client on WhatsApp — when they tap it their portal opens with no phone number or PIN, and that phone stays signed in for a year. Each client's link is different. The same works for Shareholders and Landowners.",
+          "\"Make a new link\" cancels the old one and signs out every phone that used it (use it if the link went to the wrong person or a phone was lost). \"Turn link off\" just cancels it. Opening a link yourself in your normal browser signs you out of Admin there, so test it in a private window.",
+          "The link only contains a path, never the domain: when you buy your own domain, open Admin on the new domain and copy the links from there. Keep the AUTH_SECRET setting unchanged on the host, because every link and signed-in phone depends on it.",
         ],
       },
       {
@@ -157,6 +164,9 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         details: [
           "Base price, floor premium, parking price, additional charges and discount are all recorded separately — the final sale price is calculated from them, never typed in directly.",
           "Recording a sale marks the unit \"Sold\" and creates the ownership record — this is the moment a Customer effectively becomes an Owner of that unit.",
+          "A sale's own page shows: PAYMENTS RECEIVED (sale price, received, remaining, % paid and every payment with date, purpose, method, reference and receipt no.), INSTALLMENTS (each with its status as of today), and two controls — Change the price and On the owner's portal.",
+          "CHANGE THE PRICE: if the agreed price goes up or down after the sale (a discount, extra parking…), add a change with an amount and a reason. The original agreed price is never altered; each change is kept as a dated line (and can be removed), and the customer's remaining balance follows the new price. The owner sees the changes listed on their portal.",
+          "ON THE OWNER'S PORTAL: the Hide from owner / Show to owner button switches that flat's price, payments and balance on or off for the owner, instantly and as often as you like. While hidden, the owner sees only a note to contact the office and no figures are sent to their page. It is ON by default.",
         ],
       },
       {
@@ -166,6 +176,8 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         summary: "Payments received from customers against their sale/contract.",
         details: [
           "Record the amount, method (cash/bank/mobile banking/card), and link it to a customer and project for accurate reporting.",
+          "Choose WHICH FLAT the payment is for (the field appears once a customer is chosen). That is what lets the sale page and the owner's portal show Paid / Remaining per flat. The easiest way: open the sale and press Record payment — customer and flat are filled in for you.",
+          "After you save a payment you land on its page, where Create receipt opens Statements & Notices with that payment's receipt ready: the amount received now, the total paid so far, the estimated remaining and the list of payments up to that receipt.",
         ],
       },
       {
@@ -175,6 +187,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         summary: "Payment plan schedules — due dates and amounts a customer is expected to pay over time.",
         details: [
           "Status (pending/due-soon/paid/overdue) helps you see at a glance who needs a follow-up call.",
+          "Each installment belongs to a flat sale — choose it in \\\"Which flat sale is this installment for?\\\" (or press Add installment on the sale's own page). The owner then sees every installment on their portal with its live status: Paid, Overdue (past its due date), Due soon (within 7 days) or Upcoming. The status follows the calendar by itself; you only mark an installment Paid when it is paid.",
         ],
       },
     ],
@@ -184,42 +197,103 @@ export const ADMIN_GUIDE: GuideGroup[] = [
     description: "Every taka in and out of the company — expenses, budgets, collections and the material supply chain that feeds them.",
     items: [
       {
-        label: "Expenses",
-        href: "/admin/finance/expenses",
+        label: "Budgets & cost splits",
+        href: "/admin/finance/cost-allocations",
         permission: "finance.view",
-        summary: "General project costs — labour, utilities, permits, site work and anything that isn't a material purchase or a contractor payment.",
+        summary: "Use this when the company needs to collect money from the owners of a project — piling, foundation, lift, anything shared. You say how much is needed and who pays; the system works out each person's share, sends it to their app with the last date, and keeps track of who has paid.",
         details: [
-          "Tag an expense to a project, construction phase, building, vendor, contractor and/or account so it shows up correctly in every report.",
-          "Set a Status (Pending/Submitted/Verified/etc.) — anything not yet verified appears in the Approval Queue for review.",
+          "WHEN TO USE IT — Whenever one cost has to be shared between the owners of a project (customers, shareholders and landowners who hold flats). It is NOT for money a customer pays for buying their flat — that is \"Payments received\" under Sales. Think of it this way: Payments received = the price of the flat. Budgets & cost splits = extra shared construction costs billed to owners.",
+
+          "THE WHOLE JOB IN 5 STEPS — (1) Sidebar → \"New budget split\" and answer 4 questions. (2) On the next screen choose which flats pay and how much each pays — you see the result live. (3) Press \"Save & send to clients\": every owner gets their amount and last date in their app. (4) As money arrives, press \"Record Payment\" on that owner's card. (5) When 100% is collected, press \"Mark Completed\"; press \"Archive\" to hide an old budget from the active list.",
+
+          "BEFORE YOU START — The flats must already have owners. Go to the project → Distribute tab and hand the flats to owners (customers who bought are already there). A flat with no owner is skipped: the company is treated as paying for its own unsold flats. If a flat's size is wrong, you can fix it on the screen in step 2 (see the pencil below).",
+
+          "STEP 1: THE NEW BUDGET FORM — \"Which project?\" (the project whose owners will pay). \"What is this payment for?\" (the name owners will see, e.g. Piling — Phase 1). \"Total money to collect (৳)\" (the whole amount that must be collected from all owners together). \"Last date to pay\" (shown to owners as the deadline; after this date unpaid amounts are Overdue). Press \"Next: choose who pays\". Nothing is sent yet — the budget is saved as a Draft.",
+
+          "STEP 1: \"MORE OPTIONS\" (you can ignore these) — Category (defaults to the name). Date of this budget (defaults to today). Late fine: either a flat taka amount or a percent of what is still unpaid, charged only after the last date (0 = no fine). \"How is it divided?\": \"Pick flats — you choose who pays and how\" (recommended, described below), \"Everyone by area, automatically\", \"Predefined unit ratio\", \"Tiered groups\". \"Also bill parking\": adds a parking amount box on the next screen.",
+
+          "STEP 2: THE DRAFT PAGE — At the top a blue line repeats what you are collecting, for what, in which project and by when, and says nothing is sent until you press Save. Below it is the planner. Left side = your choices. Right side = the live result.",
+
+          "STEP 2 · \"1 — Which flats pay?\" — Every owned flat is a card showing the flat number, owner's name, size (sqft) and what it will pay. Dark green = pays. White = left out. Tap a card to include/leave it out. Buttons above: \"All flats\", \"None\", and \"Every A flat\", \"Every B flat\"… (picks that position on every floor). Tap a floor's heading (\"FLOOR 3 · tap to select all\") to switch the whole floor on or off. Use this to bill only some floors or flats — for example only the flats that are above a certain floor.",
+
+          "STEP 2 · \"2 — Should everyone pay the same?\" — \"Yes — same for every flat\": the amount is divided equally by the number of flats, whatever the size. \"No — bigger flat pays more\": the amount is divided by sqft, so a 4,000 sqft flat pays four times a 1,000 sqft flat. If you choose \"same for every flat\" and the sizes are very different, a yellow warning tells you that small flats then pay much more per sqft.",
+
+          "STEP 2 · THE PENCIL ON EACH FLAT — Press the small pencil to open that flat's box right under its floor. (a) \"Size (sqft)\": type the real size. It changes the sums immediately and is SAVED ON THE FLAT as soon as you click out of the box, so every future budget uses the corrected size too (\"Back to …\" restores the old size). (b) \"How much should this flat pay?\": \"More by %\" (e.g. 10 = pays 10% more than its normal share), \"More by ৳\" (pays that many taka more), \"Exactly ৳\" (pays exactly this amount), \"Exactly % of total\" (pays that percent of the whole budget). Type a minus number for LESS. Press \"Set\". The other flats automatically cover the difference so the total stays correct. \"Back to automatic\" removes your change. Changed flats show a yellow pencil and a yellow chip appears under \"3\".",
+
+          "STEP 2 · PARKING (optional) — Shown when parking spaces exist. Type one amount in \"Same amount for every parking space\" or fill each space. Parking is billed ON TOP of the flat share, only to the owner who holds that space, and is added to that owner's single bill. Leave empty to bill no parking.",
+
+          "STEP 2 · THE LIVE RESULT (right side) — \"What happens now\": one sentence, e.g. ৳40,00,000 is divided between 40 flats; on average each flat pays about ৳1,00,000. \"Each flat pays\": every flat with its amount and a bar (green = automatic, yellow = you changed it); click a row to open its pencil box. \"Each owner pays\": the total per owner (an owner with two flats pays for both) with the flats and sqft behind it. Green message \"Correct — adds up to the total\" = ready. A red message means something must be fixed, for example \"fixed amounts add up to more than the total\" or \"nobody is left to cover the difference\" — change a flat to \"Back to automatic\".",
+
+          "STEP 2 · ROUNDING — Every amount is a whole taka. If dividing leaves 1–2 taka over, they are added to the largest flat that you did not set by hand, so the total is always exactly what you typed.",
+
+          "STEP 3 · \"SAVE & SEND TO CLIENTS\" — This is the only button that makes it real, and it can be done ONCE per budget. It: (1) creates one bill per owner (an owner with several flats gets one combined bill, with the flat-by-flat split kept inside); owners who would pay ৳0 get no bill; (2) sends each owner who has an app account a notification — \"New payment due … you need to pay ৳X by <date> (N days from now)\" — and the amount also appears in their Payments page; (3) shows a green banner: how many were sent and how many owners \"have no app access yet\". For those, open Customers and copy that person's link (the link icon) and send it on WhatsApp. If any flat size was changed, the new size is saved. Check the live result carefully first: there is no \"undo\"; mistakes after saving are corrected with Adjustments (below).",
+
+          "THE OTHER WAYS TO DIVIDE — \"Everyone by area, automatically\": each owner pays in proportion to the total sqft of their flats; you see a preview table and press \"Confirm & Generate\". \"Predefined unit ratio\": each flat's own allocation ratio decides the share (flats without one fall back to area). \"Tiered groups\": every flat starts from an equal share; you make named groups (tiers) and push a group up or down by a percent or taka amount; the other flats absorb the difference; if every flat is inside an adjusted tier and the changes do not add back to the total you get an error. These three have no flat-picking screen. For most jobs use \"Pick flats\".",
+
+          "AFTER YOU SAVE — Collection Dashboard: Target (what you typed), Allocated (what owners were billed, after any adjustments), Collected (money actually received), Outstanding (Allocated minus Collected — includes not-yet-due), Collection % (Collected ÷ Allocated), and counts of Fully Paid, Partial and Unpaid owners. All of these are recalculated from the real payments every time you open the page — never typed in.",
+
+          "INSTALLMENT PLAN (optional, after saving) — If owners may pay in parts, press the plan form: add rows, each with a Label (e.g. First half), a Mode (percent or fixed amount) and a Due date. If you use percentages they must add up to exactly 100. The plan is applied to every owner (their share is cut into the same parts). Only ONE plan per budget; it cannot be deleted once any payment has been recorded against it. When a plan exists, Record Payment asks which installment the money is for.",
+
+          "OWNER CARDS: WHAT EVERY BUTTON DOES — Search box: find an owner or flat. Status filter: All / Paid / Partially Paid / Pending / Overdue (use it for \"who has not paid\"). Each card shows: Units, Sqft and share %, Payable, Paid, Outstanding, Fine (only if overdue), Total Due, Due Date, the unit breakdown, and any adjustments. \"Record Payment\": fields are Installment (only if a plan exists), Amount (cannot be more than what is outstanding), Date, Method (Cash, Bank Transfer, Cheque, Mobile Banking, Card), Reference (e.g. cheque number), Receipt Number. Saving it lowers Outstanding and the owner sees it in their app. \"Add Adjustment\": Type — Discount, Waiver, Additional Charge, Correction or Refund; Amount (type a positive number; discount, waiver and refund automatically REDUCE what the owner owes, the others add); Reason (required). The original bill is never changed — the adjustment is added next to it, so there is always a record.",
+
+          "STATUS WORDS — Pending: nothing paid, not yet late. Partially Paid: some paid, not yet late. Paid: nothing outstanding. Overdue: something is outstanding and the last date has passed. FINE: only when Overdue. Fine = the flat taka amount you set, or the percent of what is still outstanding. \"Total Due\" = Outstanding + Fine. The fine is shown on the card but is not added into the dashboard's Outstanding or Collected figures. All of this is worked out live from today's date — nothing needs updating.",
+
+          "THE BADGE AT THE TOP — Draft (not saved yet), Upcoming (budget date in the future), Active (nothing collected yet), Partially funded, Fully funded (100% collected), Completed, Archived, Cancelled. \"Mark Completed\" appears only at 100% — closing the books is your decision, it never happens by itself. \"Archive\" hides the budget from the active list at any time.",
+
+          "OVERDUE NOTICES — Sidebar → Reports → Owner contributions → \"Send Overdue Notices\" (shown only if something is overdue and you may manage notifications). It sends each owner with an overdue bill a notification with the amount, the original date and the fine. Pressing it again never double-sends: a bill that already got an overdue notice is skipped.",
+
+          "GOOD HABITS — Give flats their owners first (Distribute tab). Check flat sizes once. Choose the sharing rule in step 2 before using pencils. Use pencils only for real exceptions. Press Save only when the green \"Correct\" message shows. Send the app link to owners who have none, otherwise they never see the amount.",
         ],
       },
       {
         label: "Project Finance",
         href: "/admin/finance/project-costs",
         permission: "finance.view",
-        summary: "Budget lines per project (and optionally per construction stage) — what you planned to spend vs. what's actually been spent.",
+        summary: "Your PLAN for spending on a project: budget lines (for the whole project or for one construction stage) that you compare against what was really spent. It is about the company's own costs — not about money collected from owners (that is Budgets & cost splits).",
         details: [
-          "Set warning/over-budget thresholds (default 80%/100%) — the budget status badge (Under/On/Over Budget) updates automatically as real costs come in.",
-          "\"Actual\" here is labelled \"Actual (Manual)\" — you type it in by hand, it isn't calculated. For the real, live-computed actual cost (the true sum of every verified Purchase, Expense and Contractor Payment), check that project's own Reports tab instead — update this field to match if you want the two to agree.",
+          "THE IDEA — A budget line says: \"For Materials in Meridian Residences we plan to spend ৳50,00,000.\" You can make one line per category, and optionally tie a line to one construction stage. The page then shows how much of each line has been used and warns you before it is overspent.",
+
+          "THE LIST — Columns: Category, Project, Budgeted (what you planned), Actual (Manual) (a number YOU type — see the warning below), Variance, Status, Date. Search by category and filter by project above the table. Variance = Actual − Budgeted: a positive number means overspent, a negative number means money still unused. The pencil edits a line; the bin deletes it (it asks first).",
+
+          "NEW BUDGET LINE — Fields: Project (required). Construction Stage (optional — leave empty for a whole-project line). Category (e.g. Materials, Labor, Permits). Budgeted (BDT) — the planned amount, must be above 0. Actual — Manual Entry (BDT). Date. Reference (optional, e.g. approval memo number). Warning Threshold % and Over Threshold % (optional): see Status below.",
+
+          "STATUS: UNDER / ON / OVER BUDGET — Used % = Actual ÷ Budgeted × 100. Under Budget: used % is below the Warning Threshold (default 80). On Budget (a caution): used % is at or above the Warning Threshold but below the Over Threshold. Over Budget: used % is at or above the Over Threshold (default 100). So \"On Budget\" here means \"you are close to the limit\", not \"all fine\". Change the two thresholds on a line if you want an earlier or later warning.",
+
+          "IMPORTANT: \"ACTUAL (MANUAL)\" IS NOT AUTOMATIC — The Actual figure on a budget line is typed by you and does not update by itself, so Status on this page is only as good as that number. The real, live figure is calculated elsewhere: it is the sum of (a) material Purchases that are not cancelled, (b) Expenses whose status is blank, Verified or Completed, and (c) Contractor Payments with the same status rule. You find it on the project's Reports tab and in the dashboard's \"Budget vs Actual\". If you want a budget line to agree with reality, copy that live number into Actual (Manual).",
+
+          "A NOTE ON ADJUSTMENTS — A refund or discount added to an expense (see Expenses) is shown on that expense's own page as \"Net\", but the live Actual cost above still uses the expense's ORIGINAL amount. Keep that in mind when comparing numbers.",
         ],
       },
       {
-        label: "Cost Allocations",
-        href: "/admin/finance/cost-allocations",
+        label: "Expenses",
+        href: "/admin/finance/expenses",
         permission: "finance.view",
-        summary: "How a shared construction cost (e.g. \"Piling — Phase 1\") gets billed back to every unit owner, split by unit size, ratio, tier or a fixed amount.",
+        summary: "Every general cost of a project that is not a material purchase and not a contractor payment: labour, utilities, permits, transport, site work, office, legal fees and so on. Each expense is one record: what, how much, when, for which project.",
         details: [
-          "This is the core \"Construction Goal\" system: create an allocation → generate owner contributions → optionally set up an installment plan → collect payments.",
-          "Every owner's payable amount, paid amount, and outstanding balance is always derived live from real payments — never a stored, staleable number.",
+          "THE LIST — Search by description or category; filter by project. Columns: Description (click to open), Project, Category, Amount, Date. Pencil = edit. Bin = delete (asks first; a deleted expense is gone, but the Audit Log remembers that it was deleted). \"New Expense\" adds one.",
+
+          "THE FORM, FIELD BY FIELD — Project (required). Construction Phase (optional; pick the stage this cost belongs to, so that stage's cost is correct). Building (optional). Description (required, at least 3 letters — what was bought or paid for). Category (required; suggestions: Construction, Labour, Contractor, Material, Equipment, Machinery, Transport, Site Work, Utilities, Office, Staff, Travel, Professional, Legal/Government, Miscellaneous — you may type your own). Subcategory (optional, e.g. Cement, Rebar). Amount (BDT, above 0). Date. Payment Method (optional: Cash, Bank Transfer, Cheque, bKash, Nagad, Rocket, Card, Other). Account (optional — which cash box/bank/mobile account the money came from; set these up under Accounts). Vendor (optional — who was paid). Contractor (optional — only a tag to remember which contractor's crew this was for; it does NOT make this a contractor payment). Status (optional, see below). Reference (optional, e.g. invoice number).",
+
+          "STATUS DECIDES WHETHER IT COUNTS — Draft, Pending, Submitted, Verified, Completed, Cancelled, Rejected. Only an expense with NO status, or Verified, or Completed counts toward the project's real cost, the dashboard and the reports. Draft, Pending, Submitted, Rejected and Cancelled are ignored in those totals, so an unconfirmed or declined cost never makes the project look more expensive than it is. Expenses waiting as Pending or Submitted also appear in the Approvals page, where a manager can mark them Verified or Rejected.",
+
+          "THE EXPENSE PAGE — Shows the project, amount, category, date, payment method, status, vendor, contractor, account and reference. Buttons: \"Edit\" and \"Delete\". Section \"Adjustments / Refunds\": use it when a supplier gives money back or you must correct a cost WITHOUT changing the original record. Type — Discount, Waiver, Additional Charge, Correction, Refund, Reversal or Transfer Adjustment. Amount — type a positive number; Discount, Waiver, Refund and Reversal automatically reduce the cost, the others add. Reason (required). Once an adjustment exists, the page shows \"Net (after adjustments)\".",
+
+          "WHICH SCREEN FOR WHICH MONEY — Expense: general costs (this page). Purchases: buying materials (Materials group; also counts as material cost). Contractor payments: paying a contractor (Construction → Contractors). Payments received: a customer paying for a flat (Sales). Budgets & cost splits: collecting a shared cost from owners. Putting a cost on the wrong screen is the most common mistake — a contractor payment entered as an expense will not show in the contractor's totals.",
         ],
       },
       {
         label: "Accounts",
         href: "/admin/finance/accounts",
         permission: "finance.view",
-        summary: "Internal cash/bank/mobile-banking records you can tag expenses and payments against — not a real banking integration.",
+        summary: "A simple list of the places your money moves through — a cash box, a bank account, a bKash number — so that each expense can say which one it came from. It is a record you keep, not a connection to any real bank.",
         details: [
-          "Add an account once (e.g. \"Site Cash Box\", \"BRAC Bank — Main\") and it becomes selectable everywhere a payment method is recorded.",
+          "WHAT IT IS FOR — Create each account once (for example \"Site Cash Box\", \"BRAC Bank — Main\", \"Company bKash\"). After that it appears in the Account dropdown when you record an expense or a contractor payment. This lets you later see which account was used for which cost.",
+
+          "ADD ACCOUNT — Press \"Add Account\" and fill: Name (required, e.g. Site Cash Box), Type (Cash, Bank or Mobile Banking), Account Number (optional), Bank Name (optional), Notes (optional). Press \"Add Account\" again to save; \"Cancel\" closes the form.",
+
+          "THE TABLE — Name, Type, Account No., Bank, Status. The Status chip is a button: click it to switch an account between Active and Inactive. Use Inactive for an account you no longer use. The bin deletes an account, but only if nothing was ever recorded against it; otherwise you get a message to retire it (make it Inactive) instead, so old records never lose their account.",
+
+          "WHAT IT DOES NOT DO — It does not connect to a bank or bKash, it does not show a balance, and the details of an existing account cannot be edited from this screen. If you typed a name wrongly, add the correct account and make the wrong one Inactive. Only people allowed to manage finance can add, change or delete accounts.",
         ],
       },
       {
@@ -305,7 +379,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         summary: "File storage attached to any record — a project, unit, owner, vendor, or transaction.",
         details: [
           "Set an expiry date on documents that need renewal (agreements, licenses) so Alerts can warn you before they lapse.",
-          "The \"Visibility\" field controls who can ever see a document — set it to \"Private\" when the document should be visible to the specific owner it belongs to (in the future Owner Portal), or \"Internal\"/\"Restricted\" to keep it admin-only.",
+          "SENDING A FILE TO A CLIENT: add a document, choose Owner Type = Customer (or Shareholder / Landowner), pick the person by NAME, keep Visibility on \\\"Show to the client in their portal\\\" and upload the PDF or image (PDF, JPG, PNG, WEBP, DOC, DOCX, up to 15MB). It appears under Documents in that person's portal straight away. \\\"Staff only\\\" and \\\"Restricted\\\" keep a file out of the portal.",
         ],
       },
       {
@@ -363,7 +437,9 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         permission: "content.view",
         summary: "The public-facing description, photos and highlights for each project — separate from the internal Project record under Development.",
         details: [
-          "Total/Available Units and Total/Available Car/Bike Parking are typed in by hand here — they drive the availability summary on the project's public page, but aren't pulled automatically from the real Units/Parking records under Development, so update them yourself as units or spaces sell.",
+          "Add or edit a project here: cover photo, a gallery (also use it for photos of the ongoing building), and three blueprints — Garage, Floor and Roof — each as an image or SVG. On the phone they show as a swipeable set in that order.",
+          "LOCATION MAP — the \"Google Maps link\" box puts a real, live map in the project page's Location section, plus an \"Open in Google Maps\" button for directions. In Google Maps open the project's exact spot → Share → \"Embed a map\" → Copy HTML, and paste it into the box (you can also paste a normal Google Maps link, a maps.app.goo.gl share link, or coordinates like 23.7925, 90.4078). Links that cannot be shown inside the page (the short share links) still give the Open button. Leave the box empty and the plain placeholder stays. Nothing here costs money or needs an API key.",
+          "The number of available flats is counted from the real unit records of the project (add the flats under Website → Properties, or in bulk). The \\\"Available Units (fallback)\\\" number is used only until the first unit is added. Parking counts are still typed by hand.",
         ],
       },
       {
@@ -371,21 +447,30 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         href: "/admin/content/properties",
         permission: "content.view",
         summary: "Public-facing property listings shown on the marketing site's Properties page.",
-        details: [],
+        details: [
+          "Each flat has a cover photo, a photo gallery and a floor-plan blueprint (image or SVG, layout drawing only — no background).",
+          "Add many flats at once with Bulk add: pick the project, then type the floors and the flats per floor (for example floors 1–8, flats A–D). Every flat is created and can be edited later. The table lets you filter by project, change a flat's status in place and delete several selected flats together.",
+        ],
       },
       {
         label: "News",
         href: "/admin/content/news",
         permission: "content.view",
         summary: "News & Updates articles published on the public website.",
-        details: [],
+        details: [
+          "Create a new article with a cover photo and extra photos, a category, a related project and a Featured switch (a featured article is the lead story on the News page).",
+          "News is the first item of the Website group in the sidebar, so it is quick to add an update right after something happens.",
+        ],
       },
       {
         label: "Gallery",
         href: "/admin/content/gallery",
         permission: "content.view",
         summary: "Photos shown on the public Gallery page — upload, categorize, and optionally link each image to a project.",
-        details: ["Use the search and category filter to find an image quickly once the gallery has many entries."],
+        details: [
+          "Use the search and category filter to find an image quickly once the gallery has many entries.",
+          "Bulk add: choose many photos at once, pick a category (and a project if they belong to one) and add them in one go — useful for progress photos of a building.",
+        ],
       },
       {
         label: "Pages",
@@ -413,6 +498,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
           "Each entry needs a Name and a Title/Role; Photo and a short Bio are optional. Without a photo, the public grid falls back to a placeholder image rather than hiding the card.",
           "Entries publish in the order you added them, same as Company Policy rules — to reorder, delete and re-add in the order you want.",
           "This is separate from Founder Profile: Founder Profile is the one owner/founder's full page (hero, story, statement), while Team & Partners is everyone else shown alongside them.",
+          "Each person has a Group: Partner, Shareholder or Employee. The public Founder page shows them under separate headings, so partners, shareholders and employees are easy to tell apart.",
         ],
       },
       {
@@ -446,6 +532,21 @@ export const ADMIN_GUIDE: GuideGroup[] = [
     description: "Read-only, drill-down views for when you need more than the dashboard's headline numbers.",
     items: [
       {
+        label: "Statements & Notices",
+        href: "/admin/statements",
+        permission: "reports.view",
+        summary: "Branded PDF and image documents on your company letterhead — notices, payment receipts, client statements, project summaries and daily reports — made in a minute and sent anywhere.",
+        details: [
+          "Pick the document type on the left; the letterhead page appears on the right and updates LIVE as you type or change a choice. Download PDF, Download image, or Copy image (paste it straight into WhatsApp Web or an email). Nothing is saved on the site.",
+          "NOTICE: choose a template (meetings, new installment, payment reminder, piling work, floor casting / dhalai, progress update, cost update, handover, price change, work order, safety, holiday and more) and fill in just the name, date, amount… or choose Custom and write your own. A field left empty shows as [Label] in the text, and the PDF / image / copy buttons stay locked until nothing is left blank.",
+          "Text pasted from an AI chat keeps its formatting: **bold**, # headings, - bullet lists, 1. numbered lists, > quotes and | tables |. The small toolbar above the text box inserts the same marks (Bold, Italic, Heading, lists, Quote, Table).",
+          "SIGNATURE is optional: press Add signature to add a signature line with a name and role; Remove takes it off.",
+          "PAYMENT RECEIPT: pick the customer and the payment (newest first). The receipt shows the amount received now (also in words), the total paid so far, the estimated remaining and every payment up to that receipt. It is also one click away from a payment's own page (Create receipt).",
+          "CLIENT STATEMENT: one customer's flats with price, paid, remaining, any price changes and every payment. PROJECT SUMMARY: money received and spent on a project (expenses, material purchases, contractor payments, by category), optionally for a date range. DAILY REPORT: one day's money in and out, for all projects or one.",
+          "BLANK LETTERHEAD FOR AN AI: download the empty pad (PDF or image) and press Copy AI instructions. Give both to Claude or any AI together with what the document must say; it writes on the pad, or answers in Markdown that you paste back into a Notice here.",
+        ],
+      },
+      {
         label: "Reports",
         href: "/admin/finance/reports",
         permission: "reports.view",
@@ -468,6 +569,25 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         permission: "reports.view",
         summary: "Real distribution breakdowns — units/leads/customers/sales/bookings/construction/parking by status.",
         details: ["No web-traffic or marketing analytics — this is business-data distributions only, all real, never a sample chart."],
+      },
+    ],
+  },
+  {
+    label: "Owner Portal",
+    description: "What your customers, shareholders and landowners see when they sign in with their phone number and PIN — and which admin screens feed each part of it.",
+    items: [
+      {
+        label: "Owner Portal overview",
+        href: "/login",
+        summary: "A private area for each owner: their flat's blueprint, payments, installments, construction progress, documents and notifications. It is built for phones first.",
+        details: [
+          "SIGN IN: Login page → Property Owner → phone number. The first time, the owner sets a 4-digit PIN; after that the phone number and PIN are enough. The phone number must be the one saved on the owner's record.",
+          "HOME: the owner's flat — number, beds, baths, size, facing and the blueprint (tap it to open it full screen). Below it: Payments (paid, remaining, last payment, next installment with its status), Construction progress, Documents and Notifications.",
+          "The blueprint comes from the flat's blueprint type or its custom blueprint (Development → Projects / Properties).",
+          "PAYMENTS: the flat's price, what has been paid, what is left, the installments with live status, any price changes and every payment received with date, method, reference, receipt no. and the balance after it. It comes from Sales → Payments and Installments, and the on/off switch on the sale's page controls whether the owner sees it.",
+          "DOCUMENTS: files added under Operations → Documents for that person with Visibility set to show in the portal.",
+          "To check what an owner sees, sign in with their phone number — the portal only ever shows that owner's own data.",
+        ],
       },
     ],
   },

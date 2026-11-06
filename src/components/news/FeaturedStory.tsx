@@ -19,7 +19,6 @@ export function FeaturedStory({ article }: { article: NewsArticle }) {
               overlay
               src={article.coverImage.src}
               alt={article.coverImage.alt}
-              priority
               sizes="100vw"
               className="transition-transform duration-500 ease-[var(--ease-standard)] group-hover:scale-[1.02]"
               caption={<span className="text-label uppercase">{article.category}</span>}

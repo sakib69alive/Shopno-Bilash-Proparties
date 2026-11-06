@@ -100,8 +100,85 @@ export function DataTable<T>({
     onSelectionChange(next);
   }
 
+  const [firstCol, ...restCols] = columns;
+  const sortableCols = columns.filter((c) => c.sortable);
+
   return (
-    <div className={cn("border-border overflow-x-auto scrollbar-none rounded-lg border", className)}>
+    <>
+      {/* Phone: every row becomes a card — the first column is the title, the rest are label/value lines.
+          A wide table you have to swipe sideways is the worst thing to use one-handed. */}
+      <div className={cn("flex flex-col gap-3 md:hidden", className)}>
+        {onSortChange && sortableCols.length > 0 && (
+          <label className="text-caption text-fg-subtle flex items-center justify-between gap-3 px-1">
+            Sort by
+            <select
+              value={sortKey ?? ""}
+              onChange={(e) => e.target.value && onSortChange(e.target.value)}
+              className="border-border-strong bg-surface-raised text-fg h-10 rounded-full border px-4 text-sm"
+            >
+              {!sortKey && <option value="">—</option>}
+              {sortableCols.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.header}
+                  {sortKey === c.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {selectable && (
+          <div className="px-1">
+            <Checkbox label="Select all" checked={allSelected} onChange={toggleAll} />
+          </div>
+        )}
+        {data.map((row) => {
+          const id = getRowId(row);
+          const selected = selectedIds?.has(id);
+          const labelled = restCols.filter((c) => c.header.trim() !== "");
+          const actions = restCols.filter((c) => c.header.trim() === "");
+          return (
+            <div
+              key={id}
+              onClick={() => onRowClick?.(row)}
+              className={cn(
+                "bg-surface-raised border-border rounded-[var(--m-radius-card)] border p-4",
+                onRowClick && "active:bg-surface cursor-pointer",
+                selected && "bg-accent-soft/40 border-accent",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                {selectable && (
+                  <div onClick={(e) => e.stopPropagation()} className="pt-0.5">
+                    <Checkbox label="Select row" className="sr-only" checked={selected} onChange={() => toggleRow(id)} />
+                  </div>
+                )}
+                <div className="text-body min-w-0 flex-1 font-semibold break-words">{firstCol?.render(row)}</div>
+              </div>
+              {labelled.length > 0 && (
+                <dl className="border-border mt-3 grid grid-cols-1 gap-y-2 border-t pt-3">
+                  {labelled.map((col) => (
+                    <div key={col.key} className="flex items-baseline justify-between gap-4">
+                      <dt className="text-caption text-fg-subtle shrink-0">{col.header}</dt>
+                      <dd className={cn("text-body-sm text-fg min-w-0 text-right break-words", col.align === "right" && "tabular-nums")}>
+                        {col.render(row)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {actions.length > 0 && (
+                <div onClick={(e) => e.stopPropagation()} className="mt-3 flex flex-wrap items-center justify-end gap-2">
+                  {actions.map((col) => (
+                    <div key={col.key}>{col.render(row)}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+    <div className={cn("border-border scrollbar-none hidden overflow-x-auto rounded-lg border md:block", className)}>
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-border bg-surface border-b">
@@ -188,5 +265,6 @@ export function DataTable<T>({
         </tbody>
       </table>
     </div>
+    </>
   );
 }

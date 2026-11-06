@@ -11,6 +11,7 @@ import { PropertyCardM } from "./PropertyCardM";
 import { Rail } from "./Rail";
 import { SectionHeading } from "./SectionHeading";
 import { UnitPlanCard } from "./UnitPlanCard";
+import { MediaExperience } from "@/components/media/MediaExperience";
 
 /**
  * Phone layout of the unit page (below `lg`): swipe photos, title + price,
@@ -76,6 +77,8 @@ export function UnitDetailM({ unit, project, otherUnits }: { unit: Unit; project
           {project.location}
         </a>
       </div>
+
+      <MediaExperience variant="inline" videoUrl={unit.videoUrl} tour360Url={unit.tour360Url} title={unit.name} />
 
       <div className="px-[var(--gutter)]">
         <UnitPlanCard unit={unit} />

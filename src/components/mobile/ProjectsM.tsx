@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Building2, ChevronDown, MapPin } from "lucide-react";
 import { Media } from "@/components/ui/Media";
+import { MediaBadges } from "@/components/media/MediaBadges";
 import { Reveal } from "@/components/ui/Reveal";
 import { PROJECT_STATUS_LABEL, PROJECT_STATUS_TONE, type Project, type ProjectStatus } from "@/content/projects";
 import type { Unit } from "@/content/units";
@@ -58,6 +59,7 @@ function ShowcaseCard({ project, units, priority }: { project: Project; units: U
           <ArrowUpRight className="size-5" />
         </span>
       </div>
+      <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} className="absolute top-[3.75rem] right-4" />
 
       <div className="absolute inset-x-5 bottom-5 text-white">
         <p className="flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] text-white/75 uppercase">

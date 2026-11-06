@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, LogOut, Menu } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { IconButton } from "@/components/ui/IconButton";
 import { GlobalSearch } from "@/components/admin/search/GlobalSearch";
 import { ROLE_LABELS } from "@/config/roles";
@@ -9,7 +9,6 @@ import type { User } from "@/types/user";
 
 export interface AdminHeaderProps {
   user: User;
-  onOpenMobileNav: () => void;
 }
 
 function initials(name: string): string {
@@ -35,11 +34,9 @@ function initials(name: string): string {
  * it. `AdminShell`'s `<main>` adds matching top padding since this no
  * longer occupies space in normal flow.
  */
-export function AdminHeader({ user, onOpenMobileNav }: AdminHeaderProps) {
+export function AdminHeader({ user }: AdminHeaderProps) {
   return (
-    <header className="border-border bg-bg/95 fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur-sm print:hidden sm:px-6 lg:left-64">
-      <IconButton icon={Menu} label="Open menu" onClick={onOpenMobileNav} className="lg:hidden" />
-
+    <header className="border-border bg-bg/95 fixed inset-x-0 top-0 z-30 hidden h-16 items-center gap-4 border-b px-4 backdrop-blur-sm print:hidden sm:px-6 lg:left-64 lg:flex">
       <GlobalSearch user={user} />
 
       <div className="ml-auto flex items-center gap-2">

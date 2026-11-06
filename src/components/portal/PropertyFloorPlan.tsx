@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Maximize2 } from "lucide-react";
-import { Media } from "@/components/ui/Media";
-import { Lightbox } from "@/components/ui/Lightbox";
+import { useEffect, useState } from "react";
+import { Maximize2, X } from "lucide-react";
+import { BlueprintPaper } from "@/components/portal/BlueprintPaper";
 import { Reveal } from "@/components/ui/Reveal";
 
 /**
@@ -17,6 +16,20 @@ import { Reveal } from "@/components/ui/Reveal";
  */
 export function PropertyFloorPlan({ src, unitLabel }: { src?: string; unitLabel: string }) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const body = document.body;
+    const previous = body.style.overflow;
+    body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      body.style.overflow = previous;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
   if (!src) return null;
 
   const alt = `Floor plan for ${unitLabel}`;
@@ -31,12 +44,23 @@ export function PropertyFloorPlan({ src, unitLabel }: { src?: string; unitLabel:
             View Full Screen
           </button>
         </div>
-        <button type="button" onClick={() => setOpen(true)} aria-label="View floor plan full screen" className="border-border block w-full border">
-          <Media ratio="auto" containerClassName="h-[45vh] sm:h-[55vh]" src={src} alt={alt} sizes="100vw" className="object-contain" />
+        <button type="button" onClick={() => setOpen(true)} aria-label="View floor plan full screen" className="border-border block w-full overflow-hidden rounded-2xl border">
+          <BlueprintPaper src={src} alt={alt} className="h-[45vh] sm:h-[55vh]" />
         </button>
       </Reveal>
 
-      <Lightbox images={[{ src, alt }]} index={open ? 0 : null} onClose={() => setOpen(false)} onNavigate={() => {}} label="Floor plan" surface="light" />
+      {/* Full screen: the same blue paper, the whole drawing. A sibling of <Reveal> on purpose (see the comment above). */}
+      {open && (
+        <div role="dialog" aria-modal="true" aria-label={alt} className="fixed inset-0 z-[70] flex flex-col bg-[#10325b] p-3 sm:p-6">
+          <div className="mb-3 flex items-center justify-between text-white">
+            <p className="text-h4">{unitLabel}</p>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="flex size-11 items-center justify-center rounded-full bg-white/15 transition-colors hover:bg-white/25">
+              <X aria-hidden className="size-5" />
+            </button>
+          </div>
+          <BlueprintPaper src={src} alt={alt} className="min-h-0 flex-1 rounded-2xl" />
+        </div>
+      )}
     </>
   );
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Bell, ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { HomeBlueprint, type HomeBlueprintUnit } from "@/components/portal/HomeBlueprint";
+import { HomeFlatProvider } from "@/components/portal/HomeFlatSelection";
+import { HomePaymentsBlock, type FlatPay, type HomePaymentFlat } from "@/components/portal/HomePaymentsBlock";
 import { formatBDT, formatDate } from "@/lib/format";
 import { OWNER_PAYMENT_METHOD_LABEL } from "@/lib/ownerFriendlyLabels";
 import { INSTALLMENT_STATUS_LABEL, type LiveInstallmentStatus } from "@/lib/installmentStatus";
@@ -8,6 +10,9 @@ import type { OwnerNextInstallment } from "@/features/ownerPortal/queries";
 
 export interface OwnerHomeMProps {
   base: string;
+  blueBlueprint?: boolean;
+  /** The office phone number, for the "call us" link under the payments note. */
+  contactPhone?: string;
   firstName: string;
   units: HomeBlueprintUnit[];
   totalPayable: number;
@@ -30,9 +35,13 @@ export interface OwnerHomeMProps {
     /** The nearest installment still to pay, with its live status, and how many are left. */
     next: { amount: number; dueDate: string; status: LiveInstallmentStatus; left: number } | null;
   } | null;
+  /** One entry per flat when the owner has flat-purchase payments, so the Payments row can follow the flat chosen at the top. */
+  paymentFlats?: HomePaymentFlat[];
   documentCount: number;
   unreadCount: number;
 }
+
+export type { FlatPay };
 
 const STATUS_LABEL: Record<OwnerNextInstallment["status"], string> = {
   upcoming: "Upcoming",
@@ -63,11 +72,12 @@ export function OwnerHomeM(p: OwnerHomeMProps) {
   const flat = p.flatPayments;
 
   return (
+    <HomeFlatProvider unitIds={p.units.map((u) => u.id)}>
     <div className="px-[var(--gutter)] pb-8 lg:hidden">
       {/* First screen: sized to what is left between the top bar and the tab bar. */}
       <div className="flex min-h-[calc(100svh-4.25rem-6.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col gap-5 pt-4">
         {p.units.length > 0 ? (
-          <HomeBlueprint units={p.units} firstName={p.firstName} className="flex-1" />
+          <HomeBlueprint units={p.units} firstName={p.firstName} blue={p.blueBlueprint} className="flex-1" />
         ) : (
           <p className="text-fg-muted border-border flex-1 rounded-3xl border border-dashed p-6 text-sm">
             No residence is linked to your account yet. Please contact Shopno Bilash Properties Ltd.
@@ -81,6 +91,9 @@ export function OwnerHomeM(p: OwnerHomeMProps) {
       </div>
 
       <div className="divide-border border-border mt-6 divide-y border-t">
+        {p.paymentFlats && p.paymentFlats.length > 0 && !p.flatHidden ? (
+          <HomePaymentsBlock base={p.base} flats={p.paymentFlats} combined={flat} contactPhone={p.contactPhone} />
+        ) : (
         <Link href={`${p.base}/payments`} className="active:bg-surface -mx-[var(--gutter)] block px-[var(--gutter)] py-7 transition-colors">
           <p className={EYEBROW}>Payments</p>
           {p.flatHidden ? (
@@ -136,6 +149,7 @@ export function OwnerHomeM(p: OwnerHomeMProps) {
             <p className="text-fg-muted mt-3 text-sm">Your payment plan will appear here once it is set up.</p>
           )}
         </Link>
+        )}
 
         <Link href={`${p.base}/construction`} className="active:bg-surface -mx-[var(--gutter)] block px-[var(--gutter)] py-7 transition-colors">
           <p className={EYEBROW}>Construction</p>
@@ -167,5 +181,6 @@ export function OwnerHomeM(p: OwnerHomeMProps) {
         ))}
       </div>
     </div>
+    </HomeFlatProvider>
   );
 }

@@ -23,6 +23,7 @@ import { createLandownerAllocation, deleteLandownerAllocationByUnit } from "@/fe
 import { projectRepository } from "@/features/projects/repository";
 import { unitRepository } from "@/features/units/repository";
 import { userRepository } from "@/features/users/repository";
+import { toPortalAccessView } from "@/features/users/portalAccessView";
 import { filterToVisibleProjectsOptional, getVisibleProjectIds } from "@/lib/projectScope";
 
 interface PageProps {
@@ -134,7 +135,9 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
             <PortalAccessPanel
               ownerType="landowner"
               ownerId={landowner.id}
-              linkedUser={linkedUser ? { id: linkedUser.id, status: linkedUser.status } : null}
+              ownerName={landowner.name}
+              phone={landowner.phone}
+              linkedUser={toPortalAccessView(linkedUser)}
             />
           )}
         </div>

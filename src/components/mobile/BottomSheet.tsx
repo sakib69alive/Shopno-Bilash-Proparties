@@ -39,8 +39,16 @@ export function BottomSheet({ open, onClose, title, children, className, texture
     if (!open) return;
 
     restoreFocusRef.current = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // Freeze the page behind the sheet. `overflow: hidden` alone is ignored by
+    // iOS Safari and some Android browsers (the page scrolls under the sheet),
+    // so the body is pinned with position: fixed and the scroll spot restored on close.
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const previous = { overflow: body.style.overflow, position: body.style.position, top: body.style.top, width: body.style.width };
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
 
     panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 
@@ -65,7 +73,11 @@ export function BottomSheet({ open, onClose, title, children, className, texture
 
     document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = previousOverflow;
+      body.style.overflow = previous.overflow;
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.width = previous.width;
+      window.scrollTo(0, scrollY);
       document.removeEventListener("keydown", onKeyDown);
       restoreFocusRef.current?.focus?.();
     };

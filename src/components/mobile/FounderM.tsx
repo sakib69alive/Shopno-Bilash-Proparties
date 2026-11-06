@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, ChevronDown, Quote } from "lucide-react";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { Media } from "@/components/ui/Media";
+import { useHorizontalSwipe } from "@/hooks/useHorizontalSwipe";
 import { cn } from "@/lib/utils";
 import { TEAM_GROUPS, TEAM_GROUP_LABEL, teamGroupOf, type TeamGroup, type TeamMember } from "@/types/teamMember";
 import type { FounderProfile } from "@/types/founderProfile";
@@ -66,13 +67,27 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
   ];
   const active = grouped.find((g) => g.group === tab);
 
+  // Swipe left/right anywhere on the page to move between the tabs (Founder → Partners → Shareholders → Our team),
+  // and keep the chosen tab visible in the scrolling tab rail.
+  useHorizontalSwipe((direction) => {
+    const order = tabs.map((t) => t.value);
+    const next = order[order.indexOf(tab) + direction];
+    if (next) setTab(next);
+  }, tabs.length > 1);
+  useEffect(() => {
+    // Scroll only the rail itself (scrollIntoView could also jump the page back up to it).
+    const el = document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+    const rail = el?.parentElement;
+    if (el && rail) rail.scrollTo({ left: el.offsetLeft - (rail.clientWidth - el.offsetWidth) / 2, behavior: "smooth" });
+  }, [tab]);
+
   const bioLong = profile.bio.length > 420;
 
   return (
     <div className="flex flex-col gap-8 pt-3 pb-8 lg:hidden">
       {/* ---------- Portrait hero ---------- */}
       <section className="px-[var(--gutter)]">
-        <div className="bg-fg relative flex min-h-[28rem] flex-col justify-end overflow-hidden rounded-[var(--m-radius-hero)] p-6 text-white">
+        <div className="bg-fg relative flex min-h-[34rem] flex-col justify-end overflow-hidden rounded-[var(--m-radius-hero)] p-7 pb-8 text-white shadow-[0_24px_48px_-16px_rgb(var(--shadow-color)/0.45)]">
           {profile.photo ? (
             <>
               <Media
@@ -83,7 +98,13 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
                 containerClassName="absolute inset-0"
                 className="object-top"
               />
-              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              {/* Warm vignette: a deep fade at the foot for the name, a soft shade at the top for the badge,
+                  and a faint champagne cast so the grey studio backdrop reads rich rather than flat. */}
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 via-28% to-transparent to-55%"
+              />
+              <div aria-hidden className="bg-premium/10 absolute inset-0 mix-blend-soft-light" />
             </>
           ) : (
             <>
@@ -97,14 +118,22 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
               </span>
             </>
           )}
-          <span className="absolute top-5 left-5 rounded-full bg-white/18 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase">
+          {/* Fine inner frame, like a mounted print. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-2.5 rounded-[calc(var(--m-radius-hero)-10px)] border border-white/20"
+          />
+          <span className="border-premium/50 absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border bg-black/25 px-3.5 py-1.5 text-[10.5px] font-semibold tracking-[0.2em] uppercase backdrop-blur-sm">
+            <span aria-hidden className="bg-premium size-1.5 rounded-full" />
             The person behind the vision
           </span>
           <div className="relative">
-            <span aria-hidden className="bg-premium mb-4 block h-px w-12" />
-            <h1 className="font-serif-display text-[2.75rem] leading-[1.02] text-balance">{profile.name}</h1>
-            <p className="mt-3 text-xs font-semibold tracking-[0.2em] text-white/70 uppercase">{profile.title}</p>
-            {profile.intro && <p className="mt-4 text-[1rem] leading-relaxed text-white/80">{profile.intro}</p>}
+            <span aria-hidden className="bg-premium mb-5 block h-px w-14" />
+            <h1 className="font-serif-display text-[2.6rem] [text-shadow:0_2px_14px_rgb(0_0_0/0.45)] leading-[1.04] tracking-[-0.01em] text-balance">{profile.name}</h1>
+            <p className="text-premium mt-3.5 text-[11px] font-semibold tracking-[0.26em] uppercase">{profile.title}</p>
+            {profile.intro && (
+              <p className="mt-5 border-t border-white/15 pt-5 text-[0.9375rem] leading-relaxed text-white/75">{profile.intro}</p>
+            )}
           </div>
         </div>
       </section>

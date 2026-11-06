@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { ProjectGalleryField } from "./ProjectGalleryField";
+import { MediaLinksFields } from "@/components/admin/shared/MediaLinksFields";
 import { AdminImageField } from "@/components/admin/settings/AdminImageField";
 import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
 import type { ProjectContentFormState } from "@/features/projectContent/actions";
@@ -185,6 +186,17 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         placeholder="A sentence about the neighborhood."
       />
 
+      <Input
+        label="Google Maps link (optional)"
+        name="mapUrl"
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        defaultValue={project?.mapUrl}
+        placeholder="Paste the Google Maps link, the embed code, or 23.7925, 90.4078"
+        helperText="In Google Maps open the project's exact spot → Share → “Embed a map” → Copy HTML (best: shows a live map), or just copy the link or coordinates. Leave empty to keep the plain placeholder."
+      />
+
       <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
         <legend className="text-label px-1.5">Photos</legend>
         <AdminImageField
@@ -195,6 +207,8 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         />
         <ProjectGalleryField images={project?.gallery ?? []} />
       </fieldset>
+
+      <MediaLinksFields subject="project" videoUrl={project?.videoUrl} tour360Url={project?.tour360Url} />
 
       <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
         <legend className="text-label px-1.5">Building blueprints (optional)</legend>

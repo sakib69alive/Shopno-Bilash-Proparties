@@ -7,6 +7,7 @@ import { UnitAvailabilityPrice } from "@/components/property/UnitAvailabilityPri
 import { UnitDescription } from "@/components/property/UnitDescription";
 import { UnitEnquiryCTA } from "@/components/property/UnitEnquiryCTA";
 import { UnitFloorPlan } from "@/components/property/UnitFloorPlan";
+import { MediaExperience } from "@/components/media/MediaExperience";
 import { UnitHero } from "@/components/property/UnitHero";
 import { UnitProjectContext } from "@/components/property/UnitProjectContext";
 import { UnitRelated } from "@/components/property/UnitRelated";
@@ -57,6 +58,7 @@ export default async function UnitDetailsPage({ params }: PageProps) {
       <UnitDetailM unit={unit} project={project} otherUnits={otherUnits} />
       <DesktopOnly>
       <UnitHero unit={unit} project={project} />
+      <MediaExperience videoUrl={unit.videoUrl} tour360Url={unit.tour360Url} title={unit.name} />
       <Gallery images={unit.gallery} label="Interior & Exterior" />
       <UnitSpecifications unit={unit} />
       <UnitFloorPlan unit={unit} />

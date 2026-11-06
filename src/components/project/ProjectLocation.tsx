@@ -1,15 +1,13 @@
-import { MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
+import { LocationMap } from "@/components/ui/LocationMap";
 import { Reveal } from "@/components/ui/Reveal";
 import { Section } from "@/components/ui/Section";
 import type { Project } from "@/content/projects";
 
 /**
- * No map service is wired into this codebase yet, so rather than fake one,
- * this renders a clean placeholder panel in its place — structured so a
- * real map component can drop in later without touching the surrounding
- * layout. Nearby places only render if the project actually lists them
- * (never invented distances, per the brief).
+ * Shows the project's Google Map when its `mapUrl` is set (see `lib/mapLinks.ts`),
+ * otherwise a clean placeholder. Nearby places only render if the project
+ * actually lists them (never invented distances, per the brief).
  */
 export function ProjectLocation({ project }: { project: Project }) {
   return (
@@ -46,14 +44,9 @@ export function ProjectLocation({ project }: { project: Project }) {
             )}
           </div>
 
-          {/* Map placeholder — swap for a real map integration; structure stays the same. */}
+          {/* Real map when the project has a map link (Admin → Website → Projects), else the placeholder. */}
           <Reveal delay={120}>
-            <div className="border-border-strong bg-surface-raised flex aspect-[4/3] w-full items-center justify-center rounded-md border sm:aspect-[16/9]">
-              <div className="text-center">
-                <MapPin aria-hidden className="text-fg-subtle mx-auto mb-3 size-6" />
-                <p className="text-label text-fg-subtle uppercase">{project.location}</p>
-              </div>
-            </div>
+            <LocationMap mapUrl={project.mapUrl} label={project.location} />
           </Reveal>
         </div>
       </Container>

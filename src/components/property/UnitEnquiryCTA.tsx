@@ -15,7 +15,7 @@ export function UnitEnquiryCTA({ unit, projectName }: { unit: Unit; projectName:
   const query = `project=${encodeURIComponent(projectName)}&unit=${encodeURIComponent(unit.name)}&type=property`;
 
   return (
-    <section id="enquire" data-header-tone="dark" className="bg-fg relative overflow-hidden py-24 text-center sm:py-32 lg:py-40">
+    <section id="enquire" data-header-tone="dark" className="bg-fg relative overflow-hidden max-lg:mx-3 max-lg:rounded-[var(--m-radius-hero)] py-24 text-center sm:py-32 lg:py-40">
       <SkylineBars className="pointer-events-none absolute inset-0 hidden h-full w-full text-white/10 sm:block" />
       <Container className="relative">
         <Reveal as="p" className="text-label mb-6 text-white/60 uppercase">

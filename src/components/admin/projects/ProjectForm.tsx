@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Media } from "@/components/ui/Media";
+import { StructureBuilder } from "@/components/admin/projects/StructureBuilder";
 import { UnitTypesField } from "@/components/admin/projects/UnitTypesField";
 import type { Project } from "@/types/project";
 import type { ProjectFormState } from "@/features/projects/actions";
@@ -120,12 +121,16 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
           placeholder="e.g. Rooftop Garden, Generator Backup"
         />
       </div>
-      <div className="grid gap-5 sm:grid-cols-4">
-        <Input label="Buildings" name="buildingCount" type="number" defaultValue={project?.buildingCount} />
-        <Input label="Floors" name="floorCount" type="number" defaultValue={project?.floorCount} />
-        <Input label="Units" name="unitCount" type="number" defaultValue={project?.unitCount} />
-        <Input label="Parking Spaces" name="parkingCount" type="number" defaultValue={project?.parkingCount} />
-      </div>
+      {project ? (
+        <div className="grid gap-5 sm:grid-cols-4">
+          <Input label="Buildings" name="buildingCount" type="number" defaultValue={project.buildingCount} />
+          <Input label="Floors" name="floorCount" type="number" defaultValue={project.floorCount} />
+          <Input label="Units" name="unitCount" type="number" defaultValue={project.unitCount} />
+          <Input label="Parking Spaces" name="parkingCount" type="number" defaultValue={project.parkingCount} />
+        </div>
+      ) : (
+        <StructureBuilder />
+      )}
 
       <h2 className="text-label text-fg-subtle -mb-2 uppercase">Timeline</h2>
       <div className="grid gap-5 sm:grid-cols-4">

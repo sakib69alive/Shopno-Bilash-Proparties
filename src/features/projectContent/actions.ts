@@ -8,6 +8,8 @@ import { hasPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectContentRepository, slugifyProjectName } from "@/features/projectContent/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { checkMapField } from "@/lib/mapLinks";
+import { checkTourField, checkVideoField } from "@/lib/mediaLinks";
 import { PLACEHOLDER_IMAGE, resolveCoverAndGallery } from "@/lib/photoUploads";
 import {
   BLUEPRINT_KIND_LABEL,
@@ -128,6 +130,13 @@ function parseProjectFields(formData: FormData) {
   const floorsRaw = String(formData.get("floors") ?? "");
   const featured = formData.get("featured") === "on";
 
+  const video = checkVideoField(String(formData.get("videoUrl") ?? ""));
+  if (video.error) return { error: video.error } as const;
+  const tour = checkTourField(String(formData.get("tour360Url") ?? ""));
+  if (tour.error) return { error: tour.error } as const;
+  const map = checkMapField(String(formData.get("mapUrl") ?? ""));
+  if (map.error) return { error: map.error } as const;
+
   if (!name || name.length < 3) return { error: "Name must be at least 3 characters." } as const;
   if (!location) return { error: "Enter a display location, e.g. \"Gulshan 2, Dhaka\"." } as const;
   if (!city) return { error: "Enter a city." } as const;
@@ -148,6 +157,7 @@ function parseProjectFields(formData: FormData) {
       buildingType: buildingType || undefined,
       area: area || undefined,
       locationDescription: locationDescription || undefined,
+      mapUrl: map.value,
       features: toList(featuresRaw),
       unitTypes: toList(unitTypesRaw),
       completionYear: toOptionalNumber(completionYearRaw),
@@ -158,6 +168,8 @@ function parseProjectFields(formData: FormData) {
       totalParkingBike: toOptionalNumber(totalParkingBikeRaw),
       availableParkingBike: toOptionalNumber(availableParkingBikeRaw),
       floors: toOptionalNumber(floorsRaw),
+      videoUrl: video.value,
+      tour360Url: tour.value,
       featured,
     },
   } as const;
@@ -199,6 +211,7 @@ export async function createProjectContent(
     buildingType: fields.buildingType,
     area: fields.area,
     locationDescription: fields.locationDescription,
+    mapUrl: fields.mapUrl,
     features: fields.features.length > 0 ? fields.features : undefined,
     unitTypes: fields.unitTypes.length > 0 ? fields.unitTypes : undefined,
     completionYear: fields.completionYear,
@@ -209,8 +222,10 @@ export async function createProjectContent(
     totalParkingBike: fields.totalParkingBike,
     availableParkingBike: fields.availableParkingBike,
     floors: fields.floors,
+    videoUrl: fields.videoUrl,
+    tour360Url: fields.tour360Url,
     featured: fields.featured,
-    coverImage: photoResult.coverImage ?? { src: PLACEHOLDER_IMAGE, alt: fields.name },
+    coverImage: photoResult.coverImage ??{ src: PLACEHOLDER_IMAGE, alt: fields.name },
     gallery: photoResult.gallery?.length ? photoResult.gallery : [{ src: PLACEHOLDER_IMAGE, alt: fields.name }],
     blueprints: blueprintResult.blueprints,
   });
@@ -268,6 +283,7 @@ export async function updateProjectContent(
     buildingType: fields.buildingType,
     area: fields.area,
     locationDescription: fields.locationDescription,
+    mapUrl: fields.mapUrl,
     features: fields.features.length > 0 ? fields.features : undefined,
     unitTypes: fields.unitTypes.length > 0 ? fields.unitTypes : undefined,
     completionYear: fields.completionYear,
@@ -278,6 +294,8 @@ export async function updateProjectContent(
     totalParkingBike: fields.totalParkingBike,
     availableParkingBike: fields.availableParkingBike,
     floors: fields.floors,
+    videoUrl: fields.videoUrl,
+    tour360Url: fields.tour360Url,
     featured: fields.featured,
     blueprints: blueprintResult.blueprints,
     coverImage: photoResult.coverImage,

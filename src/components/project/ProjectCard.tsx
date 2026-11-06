@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Media } from "@/components/ui/Media";
+import { MediaBadges, hasMedia } from "@/components/media/MediaBadges";
 import { cn } from "@/lib/utils";
 import type { Project } from "@/content/projects";
 import { ProjectStatus } from "./ProjectStatus";
@@ -62,6 +63,7 @@ export function ProjectCard({
           radius="md"
           src={project.coverImage.src}
           alt={project.coverImage.alt}
+          caption={hasMedia(project) ? <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} /> : undefined}
           className={HOVER_ZOOM}
           sizes="100vw"
         />
@@ -94,6 +96,7 @@ export function ProjectCard({
             radius="md"
             src={project.coverImage.src}
             alt={project.coverImage.alt}
+            caption={hasMedia(project) ? <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} /> : undefined}
             className={HOVER_ZOOM}
             sizes="(min-width: 1024px) 58vw, 100vw"
           />
@@ -141,6 +144,7 @@ export function ProjectCard({
               radius="sm"
               src={project.coverImage.src}
               alt={project.coverImage.alt}
+              caption={hasMedia(project) ? <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} /> : undefined}
               className={HOVER_ZOOM}
               sizes="112px"
             />
@@ -166,6 +170,7 @@ export function ProjectCard({
           radius="md"
           src={project.coverImage.src}
           alt={project.coverImage.alt}
+          caption={hasMedia(project) ? <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} /> : undefined}
           className={HOVER_ZOOM}
           sizes="(min-width: 640px) 50vw, 100vw"
         />

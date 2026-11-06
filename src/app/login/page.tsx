@@ -22,16 +22,29 @@ const NAV_WORDS = ["Projects", "Properties", "Customers", "Finance"];
  * flips light) paired with a plain sign-in panel. Collapses to the form
  * alone below `lg`.
  */
-export default async function LoginPage() {
+const LINK_PROBLEMS: Record<string, string> = {
+  invalid: "This link isn't working any more. Please ask Shopno Bilash Properties to send you a new one.",
+  inactive: "Your access is currently switched off. Please contact Shopno Bilash Properties.",
+};
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ link?: string }> }) {
   const user = await getCurrentUser();
   if (user) {
     redirect(STAFF_ROLES.includes(user.role) ? "/admin" : getPortalHomePath(user.role));
   }
 
+  const { link } = await searchParams;
+  const linkProblem = link ? LINK_PROBLEMS[link] : undefined;
+
   const settings = await companySettingsRepository.findById(COMPANY_SETTINGS_ID);
 
   return (
     <main className="flex min-h-screen">
+      {linkProblem && (
+        <div role="alert" className="bg-error-soft text-error text-body-sm fixed inset-x-0 top-0 z-50 px-4 py-3 text-center font-medium shadow-sm">
+          {linkProblem}
+        </div>
+      )}
       <LoginM
         logo={<Logo src={settings?.logo} mode={settings?.logoMode} displayName={settings?.displayName} className="h-16 sm:h-16" />}
       />

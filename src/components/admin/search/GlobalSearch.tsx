@@ -25,7 +25,7 @@ export interface GlobalSearchProps {
   user: User;
 }
 
-const QUICK_ACTIONS: { label: string; href: string; icon: typeof Plus; permission?: Parameters<typeof hasPermission>[1] }[] = [
+export const QUICK_ACTIONS: { label: string; href: string; icon: typeof Plus; permission?: Parameters<typeof hasPermission>[1] }[] = [
   { label: "Add Project", href: "/admin/projects/new", icon: Building2, permission: "project.create" },
   { label: "Add Unit", href: "/admin/properties/new", icon: Plus, permission: "unit.manage" },
   { label: "Add Owner", href: "/admin/customers/new", icon: UserPlus, permission: "customer.create" },

@@ -95,7 +95,8 @@ export function StatementStudio({
   sales,
   projects,
   allowFinance,
-  letterhead,
+  letterhead: baseLetterhead,
+  addresses = [],
   payments,
   initial,
 }: {
@@ -104,12 +105,47 @@ export function StatementStudio({
   projects: StudioOption[];
   allowFinance: boolean;
   letterhead: StudioLetterhead;
+  /** Addresses the admin can print at the top of the letterhead: the company office first, then each project's address. */
+  addresses?: { value: string; label: string; address: string }[];
   payments: StudioPaymentOption[];
   /** Opened from a payment's page: start on its receipt. */
-  initial?: { kind?: Kind; paymentId?: string };
+  initial?: { kind?: Kind; paymentId?: string; customerId?: string };
 }) {
   const initialPayment = payments.find((p) => p.value === initial?.paymentId);
-  const [kind, setKind] = useState<Kind>(initialPayment && allowFinance ? "receipt" : "announcement");
+  // Opened from a client's page: start on that client's statement (money is shown, so finance access only).
+  const initialCustomer = allowFinance && !initialPayment ? customers.find((c) => c.value === initial?.customerId) : undefined;
+  const [kind, setKind] = useState<Kind>(initialPayment && allowFinance ? "receipt" : initialCustomer ? "client" : "announcement");
+  // Which address and phone number are printed at the top-right of the letterhead. Starts from Settings; the choice is remembered on this computer.
+  const [addressChoice, setAddressChoice] = useState<string>("company");
+  const [customAddress, setCustomAddress] = useState("");
+  const [phone, setPhone] = useState(baseLetterhead.phone ?? "");
+  /* eslint-disable react-hooks/set-state-in-effect -- reads the remembered choice once after mount; it can't be read during render without a server/browser mismatch */
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("sbp.letterhead") ?? "null") as { choice?: string; custom?: string; phone?: string } | null;
+      if (!saved) return;
+      if (saved.choice && (saved.choice === "company" || saved.choice === "custom" || addresses.some((a) => a.value === saved.choice))) setAddressChoice(saved.choice);
+      if (typeof saved.custom === "string") setCustomAddress(saved.custom);
+      if (typeof saved.phone === "string") setPhone(saved.phone);
+    } catch {
+      // No saved choice (private window / blocked storage) — the defaults above are fine.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("sbp.letterhead", JSON.stringify({ choice: addressChoice, custom: customAddress, phone }));
+    } catch {
+      // Remembering is a convenience only.
+    }
+  }, [addressChoice, customAddress, phone]);
+  const letterhead = useMemo<StudioLetterhead>(() => {
+    const chosen =
+      addressChoice === "custom" ? customAddress.trim() : addressChoice === "company" ? baseLetterhead.address : addresses.find((a) => a.value === addressChoice)?.address;
+    return { ...baseLetterhead, address: chosen || undefined, phone: phone.trim() || undefined };
+  }, [baseLetterhead, addresses, addressChoice, customAddress, phone]);
+
   const [error, setError] = useState<string | null>(null);
   const [serverDoc, setServerDoc] = useState<{ key: string; doc: StudioDocument; letterhead: StudioLetterhead } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -122,7 +158,7 @@ export function StatementStudio({
   const [signer, setSigner] = useState("");
   const [signerRole, setSignerRole] = useState("");
   const [noticeDate, setNoticeDate] = useState(todayIso());
-  const [customerId, setCustomerId] = useState(initialPayment?.customerId ?? "");
+  const [customerId, setCustomerId] = useState(initialPayment?.customerId ?? initialCustomer?.value ?? "");
   const [paymentId, setPaymentId] = useState(initialPayment?.value ?? "");
   const [saleId, setSaleId] = useState("");
   const [projectId, setProjectId] = useState("");
@@ -197,7 +233,7 @@ export function StatementStudio({
   }, [inputKey]);
 
   const base = useMemo<{ doc: StudioDocument; letterhead: StudioLetterhead } | null>(
-    () => (kind === "announcement" ? (noticeDoc ? { doc: noticeDoc, letterhead } : null) : serverDoc && serverDoc.key === inputKey ? serverDoc : null),
+    () => (kind === "announcement" ? (noticeDoc ? { doc: noticeDoc, letterhead } : null) : serverDoc && serverDoc.key === inputKey ? { doc: serverDoc.doc, letterhead } : null),
     [kind, noticeDoc, letterhead, serverDoc, inputKey],
   );
   // The signature is optional: only added when the button is on.
@@ -376,6 +412,24 @@ export function StatementStudio({
               <span className="text-caption text-fg-subtle leading-snug">{hint}</span>
             </button>
           ))}
+        </div>
+
+        <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
+          <p className="text-label text-fg-subtle uppercase">Address &amp; phone on the letterhead</p>
+          <Select
+            label="Which address?"
+            value={addressChoice}
+            onChange={(e) => setAddressChoice(e.target.value)}
+            options={[
+              { value: "company", label: baseLetterhead.address ? `Company office — ${baseLetterhead.address}` : "Company office (not set in Settings yet)" },
+              ...addresses.map((a) => ({ value: a.value, label: a.label })),
+              { value: "custom", label: "Another address — type it" },
+            ]}
+          />
+          {addressChoice === "custom" && (
+            <Input label="Address" value={customAddress} onChange={(e) => setCustomAddress(e.target.value)} placeholder="e.g. House 14, Road 3, Dhanmondi, Dhaka" />
+          )}
+          <Input label="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +880 1712-345678" helperText="Printed under the address. Your choice is remembered on this computer. To change the default for everyone, edit Settings → Company." />
         </div>
 
         <div className="border-border bg-surface-raised flex flex-col gap-4 rounded-xl border p-4">

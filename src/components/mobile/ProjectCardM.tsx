@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Media } from "@/components/ui/Media";
+import { MediaBadges } from "@/components/media/MediaBadges";
 import { PROJECT_STATUS_LABEL, PROJECT_STATUS_TONE, type Project } from "@/content/projects";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export function ProjectCardM({ project, layout = "full", className }: ProjectCar
         <span className={cn("size-1.5 rounded-full", PROJECT_STATUS_TONE[project.status])} aria-hidden />
         {PROJECT_STATUS_LABEL[project.status]}
       </span>
+      <MediaBadges videoUrl={project.videoUrl} tour360Url={project.tour360Url} className="absolute top-3 right-3" />
       <div className="absolute inset-x-0 bottom-0 p-4 text-white">
         <h3 className="font-display text-xl leading-tight font-semibold">{project.name}</h3>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-white/85">

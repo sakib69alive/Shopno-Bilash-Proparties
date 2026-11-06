@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -28,9 +29,21 @@ export interface AdminSidebarNavProps {
 export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incompleteHrefs }: AdminSidebarNavProps) {
   const pathname = usePathname();
   const incompleteSet = new Set(incompleteHrefs);
+  const navRef = useRef<HTMLElement>(null);
+
+  // The item for the page you are on, including its sub-pages (a budget's own page keeps "Budgets & cost splits" lit). The longest matching address wins, so "/admin/sales/payments" is chosen over "/admin/sales" and "/admin" never lights up for everything.
+  const activeHref = groups
+    .flatMap((g) => g.items)
+    .filter((item) => !item.comingSoon && (pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href + "/"))))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+
+  // Keep the highlighted item visible when the menu is longer than the screen.
+  useEffect(() => {
+    navRef.current?.querySelector<HTMLElement>("a[aria-current=page]")?.scrollIntoView({ block: "nearest" });
+  }, [pathname]);
 
   return (
-    <nav aria-label="Admin" className="flex flex-col gap-6">
+    <nav ref={navRef} aria-label="Admin" className="flex flex-col gap-6">
       {groups.map((group) => {
         const visibleItems = group.items.filter((item) => !item.permission || hasPermission(role, item.permission));
         if (visibleItems.length === 0) return null;
@@ -43,7 +56,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
             <ul className="flex flex-col gap-0.5">
               {visibleItems.map((item) => {
                 const Icon = item.icon;
-                const active = pathname === item.href;
+                const active = item.href === activeHref;
                 const incomplete = !item.comingSoon && incompleteSet.has(item.href);
 
                 const row = (
@@ -55,7 +68,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
                   >
                     {Icon && (
                       <span className="relative shrink-0">
-                        <Icon aria-hidden className={cn("size-4.5", active && "text-accent")} />
+                        <Icon aria-hidden className={cn("size-4.5", active && "text-accent-foreground")} />
                         {incomplete && (
                           <span
                             aria-hidden
@@ -65,7 +78,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
                       </span>
                     )}
                     {!collapsed && (
-                      <span className={cn("text-nav flex-1 truncate", active && "font-medium")}>{item.label}</span>
+                      <span className={cn("text-nav flex-1 truncate", active && "font-semibold")}>{item.label}</span>
                     )}
                     {!collapsed && incomplete && (
                       <span
@@ -109,7 +122,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
                     className={cn(
                       "block rounded-r-md border-l-2 transition-colors",
                       active
-                        ? "border-accent bg-accent-soft text-accent"
+                        ? "border-accent-strong bg-accent text-accent-foreground shadow-sm"
                         : "text-fg-muted hover:bg-surface hover:text-fg border-transparent",
                     )}
                   >

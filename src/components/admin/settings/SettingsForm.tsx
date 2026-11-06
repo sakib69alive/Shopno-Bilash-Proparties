@@ -149,6 +149,14 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         <Input label="Landowner Partnerships" name="impactLandownerPartnerships" type="number" defaultValue={settings.impactLandownerPartnerships} />
       </div>
 
+      <h2 className="text-label text-fg-subtle mt-2 uppercase">Client app look</h2>
+      <Switch
+        name="portalHomeBlueBlueprint"
+        label="Blue blueprint on the client's Home screen"
+        description="On (default): the floor plan on the client's Home screen sits on the blue blueprint sheet. Off: it sits on the classic cream paper instead. This only changes the client app's Home screen — the My Property pages always show the blue sheet, and nothing on the public website or in Admin changes."
+        defaultChecked={settings.portalHomeBlueBlueprint ?? true}
+      />
+
       <h2 className="text-label text-fg-subtle mt-2 uppercase">Security</h2>
       <Switch
         name="requireOwnerPin"

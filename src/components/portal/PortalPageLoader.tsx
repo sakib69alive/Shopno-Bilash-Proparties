@@ -90,6 +90,10 @@ export function PortalPageLoader({ navItems }: { navItems: OwnerNavItem[] }) {
       const destPath = url.pathname;
       const destHref = destPath + url.search + url.hash;
 
+      // Start fetching the destination now so the network work overlaps the
+      // curtain animation (timings unchanged — the page is just ready sooner).
+      router.prefetch(destPath);
+
       setTitle(getOwnerPortalRouteTitle(destPath, navItems));
       setFill(0);
       setCurtainActive(false);

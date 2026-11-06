@@ -9,6 +9,7 @@ import { recordAuditEvent } from "@/features/audit/repository";
 import { unitContentRepository, slugifyUnitName } from "@/features/unitContent/repository";
 import { projectContentRepository } from "@/features/projectContent/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { checkTourField, checkVideoField } from "@/lib/mediaLinks";
 import { PLACEHOLDER_IMAGE, getUploadedFile, resolveCoverAndGallery } from "@/lib/photoUploads";
 import type { ImageAsset } from "@/content/shared";
 import type { UnitStatus } from "@/content/units";
@@ -84,6 +85,11 @@ async function parseUnitFields(formData: FormData) {
   const balconiesRaw = String(formData.get("balconies") ?? "");
   const parkingRaw = String(formData.get("parking") ?? "");
 
+  const video = checkVideoField(String(formData.get("videoUrl") ?? ""));
+  if (video.error) return { error: video.error } as const;
+  const tour = checkTourField(String(formData.get("tour360Url") ?? ""));
+  if (tour.error) return { error: tour.error } as const;
+
   if (!name || name.length < 2) return { error: "Name must be at least 2 characters." } as const;
   const projects = await projectContentRepository.list();
   if (!projectSlug || !projects.some((p) => p.slug === projectSlug)) return { error: "Choose a valid project." } as const;
@@ -110,6 +116,8 @@ async function parseUnitFields(formData: FormData) {
       bathrooms: toOptionalNumber(bathroomsRaw),
       balconies: toOptionalNumber(balconiesRaw),
       parking: toOptionalNumber(parkingRaw),
+      videoUrl: video.value,
+      tour360Url: tour.value,
     },
   } as const;
 }
@@ -150,6 +158,8 @@ export async function createUnitContent(
     bathrooms: fields.bathrooms,
     balconies: fields.balconies,
     parking: fields.parking,
+    videoUrl: fields.videoUrl,
+    tour360Url: fields.tour360Url,
     facing: fields.facing,
     price: fields.price,
     shortDescription: fields.shortDescription,
@@ -207,6 +217,8 @@ export async function updateUnitContent(
     bathrooms: fields.bathrooms,
     balconies: fields.balconies,
     parking: fields.parking,
+    videoUrl: fields.videoUrl,
+    tour360Url: fields.tour360Url,
     facing: fields.facing,
     price: fields.price,
     shortDescription: fields.shortDescription,

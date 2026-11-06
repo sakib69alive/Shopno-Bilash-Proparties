@@ -672,3 +672,36 @@
   }
 }
 
+
+/* ---- Owner portal home: moving between flats — the old one is replaced by the new one sliding/fading in from the side swiped toward ---- */
+@layer utilities {
+  @keyframes flat-swap {
+    from {
+      opacity: 0;
+      transform: translateX(var(--swap-from, 24px));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  .flat-swap {
+    animation: flat-swap 340ms var(--ease-standard) both;
+  }
+}
+
+/* ---- Admin on phones & tablets (below `lg`) ----
+   iOS Safari zooms the whole page whenever a field under 16px is focused, which
+   makes every admin form jump around — so fields are 16px here. Desktop is untouched. */
+@media (max-width: 1023.98px) {
+  [data-admin-shell] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  [data-admin-shell] select,
+  [data-admin-shell] textarea {
+    font-size: 16px;
+  }
+  /* Two KPI cards sit side by side on a phone, so the big numbers step down a size. */
+  [data-admin-shell] .text-stat-admin {
+    font-size: 1.25rem;
+  }
+}
+

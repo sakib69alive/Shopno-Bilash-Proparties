@@ -6,6 +6,10 @@ import { Header } from "@/components/navigation/Header";
 import { HeaderVariantProvider } from "@/components/navigation/HeaderVariantContext";
 import { SitePageLoader } from "@/components/navigation/SitePageLoader";
 import { PageContent } from "@/components/navigation/PageContent";
+import { DesktopOnly } from "@/components/mobile/DesktopOnly";
+import { MobileChromeProvider } from "@/components/mobile/MobileChrome";
+import { MobileFooter } from "@/components/mobile/MobileFooter";
+import { MobileShell } from "@/components/mobile/MobileShell";
 import { SearchOverlay } from "@/components/search/SearchOverlay";
 import { SearchProvider } from "@/components/search/SearchContext";
 import { getSiteNavDataAsync } from "@/lib/siteNavDataAsync";
@@ -34,14 +38,24 @@ export default async function RootNotFound() {
   return (
     <HeaderVariantProvider>
       <SearchProvider>
-        <Header settings={settings} />
-        <PageContent>
-          <NotFoundContent />
-        </PageContent>
-        <Footer settings={settings} />
-        <SitePageLoader routeTitleData={{ projects, units, newsArticles }} />
-        <SearchOverlay searchData={{ projects, listings, newsArticles }} />
-        <CookieNotice />
+        <MobileChromeProvider
+          contact={{ phone: settings?.phone, whatsapp: settings?.whatsapp, displayName: settings?.displayName }}
+        >
+          <DesktopOnly>
+            <Header settings={settings} />
+          </DesktopOnly>
+          <MobileShell settings={settings} routeTitleData={{ projects, units, newsArticles }} />
+          <PageContent>
+            <NotFoundContent />
+          </PageContent>
+          <DesktopOnly>
+            <Footer settings={settings} />
+          </DesktopOnly>
+          <MobileFooter settings={settings} />
+          <SitePageLoader routeTitleData={{ projects, units, newsArticles }} />
+          <SearchOverlay searchData={{ projects, listings, newsArticles }} />
+          <CookieNotice />
+        </MobileChromeProvider>
       </SearchProvider>
     </HeaderVariantProvider>
   );

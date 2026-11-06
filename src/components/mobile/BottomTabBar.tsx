@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Building2, Heart, House, KeyRound, Menu, type LucideIcon } from "lucide-react";
+import { useHorizontalSwipe } from "@/hooks/useHorizontalSwipe";
 import { useSavedIds } from "@/hooks/useSavedProperties";
 import { cn } from "@/lib/utils";
 import { useMobileChrome } from "./MobileChrome";
@@ -33,8 +34,8 @@ const ITEM =
   "relative flex h-12 min-w-0 touch-manipulation items-center justify-center gap-2 overflow-hidden rounded-full text-sm font-semibold [-webkit-tap-highlight-color:transparent] transition-[flex-grow,background-color,color] duration-200 ease-[var(--ease-standard)]";
 
 /**
- * Phone bottom navigation — a solid floating capsule (no backdrop-filter: it
- * is costly on low-end Android) held just above the screen edge. Only the
+ * Phone bottom navigation — a solid floating capsule held just above the screen
+ * edge (smoked frosted glass on every public page). Only the
  * current tab shows its label, inside a green capsule that grows into place
  * as you move between tabs. Steps aside while a detail page's `ActionBar`
  * is mounted.
@@ -50,6 +51,29 @@ export function BottomTabBar() {
   const pending = tapped && tapped.from === pathname ? tapped.key : null;
   const current = menuOpen ? "menu" : (pending ?? activeKey(pathname));
 
+  // The bar is smoked-glass on every public page (see `glassStyle`): a dark translucent tint + blur, so white icons
+  // stay readable whether it floats over a photo or over the ivory page background.
+
+  // Swipe left/right to step to the next/previous tab (Home ↔ Projects ↔ Properties ↔ Saved). Shared rules
+  // (what it ignores, how forgiving it is) live in `useHorizontalSwipe`.
+  const router = useRouter();
+  const hrefs = TABS.filter((t) => t.href).map((t) => t.href as string);
+  const currentIndex = hrefs.findIndex((h) => TABS.find((t) => t.href === h)?.key === activeKey(pathname));
+  useHorizontalSwipe((direction) => {
+    const next = hrefs[currentIndex + direction];
+    if (!next) return;
+    setTapped({ key: TABS.find((t) => t.href === next)!.key, from: pathname });
+    router.push(next);
+  }, currentIndex >= 0 && !menuOpen);
+  const glassStyle: CSSProperties = {
+    backgroundColor: "rgb(28 27 25 / 0.42)",
+    backdropFilter: "blur(22px) saturate(180%)",
+    WebkitBackdropFilter: "blur(22px) saturate(180%)",
+    borderColor: "rgb(255 255 255 / 0.28)",
+    transition:
+      "background-color 500ms var(--ease-standard), backdrop-filter 500ms var(--ease-standard), -webkit-backdrop-filter 500ms var(--ease-standard), border-color 500ms var(--ease-standard), box-shadow 500ms var(--ease-standard)",
+  };
+
   return (
     <nav
       aria-label="Main"
@@ -60,7 +84,10 @@ export function BottomTabBar() {
         hasActionBar && "invisible",
       )}
     >
-      <div className="bg-bg border-border flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]">
+      <div
+        style={glassStyle}
+        className="flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]"
+      >
         {TABS.map(({ key, label, icon: Icon, href }) => {
           const active = key === current;
           const content = (
@@ -85,7 +112,9 @@ export function BottomTabBar() {
           );
           const cls = cn(
             ITEM,
-            active ? "bg-accent text-accent-foreground grow-[2.4] px-3" : "text-fg-muted grow active:bg-surface",
+            active
+              ? "bg-accent/90 text-accent-foreground grow-[2.4] px-3"
+              : "text-white grow active:bg-white/15",
           );
 
           return href ? (

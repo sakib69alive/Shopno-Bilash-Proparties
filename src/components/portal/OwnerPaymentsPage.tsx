@@ -11,6 +11,7 @@ import { PaymentHistoryList } from "@/components/portal/PaymentHistoryList";
 import { AdjustmentsList } from "@/components/portal/AdjustmentsList";
 import { formatBDT } from "@/lib/format";
 import { SalePaymentsSection } from "@/components/portal/SalePaymentsSection";
+import { FlatsPaymentsOverview } from "@/components/portal/FlatsPaymentsOverview";
 import {
   getOwnerUnits,
   getOwnerProjects,
@@ -117,10 +118,14 @@ export async function OwnerPaymentsPage({ base }: { base: string }) {
         />
       ) : (
         <>
+          <FlatsPaymentsOverview summaries={saleSummaries} />
           <SalePaymentsSection summaries={saleSummaries} />
 
           {hasAnyPlan && (
             <>
+              {saleSummaries.length > 0 && (
+                <p className="text-label text-fg-subtle -mb-4 uppercase">Shared construction costs</p>
+              )}
               <Reveal>
                 <PaymentProgressHero
                   totalPayable={outstanding.totalPayable}

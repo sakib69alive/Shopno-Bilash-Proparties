@@ -75,7 +75,7 @@ export function Modal({ open, onClose, children, title, description, size = "md"
   }, [open, onClose]);
 
   return (
-    <div aria-hidden={!open} inert={!open || undefined} className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div aria-hidden={!open} inert={!open || undefined} className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-4">
       <div
         aria-hidden
         onClick={onClose}
@@ -91,13 +91,14 @@ export function Modal({ open, onClose, children, title, description, size = "md"
         aria-modal="true"
         aria-label={title}
         className={cn(
-          "bg-bg relative flex w-full max-h-[85vh] flex-col rounded-lg shadow-float transition-[transform,opacity] duration-200 ease-[var(--ease-standard)]",
+          // Phone: slides up as a bottom sheet with rounded top corners; from `sm` up it is the centered dialog it always was.
+          "bg-bg relative flex w-full max-h-[90svh] flex-col rounded-t-[var(--m-radius-hero)] shadow-float transition-[transform,opacity] duration-200 ease-[var(--ease-standard)] sm:max-h-[85vh] sm:rounded-lg",
           SIZE_CLASSES[size],
           open ? "translate-y-0 scale-100 opacity-100" : "translate-y-2 scale-[0.98] opacity-0",
         )}
       >
         {(title || description) && (
-          <div className="border-border flex items-start justify-between gap-4 border-b px-6 py-5">
+          <div className="border-border flex items-start justify-between gap-4 border-b px-5 py-4 sm:px-6 sm:py-5">
             <div>
               {title && <p className="text-h4">{title}</p>}
               {description && <p className="text-body-sm text-fg-muted mt-1">{description}</p>}
@@ -105,7 +106,7 @@ export function Modal({ open, onClose, children, title, description, size = "md"
             <IconButton icon={X} label="Close" onClick={onClose} className="shrink-0" />
           </div>
         )}
-        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-5">{children}</div>
       </div>
     </div>
   );

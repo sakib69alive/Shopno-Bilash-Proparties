@@ -33,6 +33,9 @@ import type { Document } from "@/types/document";
 
 export interface OwnerDashboardProps {
   base: string;
+  /** Floor plans on the blue blueprint sheet (admin setting) instead of the classic cream paper. */
+  blueBlueprint?: boolean;
+  contactPhone?: string;
   firstName: string;
   units: Unit[];
   primaryProject: Project | null;
@@ -104,6 +107,8 @@ function StatPanel({
  */
 export function OwnerDashboard({
   base,
+  blueBlueprint = false,
+  contactPhone,
   firstName,
   units,
   primaryProject,
@@ -136,6 +141,8 @@ export function OwnerDashboard({
     <>
       <OwnerHomeM
         base={base}
+        blueBlueprint={blueBlueprint}
+        contactPhone={contactPhone}
         firstName={firstName}
         units={units.map((u) => ({
           id: u.id,
@@ -148,6 +155,7 @@ export function OwnerDashboard({
           ).src,
           bedrooms: u.bedrooms,
           bathrooms: u.bathrooms,
+          balconies: u.balconies,
           sizeSqft: u.sizeSqft,
           facing: u.facing,
         }))}
@@ -180,6 +188,33 @@ export function OwnerDashboard({
               };
             })()
       }
+        paymentFlats={
+          saleSummaries.length === 0
+            ? undefined
+            : units.map((u) => {
+                const sale = saleSummaries.find((x) => x.unitId === u.id);
+                const visible = sale?.visible ? sale : undefined;
+                const last = visible?.payments.slice().sort((a, b) => b.date.localeCompare(a.date))[0];
+                const open = visible?.installments.filter((i) => i.status !== "paid").sort((a, b) => a.dueDate.localeCompare(b.dueDate)) ?? [];
+                return {
+                  id: u.id,
+                  unitNumber: u.unitNumber,
+                  projectName: projects.find((p) => p.id === u.projectId)?.name ?? "Your property",
+                  hidden: sale ? !sale.visible : false,
+                  pay: visible
+                    ? {
+                        price: visible.price,
+                        paid: visible.paid,
+                        remaining: visible.remaining,
+                        percent: visible.price > 0 ? Math.min(100, Math.round((visible.paid / visible.price) * 100)) : 0,
+                        last: last ? { amount: last.amount, date: last.date, method: last.method } : null,
+                        next: open[0] ? { amount: open[0].amount, dueDate: open[0].dueDate, status: open[0].status, left: open.length } : null,
+                        installments: visible.installments,
+                      }
+                    : null,
+                };
+              })
+        }
       documentCount={documents.length}
         unreadCount={unreadCount}
       />

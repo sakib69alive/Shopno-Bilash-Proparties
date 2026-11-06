@@ -2,7 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { Search, Pencil, Trash2, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Pencil, Trash2, Plus, Wallet } from "lucide-react";
+import { PortalLinkControls } from "@/components/admin/users/PortalLinkControls";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { StatusBadge } from "@/components/ui/Badge";
@@ -15,8 +17,14 @@ import type { Customer, CustomerStatus } from "@/types/customer";
 
 export interface CustomersAdminExplorerProps {
   customers: Customer[];
+  /** Customer id → names of the projects they have a sale in. */
+  projectsByCustomer?: Record<string, string[]>;
   canCreate: boolean;
   canDelete: boolean;
+  /** Shows the "copy login link / send on WhatsApp" buttons on every row. */
+  canManagePortalAccess?: boolean;
+  /** Shows the "record a payment" shortcut on every row. */
+  canRecordPayment?: boolean;
 }
 
 const STATUS_OPTIONS: { value: CustomerStatus | "all"; label: string }[] = [
@@ -31,9 +39,10 @@ const STATUS_OPTIONS: { value: CustomerStatus | "all"; label: string }[] = [
  * `customerRepository` — plain substring match over name/phone/email
  * (Admin Step 7 §8), never an "AI" search.
  */
-export function CustomersAdminExplorer({ customers, canCreate, canDelete }: CustomersAdminExplorerProps) {
+export function CustomersAdminExplorer({ customers, projectsByCustomer = {}, canCreate, canDelete, canManagePortalAccess, canRecordPayment }: CustomersAdminExplorerProps) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<CustomerStatus | "all">("all");
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   function handleDelete(customer: Customer) {
@@ -51,20 +60,26 @@ export function CustomersAdminExplorer({ customers, canCreate, canDelete }: Cust
         !query ||
         c.name.toLowerCase().includes(query) ||
         c.phone.toLowerCase().includes(query) ||
-        c.email.toLowerCase().includes(query);
+        c.email.toLowerCase().includes(query) ||
+        (projectsByCustomer[c.id] ?? []).some((p) => p.toLowerCase().includes(query));
       return matchesStatus && matchesSearch;
     });
-  }, [customers, search, status]);
+  }, [customers, projectsByCustomer, search, status]);
 
   const columns: DataTableColumn<Customer>[] = [
     {
       key: "name",
       header: "Name",
       render: (c) => (
-        <Link href={`/admin/customers/${c.id}`} className="text-fg hover:text-accent transition-colors">
+        <Link href={`/admin/customers/${c.id}`} className="text-fg hover:text-accent font-medium underline-offset-4 transition-colors hover:underline">
           {c.name}
         </Link>
       ),
+    },
+    {
+      key: "project",
+      header: "Project",
+      render: (c) => (projectsByCustomer[c.id] ?? []).join(", ") || <span className="text-fg-subtle">—</span>,
     },
     { key: "phone", header: "Phone", render: (c) => c.phone },
     { key: "email", header: "Email", render: (c) => c.email },
@@ -75,7 +90,13 @@ export function CustomersAdminExplorer({ customers, canCreate, canDelete }: Cust
       header: "",
       align: "right",
       render: (c) => (
-        <span className="flex items-center justify-end gap-1">
+        <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          {canManagePortalAccess && <PortalLinkControls variant="compact" ownerType="customer" ownerId={c.id} ownerName={c.name} phone={c.phone} />}
+          {canRecordPayment && (
+            <Link href={`/admin/sales/payments/new?customerId=${c.id}`}>
+              <IconButton icon={Wallet} label={`Record a payment from ${c.name}`} size="sm" />
+            </Link>
+          )}
           <Link href={`/admin/customers/${c.id}/edit`}>
             <IconButton icon={Pencil} label={`Edit ${c.name}`} size="sm" />
           </Link>
@@ -120,7 +141,7 @@ export function CustomersAdminExplorer({ customers, canCreate, canDelete }: Cust
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, phone, or email"
+            placeholder="Search by name, phone, email or project"
             aria-label="Search customers"
             className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface-raised pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
@@ -143,6 +164,7 @@ export function CustomersAdminExplorer({ customers, canCreate, canDelete }: Cust
         columns={columns}
         data={filtered}
         getRowId={(c) => c.id}
+        onRowClick={(c) => router.push(`/admin/customers/${c.id}`)}
         emptyTitle="No customers match your search"
         emptyDescription="Try a different name, phone, email, or status filter."
       />

@@ -90,6 +90,11 @@ export function SitePageLoader({ routeTitleData }: { routeTitleData: RouteTitleD
       const destPath = url.pathname;
       const destHref = destPath + url.search + url.hash;
 
+      // Start fetching the destination now, so the network work overlaps the
+      // curtain animation instead of only beginning after it (the animation
+      // and its timing are unchanged — the page is just ready sooner).
+      router.prefetch(destPath);
+
       setTitle(getRouteTitle(destPath, routeTitleData, url.hash));
       setFill(0);
       setCurtainActive(false);

@@ -18,6 +18,7 @@ import { assignUnitToShareholding, unassignUnitFromShareholding } from "@/featur
 import { projectRepository } from "@/features/projects/repository";
 import { unitRepository } from "@/features/units/repository";
 import { userRepository } from "@/features/users/repository";
+import { toPortalAccessView } from "@/features/users/portalAccessView";
 import { filterToVisibleProjects, getVisibleProjectIds } from "@/lib/projectScope";
 
 interface PageProps {
@@ -132,7 +133,9 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
             <PortalAccessPanel
               ownerType="shareholder"
               ownerId={shareholder.id}
-              linkedUser={linkedUser ? { id: linkedUser.id, status: linkedUser.status } : null}
+              ownerName={shareholder.name}
+              phone={shareholder.phone}
+              linkedUser={toPortalAccessView(linkedUser)}
             />
           )}
         </div>

@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { resolveOwnerContext } from "@/lib/ownerContext";
 import { logoutAction } from "@/lib/auth/actions";
+import { findOwnerCredentialsByPhone } from "@/lib/auth/ownerCredentials";
 import { getOwnerUnits } from "@/features/ownerPortal/queries";
 import { projectRepository } from "@/features/projects/repository";
 import { ChangePinForm } from "@/components/portal/ChangePinForm";
@@ -18,6 +19,9 @@ const STATUS_LABEL: Record<UserStatus, string> = {
 export async function OwnerProfilePage() {
   const user = await getCurrentUser();
   if (!user) return null;
+
+  // Clients who come in through their personal link never set a PIN — nothing to change for them.
+  const hasPin = user.phone ? Boolean(await findOwnerCredentialsByPhone(user.phone)) : false;
 
   const context = resolveOwnerContext(user);
   const units = context ? await getOwnerUnits(context.ownerType, context.ownerId) : [];
@@ -45,7 +49,7 @@ export async function OwnerProfilePage() {
             <p className="text-caption text-fg-subtle uppercase">Phone</p>
             <p className="text-body text-fg mt-0.5 font-medium">{user.phone ?? "—"}</p>
           </div>
-          {user.email && (
+          {user.email && !user.email.endsWith("@portal.invalid") && (
             <div>
               <p className="text-caption text-fg-subtle uppercase">Email</p>
               <p className="text-body text-fg mt-0.5 font-medium">{user.email}</p>
@@ -77,10 +81,12 @@ export async function OwnerProfilePage() {
         )}
       </div>
 
-      <div className="border-border bg-surface-raised rounded-2xl border p-6 shadow-sm sm:p-7">
-        <p className="text-h4 text-fg mb-4">Security</p>
-        <ChangePinForm />
-      </div>
+      {hasPin && (
+        <div className="border-border bg-surface-raised rounded-2xl border p-6 shadow-sm sm:p-7">
+          <p className="text-h4 text-fg mb-4">Security</p>
+          <ChangePinForm />
+        </div>
+      )}
 
       <form action={logoutAction}>
         <Button type="submit" variant="outline" className="w-full sm:w-auto">

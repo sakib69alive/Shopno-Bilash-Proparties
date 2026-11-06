@@ -8,6 +8,8 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { buttonVariants } from "@/components/ui/Button";
 import { CustomersAdminExplorer } from "@/components/admin/customers/CustomersAdminExplorer";
 import { customerRepository } from "@/features/customers/repository";
+import { saleRepository } from "@/features/sales/repository";
+import { projectRepository } from "@/features/projects/repository";
 
 /**
  * Admin Step 7 — Customer Management Foundation. Reads `customerRepository`
@@ -26,8 +28,19 @@ export default async function AdminCustomersPage() {
   }
 
   let customers;
+  const projectsByCustomer: Record<string, string[]> = {};
   try {
     customers = await customerRepository.list();
+    const [sales, projects] = await Promise.all([saleRepository.list(), projectRepository.list()]);
+    const projectNames = new Map(projects.map((p) => [p.id, p.name]));
+    // A client belongs to every project they have a (non-cancelled) sale in.
+    for (const sale of sales) {
+      if (sale.status === "cancelled") continue;
+      const name = projectNames.get(sale.projectId);
+      if (!name) continue;
+      const list = projectsByCustomer[sale.customerId] ?? (projectsByCustomer[sale.customerId] = []);
+      if (!list.includes(name)) list.push(name);
+    }
   } catch {
     return (
       <div className="p-4 sm:p-6">
@@ -38,6 +51,8 @@ export default async function AdminCustomersPage() {
 
   const canCreate = hasPermission(user.role, "customer.create");
   const canDelete = hasPermission(user.role, "customer.delete");
+  const canManagePortalAccess = hasPermission(user.role, "users.manage");
+  const canRecordPayment = hasPermission(user.role, "finance.manage");
 
   return (
     <>
@@ -54,7 +69,14 @@ export default async function AdminCustomersPage() {
         }
       />
       <div className="p-4 sm:p-6">
-        <CustomersAdminExplorer customers={customers} canCreate={canCreate} canDelete={canDelete} />
+        <CustomersAdminExplorer
+          customers={customers}
+          canCreate={canCreate}
+          canDelete={canDelete}
+          projectsByCustomer={projectsByCustomer}
+          canManagePortalAccess={canManagePortalAccess}
+          canRecordPayment={canRecordPayment}
+        />
       </div>
     </>
   );

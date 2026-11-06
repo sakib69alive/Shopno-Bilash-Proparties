@@ -76,4 +76,11 @@ export interface CompanySettings extends AuditFields {
    * turn back off in one click if it ever looks like a problem.
    */
   showPublicSignInLink?: boolean;
+  /**
+   * The client app's Home screen: show each flat's floor plan on the blue
+   * blueprint sheet (`true`, and the default when unset) or on the classic
+   * cream paper (`false` — the admin switches back in Settings). Only
+   * affects the client portal Home; the My Property pages always use the blue sheet.
+   */
+  portalHomeBlueBlueprint?: boolean;
 }

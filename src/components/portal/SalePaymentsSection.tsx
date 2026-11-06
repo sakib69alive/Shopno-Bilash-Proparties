@@ -27,11 +27,11 @@ export function SalePaymentsSection({ summaries }: { summaries: OwnerSaleSummary
       {summaries.map((sale) => {
         if (!sale.visible) {
           return (
-            <Reveal key={sale.saleId}>
+            <Reveal key={sale.saleId} id={`flat-${sale.unitId}`} className="scroll-mt-24">
               <p className="text-label text-fg-subtle uppercase">
                 {sale.projectName} · Unit {sale.unitNumber}
               </p>
-              <h2 className="text-h2 text-fg mt-1">Your flat payments</h2>
+              <h2 className="text-h2 text-fg mt-1">{summaries.length > 1 ? `Unit ${sale.unitNumber} payments` : "Your flat payments"}</h2>
               <div className="border-border bg-surface mt-5 flex items-start gap-3 rounded-2xl border p-5">
                 <Lock aria-hidden className="text-fg-subtle mt-0.5 size-4 shrink-0" />
                 <p className="text-body-sm text-fg-muted">
@@ -53,25 +53,25 @@ export function SalePaymentsSection({ summaries }: { summaries: OwnerSaleSummary
           .reverse();
 
         return (
-          <Reveal key={sale.saleId}>
+          <Reveal key={sale.saleId} id={`flat-${sale.unitId}`} className="scroll-mt-24">
             <p className="text-label text-fg-subtle uppercase">
               {sale.projectName} · Unit {sale.unitNumber}
             </p>
-            <h2 className="text-h2 text-fg mt-1">Your flat payments</h2>
+            <h2 className="text-h2 text-fg mt-1">{summaries.length > 1 ? `Unit ${sale.unitNumber} payments` : "Your flat payments"}</h2>
 
             <div className="border-border bg-surface-raised mt-5 rounded-2xl border p-5 shadow-sm">
-              <div className="grid grid-cols-3 gap-3">
-                <div>
+              <div className="flex flex-col gap-3 sm:grid sm:grid-cols-3">
+                <div className="flex items-baseline justify-between gap-3 sm:block">
                   <p className="text-caption text-fg-subtle uppercase">Flat price</p>
-                  <p className="text-h4 text-fg mt-1">{formatBDT(sale.price)}</p>
+                  <p className="text-h4 text-fg sm:mt-1">{formatBDT(sale.price)}</p>
                 </div>
-                <div>
+                <div className="flex items-baseline justify-between gap-3 sm:block">
                   <p className="text-caption text-fg-subtle uppercase">Paid</p>
-                  <p className="text-h4 text-fg mt-1">{formatBDT(sale.paid)}</p>
+                  <p className="text-h4 text-fg sm:mt-1">{formatBDT(sale.paid)}</p>
                 </div>
-                <div>
+                <div className="flex items-baseline justify-between gap-3 sm:block">
                   <p className="text-caption text-fg-subtle uppercase">Remaining</p>
-                  <p className="text-h4 text-fg mt-1">{formatBDT(sale.remaining)}</p>
+                  <p className="text-h4 text-fg sm:mt-1">{formatBDT(sale.remaining)}</p>
                 </div>
               </div>
               <div className="bg-border mt-5 h-1.5 overflow-hidden rounded-full">

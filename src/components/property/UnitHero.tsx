@@ -49,7 +49,6 @@ export function UnitHero({ unit, project }: { unit: Unit; project: Project }) {
           ratio="hero"
           src={unit.coverImage.src}
           alt={unit.coverImage.alt}
-          priority
           sizes="100vw"
         />
       </Reveal>

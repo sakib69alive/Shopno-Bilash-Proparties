@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BedDouble, Building2, Ruler, Bath } from "lucide-react";
+import { ArrowRight, BedDouble, Building2, Ruler, Bath, DoorOpen } from "lucide-react";
 import { Media } from "@/components/ui/Media";
+import { MediaBadges } from "@/components/media/MediaBadges";
 import { SaveButton } from "@/components/saved/SaveButton";
 import { UNIT_STATUS_LABEL, UNIT_STATUS_TONE } from "@/content/units";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,7 @@ export function PropertyCard({ listing, index }: { listing: PropertyListing; ind
   const specs = [
     listing.bedrooms !== undefined ? { icon: BedDouble, label: `${listing.bedrooms} Bed` } : null,
     listing.bathrooms !== undefined ? { icon: Bath, label: `${listing.bathrooms} Bath` } : null,
+    listing.balconies !== undefined && listing.balconies > 0 ? { icon: DoorOpen, label: `${listing.balconies} Balcon${listing.balconies === 1 ? "y" : "ies"}` } : null,
     listing.area ? { icon: Ruler, label: listing.area } : null,
     listing.floor !== undefined ? { icon: Building2, label: `Floor ${listing.floor}` } : null,
   ].filter((s): s is { icon: typeof BedDouble; label: string } => s !== null);
@@ -43,10 +45,11 @@ export function PropertyCard({ listing, index }: { listing: PropertyListing; ind
             className={HOVER_ZOOM}
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
-          <span className="bg-bg/90 text-fg absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase backdrop-blur-sm">
+          <span className="bg-bg/90 text-fg absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
             <span className={cn("size-1.5 rounded-full", UNIT_STATUS_TONE[listing.status])} aria-hidden />
             {UNIT_STATUS_LABEL[listing.status]}
           </span>
+          <MediaBadges videoUrl={listing.videoUrl} tour360Url={listing.tour360Url} className="absolute bottom-4 left-4" />
         </div>
 
           <div className="mt-5 flex flex-1 flex-col">

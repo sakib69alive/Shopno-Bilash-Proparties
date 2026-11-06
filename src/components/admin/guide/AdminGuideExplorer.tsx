@@ -54,7 +54,7 @@ export function AdminGuideExplorer({ groups }: AdminGuideExplorerProps) {
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-      <aside className="border-border bg-surface-raised top-20 flex shrink-0 flex-col gap-4 rounded-lg border p-4 print:hidden lg:sticky lg:w-64">
+      <aside className="border-border bg-surface-raised top-20 flex shrink-0 flex-col gap-4 rounded-lg border p-4 print:hidden lg:sticky lg:max-h-[calc(100vh-6rem)] lg:w-64">
         <div className="relative">
           <Search aria-hidden className="text-fg-subtle pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <input
@@ -66,7 +66,7 @@ export function AdminGuideExplorer({ groups }: AdminGuideExplorerProps) {
             className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
         </div>
-        <nav aria-label="Guide sections" className="thin-scrollbar flex max-h-[70vh] flex-col gap-4 overflow-y-auto">
+        <nav aria-label="Guide sections" className="thin-scrollbar flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
           {groups.map((group) => (
             <div key={group.label}>
               <a href={`#${slugify(group.label)}`} className="text-label text-fg hover:text-accent uppercase transition-colors">

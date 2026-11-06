@@ -11,7 +11,6 @@ import { DashboardSection } from "@/components/admin/dashboard/DashboardSection"
 import { KpiCard } from "@/components/admin/dashboard/KpiCard";
 import { GenerateContributionsButton } from "@/components/admin/finance/GenerateContributionsButton";
 import { AllocationPreviewTable } from "@/components/admin/finance/AllocationPreviewTable";
-import { EditableAllocationPreviewTable } from "@/components/admin/finance/EditableAllocationPreviewTable";
 import { GoalInstallmentPlanForm } from "@/components/admin/finance/GoalInstallmentPlanForm";
 import { TierAllocationBuilder } from "@/components/admin/finance/TierAllocationBuilder";
 import { GoalLifecycleActions } from "@/components/admin/finance/GoalLifecycleActions";
@@ -38,6 +37,8 @@ import { recordContributionPayment, previewContributions, type AllocationPreview
 import { projectRepository } from "@/features/projects/repository";
 import { unitRepository } from "@/features/units/repository";
 import { parkingRepository } from "@/features/parking/repository";
+import { floorRepository } from "@/features/floors/repository";
+import { SplitPlanner } from "@/components/admin/finance/SplitPlanner";
 import { landownerAllocationRepository } from "@/features/landowners/repository";
 import { resolveDocumentOwner } from "@/features/documents/resolveOwner";
 import { canAccessProject } from "@/lib/projectScope";
@@ -45,6 +46,7 @@ import type { GoalInstallment, UnitTier } from "@/types/finance/costAllocation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ notified?: string; withoutApp?: string }>;
 }
 
 function Fact({ label, value }: { label: string; value: string }) {
@@ -56,8 +58,9 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function CostAllocationDetailPage({ params }: PageProps) {
+export default async function CostAllocationDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { notified, withoutApp } = await searchParams;
 
   const user = await getCurrentUser();
   if (!user || !hasPermission(user.role, "finance.view")) {
@@ -81,7 +84,7 @@ export default async function CostAllocationDetailPage({ params }: PageProps) {
   let project,
     contributionRows: ContributionRow[],
     draftPreview: AllocationPreview | { error: string } | null = null,
-    editableUnits: { id: string; unitNumber: string; ownerLabel: string; ownerHref?: string; sizeSqft: number }[] = [],
+    editableUnits: { id: string; unitNumber: string; ownerLabel: string; ownerHref?: string; sizeSqft: number; floorLabel: string; floorNumber: number }[] = [],
     editableParking: { id: string; parkingNumber: string; ownerLabel: string }[] = [],
     tiers: UnitTier[] = [],
     installments: GoalInstallment[] | undefined,
@@ -156,6 +159,7 @@ export default async function CostAllocationDetailPage({ params }: PageProps) {
       const method = resolveAllocationMethod(allocation.allocationMethod);
       if (method === "fixed-unit" || method === "custom" || method === "tier") {
         const projectUnits = allUnits.filter((u) => u.projectId === allocation.projectId);
+        const floorsById = new Map((await floorRepository.list()).map((fl) => [fl.id, fl]));
         const resolvedUnits = await Promise.all(
           projectUnits.map(async (unit) => {
             let ownerLabel = "Unowned (excluded)";
@@ -176,12 +180,12 @@ export default async function CostAllocationDetailPage({ params }: PageProps) {
                 ownerHref = resolved.href;
               }
             }
-            return { id: unit.id, unitNumber: unit.unitNumber, ownerLabel, ownerHref, sizeSqft: unit.sizeSqft, owned: ownerLabel !== "Unowned (excluded)" };
+            return { id: unit.id, unitNumber: unit.unitNumber, ownerLabel, ownerHref, sizeSqft: unit.sizeSqft, floorLabel: floorsById.get(unit.floorId)?.label ?? "Flats", floorNumber: floorsById.get(unit.floorId)?.floorNumber ?? 0, owned: ownerLabel !== "Unowned (excluded)" };
           }),
         );
         editableUnits = resolvedUnits.filter((u) => u.owned);
 
-        if (allocation.includeParkingInAllocation) {
+        if (allocation.includeParkingInAllocation || method === "custom" || method === "fixed-unit") {
           const projectParking = (await parkingRepository.list()).filter((p) => p.projectId === allocation.projectId && p.ownerType && p.ownerId);
           editableParking = await Promise.all(
             projectParking.map(async (p) => ({
@@ -233,7 +237,25 @@ export default async function CostAllocationDetailPage({ params }: PageProps) {
       />
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
-        <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
+        {notified !== undefined && (
+          <div role="status" className="bg-success-soft text-success text-body-sm rounded-md px-4 py-3 lg:col-span-2">
+            Saved. {notified} client{notified === "1" ? "" : "s"} {notified === "1" ? "has" : "have"} been sent the amount and due date in their app.
+            {Number(withoutApp) > 0 &&
+              ` ${withoutApp} owner${withoutApp === "1" ? " has" : "s have"} no app access yet — copy their link from the Customers list and send it on WhatsApp.`}
+          </div>
+        )}
+        {allocation.status === "draft" && (
+          <div className="bg-accent-soft text-fg rounded-xl px-4 py-4 lg:col-span-2">
+            <p className="text-body">
+              Collect <span className="font-semibold">{formatBDT(allocation.totalAmount.amount)}</span> for{" "}
+              <span className="font-semibold">{allocation.title}</span>
+              {project ? <> in {project.name}</> : null}, to be paid by{" "}
+              <span className="font-semibold">{formatDate(new Date(allocation.dueDate))}</span>.
+            </p>
+            <p className="text-body-sm text-fg-muted mt-1">Choose who pays below. Nothing is sent to anyone until you press Save.</p>
+          </div>
+        )}
+        <section className={"border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4" + (allocation.status === "draft" ? " hidden" : "")}>
           <h2 className="text-label text-fg-subtle uppercase">Allocation</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -273,17 +295,18 @@ export default async function CostAllocationDetailPage({ params }: PageProps) {
         </section>
 
         {allocation.status === "draft" && canManage && method !== "tier" && (
-          <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-            <h2 className="text-label text-fg-subtle uppercase">Generate Contributions</h2>
+          <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4 lg:col-span-2">
+            <h2 className="text-label text-fg-subtle uppercase">Who pays how much?</h2>
             {method === "fixed-unit" || method === "custom" ? (
               editableUnits.length === 0 ? (
                 <p className="text-body-sm text-fg-subtle">No owned units found in this project — nothing to allocate.</p>
               ) : (
-                <EditableAllocationPreviewTable
+                <SplitPlanner
                   costAllocationId={allocation.id}
                   totalAmount={allocation.totalAmount.amount}
                   units={editableUnits}
                   parkingSpaces={editableParking}
+                  defaultBasis={method === "fixed-unit" ? "equal" : "sqft"}
                 />
               )
             ) : draftPreview && "error" in draftPreview ? (

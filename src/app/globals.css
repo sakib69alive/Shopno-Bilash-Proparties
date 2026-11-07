@@ -705,3 +705,34 @@
   }
 }
 
+
+/* ---- Room plan (press "Kitchen" → the room lifts off the plan) ---- */
+@layer utilities {
+  @keyframes room-lift {
+    from {
+      transform: scale(1);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1.065);
+      opacity: 1;
+    }
+  }
+  /* `both` keeps the lifted end state; the origin is set per room (its centre) inline. */
+  .room-lift {
+    animation: room-lift 420ms cubic-bezier(0.2, 0.9, 0.25, 1.12) both;
+  }
+  @keyframes room-tag-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, calc(var(--tag-y, -34px) + 10px)) scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, var(--tag-y, -34px)) scale(1);
+    }
+  }
+  .room-tag-in {
+    animation: room-tag-in 300ms 120ms var(--ease-standard) both;
+  }
+}

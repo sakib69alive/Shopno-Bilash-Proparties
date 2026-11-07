@@ -18,6 +18,7 @@ const STATUS_NOTE: Record<ProjectStatus, string> = {
   ongoing: "Construction is actively underway.",
   "near-completion": "Nearing completion and handover.",
   completed: "Construction is complete and handed over.",
+  "handed-over": "Completed and handed over to its owners.",
   "sold-out": "Fully sold — no units remain available.",
 };
 

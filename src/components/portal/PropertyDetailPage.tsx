@@ -21,6 +21,7 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { Reveal } from "@/components/ui/Reveal";
 import { PropertyGallery } from "@/components/portal/PropertyGallery";
 import { PropertyFloorPlan } from "@/components/portal/PropertyFloorPlan";
+import { RememberHomeFlat } from "@/components/portal/RememberHomeFlat";
 import { PropertySwitcher } from "@/components/portal/PropertySwitcher";
 import { PropertyTimeline, type PropertyMilestone } from "@/components/portal/PropertyTimeline";
 import { AnimatedNumber } from "@/components/portal/AnimatedNumber";
@@ -40,7 +41,8 @@ import {
 } from "@/features/ownerPortal/queries";
 import type { OwnerType } from "@/types/finance/costAllocation";
 import type { Project } from "@/types/project";
-import { resolveUnitPlan } from "@/lib/unitPlan";
+import { resolveUnitPlan, resolveParkingPlan } from "@/lib/unitPlan";
+import { BlueprintPaper } from "@/components/portal/BlueprintPaper";
 
 function Feature({ icon: Icon, label, value }: { icon: typeof Ruler; label: string; value: string }) {
   return (
@@ -121,6 +123,8 @@ export async function PropertyDetailPage({ base, unitId }: { base: string; unitI
   if (!detail) notFound();
 
   const { unit, project, building, floor, parking, ownershipRecord } = detail;
+  const plan = resolveUnitPlan(unit, project, floor?.floorNumber, { forOwner: true });
+  const parkingPlan = resolveParkingPlan(parking, project);
 
   const [allUnits, ownerProjects, outstanding, nextInstallment, constructionProgress, documents] = await Promise.all([
     getOwnerUnits(context.ownerType, context.ownerId),
@@ -178,7 +182,8 @@ export async function PropertyDetailPage({ base, unitId }: { base: string; unitI
         </Reveal>
       </div>
 
-      <PropertyFloorPlan src={resolveUnitPlan(unit, project, floor?.floorNumber).src} unitLabel={`Unit ${unit.unitNumber}`} />
+      <RememberHomeFlat unitId={unit.id} />
+      <PropertyFloorPlan src={plan.src} highlight={plan.highlight} unitLabel={`Unit ${unit.unitNumber}`} />
 
       <Reveal>
         <SectionHeading>Parking</SectionHeading>
@@ -197,6 +202,10 @@ export async function PropertyDetailPage({ base, unitId }: { base: string; unitI
               );
             })}
           </div>
+        )}
+        {parkingPlan && (
+          // The parking level with this owner's own bays lit and the other bays dimmed.
+          <BlueprintPaper src={parkingPlan.src} alt="Parking plan" highlight={parkingPlan.highlight} className="border-border mt-4 aspect-[4/3] rounded-2xl border" />
         )}
       </Reveal>
 

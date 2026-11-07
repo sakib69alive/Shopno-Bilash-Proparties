@@ -28,6 +28,9 @@ export interface CompanySettings extends AuditFields {
   website?: string;
   /** Free text since hours don't fit one fixed format (e.g. "Sat–Thu, 10am–7pm (GMT+6)") — shown in the footer's Contact column next to phone/email/address, hidden entirely while unset. */
   hours?: string;
+  /** Headings on the Clients page: the big title at the top, and the extra section at the foot. */
+  clientsOverviewTitle?: string;
+  clientsExtraTitle?: string;
   /**
    * Social profile URLs — each optional and independent, same "never
    * invent, never show a dead/placeholder link" rule as `socialLinks` in
@@ -77,10 +80,9 @@ export interface CompanySettings extends AuditFields {
    */
   showPublicSignInLink?: boolean;
   /**
-   * The client app's Home screen: show each flat's floor plan on the blue
-   * blueprint sheet (`true`, and the default when unset) or on the classic
-   * cream paper (`false` — the admin switches back in Settings). Only
-   * affects the client portal Home; the My Property pages always use the blue sheet.
+   * How floor plans look on the client app's Home screen by default: on blue with a drafting grid (`"grid"`, also the
+   * default when unset) or plain blue (`"blue"`) or classic cream (`"cream"`). A client can override it for themselves in
+   * Profile → Appearance (`User.portalLook`). Only affects the client Home screen.
    */
-  portalHomeBlueBlueprint?: boolean;
+  portalHomeLook?: "cream" | "blue" | "grid";
 }

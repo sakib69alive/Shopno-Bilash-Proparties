@@ -15,6 +15,8 @@ export interface User extends AuditFields {
   linkedShareholderId?: ID;
   linkedLandownerId?: ID;
   lastLoginAt?: string;
+  /** The last time this person had the app open (refreshed at most every couple of minutes) — what the Clients page shows as "last seen". */
+  lastSeenAt?: string;
   /**
    * Personal no-login link for Customer/Shareholder/Landowner accounts. This
    * is NOT the secret by itself — the link a client receives is
@@ -27,6 +29,8 @@ export interface User extends AuditFields {
   portalLinkCreatedAt?: string;
   portalLinkLastUsedAt?: string;
   portalLinkUseCount?: number;
+  /** The client's own pick for how floor plans look on their Home screen (Profile → Appearance). Unset = follow the company default in Settings. */
+  portalLook?: "cream" | "blue" | "grid";
   /**
    * Projects this staff member can see — ignored for `super_admin`/
    * `managing_director`, who always see everything (see

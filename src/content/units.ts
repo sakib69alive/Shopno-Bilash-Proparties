@@ -6,6 +6,7 @@
  * `/projects/[slug]/units/[unitSlug]` actually needs to resolve.
  */
 import type { ImageAsset } from "./shared";
+import type { FlatOutline, PlanRooms } from "@/lib/planRooms";
 
 export type UnitStatus = "available" | "reserved" | "sold" | "on-hold";
 
@@ -32,6 +33,8 @@ export interface Unit {
   projectSlug: string;
   name: string;
   slug: string;
+  /** Admin-chosen display position within its project (smaller = earlier). Unset = after the ordered ones. See `lib/sortOrder.ts`. */
+  sortOrder?: number;
   unitNumber?: string;
   unitType: string;
   status: UnitStatus;
@@ -49,6 +52,10 @@ export interface Unit {
   coverImage: UnitImage;
   gallery: UnitImage[];
   floorPlan?: UnitImage;
+  /** Rooms marked on the floor plan — buttons that lift a room off the plan on the public unit page. */
+  floorPlanRooms?: PlanRooms;
+  /** When the uploaded floor plan is a WHOLE-FLOOR drawing: where this flat sits on it, so the unit page shows only this flat. */
+  floorPlanFlat?: FlatOutline;
   /** URL to a real downloadable floor-plan file, if one exists — never fabricated. */
   floorPlanFile?: string;
   /** A YouTube / Vimeo / Facebook / .mp4 link. When empty, no video option shows anywhere on the public site. */

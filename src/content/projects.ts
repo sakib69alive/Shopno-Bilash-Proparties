@@ -5,6 +5,7 @@
  * would publish from the internal model onto the public site.
  */
 import type { ImageAsset } from "./shared";
+import type { PlanRooms } from "@/lib/planRooms";
 
 export type ProjectStatus =
   | "upcoming"
@@ -12,6 +13,7 @@ export type ProjectStatus =
   | "ongoing"
   | "near-completion"
   | "completed"
+  | "handed-over"
   | "sold-out";
 
 export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -20,6 +22,7 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
   ongoing: "Ongoing",
   "near-completion": "Near Completion",
   completed: "Completed",
+  "handed-over": "Handed Over",
   "sold-out": "Sold Out",
 };
 
@@ -30,6 +33,7 @@ export const PROJECT_STATUS_TONE: Record<ProjectStatus, string> = {
   ongoing: "bg-accent",
   "near-completion": "bg-accent",
   completed: "bg-success",
+  "handed-over": "bg-success",
   "sold-out": "bg-fg-muted",
 };
 
@@ -51,6 +55,10 @@ export interface ProjectBlueprint {
   /** Shown on the tab and caption — defaults to the kind's label, but a floor plan is often "Typical floor (2–9)". */
   label: string;
   image: ProjectImage;
+  /** Rooms marked on this plan (by hand in Admin, or read from `data-room` markers in the SVG) — they become buttons that lift a room off the plan. */
+  planRooms?: PlanRooms;
+  /** Hidden from the public project page without deleting it (Admin → Settings → Blueprint AI → Control panel). */
+  hidden?: boolean;
 }
 
 export interface NearbyPlace {
@@ -77,6 +85,10 @@ export interface Project {
   gallery: ProjectImage[];
   /** Building blueprints uploaded from Admin → Website → Projects. Each kind is optional; shown garage → floor → roof. */
   blueprints?: ProjectBlueprint[];
+  /** Hide the whole "Building blueprints" section on this project's public page (the plans stay saved). */
+  blueprintsHidden?: boolean;
+  /** Hide the "Enlarge" / full-screen button on this project's public blueprints. */
+  blueprintZoomHidden?: boolean;
   /** A YouTube / Vimeo / Facebook / .mp4 link. When empty, no video option shows anywhere on the public site. */
   videoUrl?: string;
   /** A 360° virtual-tour page link (Matterport, Kuula, …). When empty, no 360° option shows anywhere on the public site. */
@@ -100,6 +112,8 @@ export interface Project {
   mapUrl?: string;
   nearbyPlaces?: NearbyPlace[];
   featured: boolean;
+  /** Admin-chosen display position (smaller = earlier). Unset = after the ordered ones. See `lib/sortOrder.ts`. */
+  sortOrder?: number;
 }
 
 /** Not populated yet — real projects are created by admin via the Website CMS (`/admin/content/projects`), not static data here. */

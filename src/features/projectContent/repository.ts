@@ -1,6 +1,7 @@
 import { createPrismaRepository } from "@/lib/prismaRepository";
 import type { Repository } from "@/lib/repository";
 import type { Project } from "@/content/projects";
+import { sortByOrder } from "@/lib/sortOrder";
 
 /**
  * Website CMS — Projects. Same pattern as CMS Step 1 (News): the public
@@ -29,7 +30,13 @@ import type { Project } from "@/content/projects";
  * `content/projects.ts` directly, kept for any caller that genuinely needs
  * synchronous access — see that file's own doc comment.
  */
-export const projectContentRepository: Repository<Project> = createPrismaRepository<Project>("projectContent");
+const projectContentBase = createPrismaRepository<Project>("projectContent");
+
+/** `list()` returns projects in the admin-chosen order (Admin → Website → Projects → arrows), so every public page that lists them follows it. */
+export const projectContentRepository: Repository<Project> = {
+  ...projectContentBase,
+  list: async () => sortByOrder(await projectContentBase.list()),
+};
 
 export async function findProjectContentBySlug(slug: string): Promise<Project | null> {
   const all = await projectContentRepository.list();

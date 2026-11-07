@@ -4,7 +4,7 @@ import { hasPermission } from "@/lib/permissions";
 import { isOwnerVisible } from "@/lib/documentVisibility";
 import { documentRepository } from "@/features/documents/repository";
 import { PORTAL_ROLES } from "@/config/roles";
-import { readFromBlobStore } from "@/lib/uploadStore";
+import { readFromAnyStore } from "@/lib/uploadStore";
 
 const MIME_TYPES: Record<string, string> = {
   pdf: "application/pdf",
@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   let data: Buffer | null = null;
   try {
     if (isPrivateArea && !(await mayReadDocument(relativePath))) return new NextResponse("Not found", { status: 404 });
-    data = await readFromBlobStore(relativePath);
+    data = await readFromAnyStore(relativePath);
   } catch {
     return new NextResponse("Not found", { status: 404 });
   }

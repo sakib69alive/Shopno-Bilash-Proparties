@@ -31,7 +31,7 @@ export function ProjectCardM({ project, layout = "full", className }: ProjectCar
         containerClassName="absolute inset-0"
         overlay
       />
-      <span className="bg-bg text-fg absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
+      <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/35 text-white px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
         <span className={cn("size-1.5 rounded-full", PROJECT_STATUS_TONE[project.status])} aria-hidden />
         {PROJECT_STATUS_LABEL[project.status]}
       </span>

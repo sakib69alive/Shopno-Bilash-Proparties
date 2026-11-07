@@ -35,4 +35,10 @@ export interface Customer extends AuditFields {
    * in this step.
    */
   unitIds: ID[];
+  /** What the Admin expects this client to pay next, and when — typed on the Clients page, only a plan (it never changes any balance). */
+  plannedPayment?: { amount?: number; date?: string; note?: string; updatedAt: string };
+  /** Shown in the extra section at the foot of the Clients page (e.g. people who invested in several flats) instead of under their project. */
+  inExtraSection?: boolean;
+  /** This client's own colour on the Clients page — a running number handed out once, in order, and never changed (the colour is worked out from it). */
+  tintIndex?: number;
 }

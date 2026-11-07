@@ -67,6 +67,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
           "Publish a project (toggle \"isPublished\") to make it visible on the public website; unpublished projects stay internal-only.",
           "BLUEPRINT TYPES (on the project's Edit page): most buildings repeat a few flat designs. Add each design once — a name, the flat code that repeats on every floor (for example A for 1A, 2A, 3A…) and the blueprint image — and every matching flat shows that blueprint automatically, in the owner's portal too. Change a type's image later and all its flats update at once; nothing is copied onto each flat.",
           "Blueprints can be an image (JPG, PNG, WEBP) or an SVG — either works. Upload only the layout drawing: no background, border or page colour. SVG files are cleaned on upload (anything that could run code is removed; the drawing itself is unchanged).",
+          "FLOOR PLANS TAB (whole-floor plans with each flat marked): upload the architect's WHOLE floor once, say which floors use it (leave Floors empty for the typical plan; use 0 for the ground floor, or a list like 5-8 for floors that differ), then type a flat code (A) and click around that flat's edge on the drawing to mark it — repeat for B, C… Owners then see this plan with their own flat lit up and the other flats dimmed, on their Home card, My Properties list and the flat's page. Flats are matched by the part of the number that repeats (1A, 2A… → A). Leave the lift, stair and corridors unmarked. A flat with its own custom blueprint still shows that instead.",
         ],
       },
       {
@@ -438,6 +439,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         summary: "The public-facing description, photos and highlights for each project — separate from the internal Project record under Development.",
         details: [
           "Add or edit a project here: cover photo, a gallery (also use it for photos of the ongoing building), and three blueprints — Garage, Floor and Roof — each as an image or SVG. On the phone they show as a swipeable set in that order.",
+          "ORDER — use the arrows in the Order column (up, down, or \"to the top\") to choose which projects come first on the public Projects page, the Properties page and the home page. Projects you never move simply follow after the ones you ordered.",
           "LOCATION MAP — the \"Google Maps link\" box puts a real, live map in the project page's Location section, plus an \"Open in Google Maps\" button for directions. In Google Maps open the project's exact spot → Share → \"Embed a map\" → Copy HTML, and paste it into the box (you can also paste a normal Google Maps link, a maps.app.goo.gl share link, or coordinates like 23.7925, 90.4078). Links that cannot be shown inside the page (the short share links) still give the Open button. Leave the box empty and the plain placeholder stays. Nothing here costs money or needs an API key.",
           "The number of available flats is counted from the real unit records of the project (add the flats under Website → Properties, or in bulk). The \\\"Available Units (fallback)\\\" number is used only until the first unit is added. Parking counts are still typed by hand.",
         ],
@@ -448,6 +450,7 @@ export const ADMIN_GUIDE: GuideGroup[] = [
         permission: "content.view",
         summary: "Public-facing property listings shown on the marketing site's Properties page.",
         details: [
+          "ORDER — use the arrows in the Order column (up, down, or \"to the top\") to choose which properties come first on the public site, within each project. The projects themselves are ordered the same way on the Projects page, and the public Properties page follows project order first, then this. Properties you never move simply follow after the ones you ordered.",
           "Each flat has a cover photo, a photo gallery and a floor-plan blueprint (image or SVG, layout drawing only — no background).",
           "Add many flats at once with Bulk add: pick the project, then type the floors and the flats per floor (for example floors 1–8, flats A–D). Every flat is created and can be edited later. The table lets you filter by project, change a flat's status in place and delete several selected flats together.",
         ],
@@ -648,6 +651,18 @@ export const ADMIN_GUIDE: GuideGroup[] = [
           "A backup covers everything: projects, units, sales, payments, expenses, owners, documents, and every piece of public-site content editable from this admin panel (Our Story, Founder Profile, Team & Partners, Company Policy, News, Gallery, Settings, all of it).",
           "Restoring replaces ALL current data with the backup's contents — anything added or changed since that backup was taken is lost, and this can't be undone. It requires typing a confirmation phrase on purpose, so it can never happen by a stray click.",
           "A restored backup's files go back to exactly the same place they came from automatically — there's nothing to sort or place by hand.",
+        ],
+      },
+      {
+        label: "Blueprint AI",
+        href: "/admin/settings/blueprint-ai",
+        permission: "settings.manage",
+        summary: "Master prompts for copying an architect's drawing (picture, PDF or CAD export) into an exact SVG with an AI, or changing one, plus a checker for the SVG it gives back.",
+        details: [
+          "Copy the prompt, give the AI the architect's drawing, save the SVG it returns, compare it with the original, drop it into the checker, then upload it (a flat: Properties → the flat → Edit → Layout image; a whole floor: the project's Floor plans tab).",
+          "The prompt's golden rule is a FAITHFUL COPY: the AI may never change the structure or design — walls, columns, stairs, lift, parking bays, boundary — and must keep every detail, dimension line and every word and number (turned into outline shapes in one filled path, never <text>).",
+          "The rules keep every plan phone-safe: one ink colour, no background, no white paint, real gaps for doors and windows, a few merged paths. A plan that breaks the hard rules (filters, masks, pictures, gradients, too many shapes, over 1 MB) is refused on upload with the reason.",
+          "The second prompt edits an existing plan — fix a label, mirror the layout, simplify a heavy file — and leaves everything else exactly as it is. The checker runs in your browser; nothing is uploaded until you attach the file.",
         ],
       },
     ],

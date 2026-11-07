@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -38,7 +39,7 @@ export function AddFloorDrawer({ open, onClose, buildingId, nextFloorNumber }: A
 
   return (
     <Drawer open={open} onClose={onClose} side="right" title="Add Floor">
-      <form action={formAction} className="flex flex-col gap-5 p-5">
+      <PersistForm state={state} action={formAction} className="flex flex-col gap-5 p-5">
         <input type="hidden" name="buildingId" value={buildingId} />
 
         {state.error && (
@@ -54,7 +55,7 @@ export function AddFloorDrawer({ open, onClose, buildingId, nextFloorNumber }: A
         <div className="flex items-center gap-3">
           <SubmitButton />
         </div>
-      </form>
+      </PersistForm>
     </Drawer>
   );
 }

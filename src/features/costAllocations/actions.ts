@@ -342,6 +342,8 @@ export async function generateContributions(
   costAllocationId: string,
   customUnitAmounts: Record<string, number> = {},
   customParkingAmounts: Record<string, number> = {},
+  /** "Keep everyone else's amount": the budget grows (or shrinks) to the sum of the amounts, and `baseUnitAmounts` is what each flat would have paid without any custom figure. */
+  onTop?: { baseUnitAmounts: Record<string, number> },
 ): Promise<{ error?: string; notified?: number; withoutApp?: number }> {
   const user = await requireFinancePermission();
 
@@ -358,9 +360,11 @@ export async function generateContributions(
     return { error: "No owned units found in this project — nothing to allocate." };
   }
 
+  // Normally the amounts must add up to the budget. With "on top" the budget becomes whatever they add up to.
+  const budget = onTop ? Math.round(rawShares.reduce((sum, r) => sum + r.rawAmount, 0)) : allocation.totalAmount.amount;
   const reconciled = reconcileRounding(
     rawShares.map((s) => ({ key: s.key, amount: s.rawAmount })),
-    allocation.totalAmount.amount,
+    budget,
   );
 
   const method = resolveAllocationMethod(allocation.allocationMethod);
@@ -373,8 +377,12 @@ export async function generateContributions(
   for (const share of rawShares) {
     const payableAmount = reconciled.get(share.key) ?? 0;
     const unitSizeSqft = share.units.reduce((s, u) => s + u.sizeSqft, 0);
-    const shareRatio = allocation.totalAmount.amount > 0 ? payableAmount / allocation.totalAmount.amount : 0;
+    const shareRatio = budget > 0 ? payableAmount / budget : 0;
     const contributionId = randomUUID();
+    // What this owner would have paid at the normal share (on-top budgets only): their own flats' base amounts, plus any parking.
+    const baseAmount = onTop
+      ? payableAmount - Math.round(share.unitAmounts.reduce((sum, ua) => sum + ua.rawAmount - (onTop.baseUnitAmounts[ua.unit.id] ?? ua.rawAmount), 0))
+      : undefined;
 
     await ownerContributionRepository.create({
       id: contributionId,
@@ -386,6 +394,7 @@ export async function generateContributions(
       unitSizeSqft,
       shareRatio,
       payableAmount: { amount: payableAmount, currency: "BDT" },
+      ...(baseAmount !== undefined ? { baseAmount: { amount: baseAmount, currency: "BDT" as const } } : {}),
       paidAmount: { amount: 0, currency: "BDT" },
       dueDate: allocation.dueDate,
       createdAt: now,
@@ -421,7 +430,12 @@ export async function generateContributions(
     }
   }
 
-  await costAllocationRepository.update(allocation.id, { status: "generated", totalAllocatedSqft });
+  await costAllocationRepository.update(
+    allocation.id,
+    onTop && budget !== allocation.totalAmount.amount
+      ? { status: "generated", totalAllocatedSqft, originalAmount: allocation.totalAmount, totalAmount: { amount: budget, currency: "BDT" } }
+      : { status: "generated", totalAllocatedSqft },
+  );
 
   await recordAuditEvent({
     actorUserId: user.id,

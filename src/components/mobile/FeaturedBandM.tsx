@@ -37,7 +37,7 @@ export function FeaturedBandM({ project }: { project?: Project }) {
                 aria-hidden
                 className="absolute inset-0 [background-image:linear-gradient(rgb(255_255_255/0.06)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.06)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:linear-gradient(to_top,black,transparent_85%)]"
               />
-              <div aria-hidden className="bg-premium/30 absolute -top-16 -right-16 size-64 rounded-full blur-3xl" />
+              <div aria-hidden className="absolute -top-16 -right-16 size-64 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_42%,transparent),transparent)]" />
               <svg
                 aria-hidden
                 viewBox="0 0 360 230"
@@ -72,7 +72,7 @@ export function FeaturedBandM({ project }: { project?: Project }) {
             Featured development
           </span>
           {project && (
-            <span className="bg-bg text-fg absolute top-5 right-5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
+            <span className="absolute top-5 right-5 rounded-full border border-white/25 bg-black/35 text-white px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
               {PROJECT_STATUS_LABEL[project.status]}
             </span>
           )}

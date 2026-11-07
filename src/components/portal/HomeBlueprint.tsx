@@ -5,13 +5,18 @@ import { Check, ChevronDown, Compass, Maximize2, X } from "lucide-react";
 import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { cn } from "@/lib/utils";
 import { useHomeFlat } from "@/components/portal/HomeFlatSelection";
-import { BLUEPRINT_LIGHT_LINE_STYLE, BLUEPRINT_LIGHT_STYLE } from "@/components/portal/BlueprintPaper";
+import { BLUEPRINT_GRID_STYLE, BLUEPRINT_LIGHT_LINE_STYLE, BLUEPRINT_LIGHT_STYLE } from "@/components/portal/BlueprintPaper";
+import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
+import { ZoomPan } from "@/components/plan/ZoomPan";
+import type { PlanHighlight } from "@/lib/unitPlan";
 
 export interface HomeBlueprintUnit {
   id: string;
   unitNumber: string;
   projectName: string;
   layoutImage?: string;
+  /** Set when the plan is the whole floor: the owner's flat is lit up and the others dimmed. */
+  highlight?: PlanHighlight;
   bedrooms: number;
   bathrooms: number;
   balconies: number;
@@ -54,8 +59,27 @@ const PAPER = "bg-[#f3efe5]";
  * flats, swipe between flats). Only real data is shown; a flat with no
  * uploaded plan still gets its numbers and a note instead of a blank.
  */
-export function HomeBlueprint({ units, firstName, className, blue = false }: { units: HomeBlueprintUnit[]; firstName?: string; className?: string; blue?: boolean }) {
+/**
+ * How far the flat is turned on the phone. The admin's own turn wins; otherwise a flat drawn wide (landscape) is turned a quarter so it
+ * stands upright in the tall card and fills it, instead of floating small in the middle with empty space above and below.
+ */
+function homeTurn(h: PlanHighlight): number | undefined {
+  const area = h.mine[0];
+  if (!area) return undefined;
+  if (area.turn !== undefined && area.turn !== 0) return area.turn;
+  const xs = area.points.map((p) => p[0]);
+  const ys = area.points.map((p) => p[1]);
+  const w = Math.max(...xs) - Math.min(...xs);
+  const hgt = Math.max(...ys) - Math.min(...ys);
+  if (hgt <= 0) return undefined;
+  return (w * h.aspect) / hgt > 1.25 ? 90 : undefined;
+}
+
+export function HomeBlueprint({ units, firstName, className, blue = false, grid = false }: { units: HomeBlueprintUnit[]; firstName?: string; className?: string; blue?: boolean; grid?: boolean }) {
+  const sheetStyle = blue ? (grid ? BLUEPRINT_GRID_STYLE : BLUEPRINT_LIGHT_STYLE) : undefined;
   const [open, setOpen] = useState(false);
+  // Rooms pressed in the full-screen view, per residence (the Home card itself has no room buttons).
+  const [roomSel, setRoomSel] = useState<Record<string, string[]>>({});
   const { selectedId, select } = useHomeFlat();
   const selectedIndex = Math.max(0, units.findIndex((u) => u.id === selectedId));
   const [page, setPage] = useState(selectedIndex);
@@ -119,7 +143,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false }: { u
                   <p className="font-serif-display text-fg mt-1 text-[2rem] leading-none break-words">{firstName}</p>
                 </>
               )}
-              <p className={cn("text-accent text-[0.625rem] font-semibold tracking-[0.22em] uppercase", firstName && "mt-6")}>
+              <p className={cn("text-accent text-[0.5625rem] font-semibold tracking-[0.12em] whitespace-nowrap uppercase", firstName && "mt-6")}>
                 {units.length > 1 ? `Residence ${selectedIndex + 1} of ${units.length}` : "Your residence"}
               </p>
               {units.length > 1 ? (
@@ -145,7 +169,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false }: { u
           {/* The plan runs off the right edge of the screen (the page gutter is cancelled on this side); tap for full screen. */}
           <button
             type="button"
-            style={blue ? BLUEPRINT_LIGHT_STYLE : undefined}
+            style={sheetStyle}
             onClick={() => {
               if (swiped.current) {
                 swiped.current = false;
@@ -175,7 +199,27 @@ export function HomeBlueprint({ units, firstName, className, blue = false }: { u
             )}
           >
             <div key={first.id} style={{ "--swap-from": `${dir * 36}px` } as React.CSSProperties} className="flat-swap absolute inset-0">
-            {first.layoutImage ? (
+            {first.layoutImage && first.highlight ? (
+              // The flat on its own — cut out of the whole-floor drawing — with the same room animation as everywhere else.
+              /* 2 grid squares (12px each) of empty sheet all round the plan on the card — nothing sits in that margin. The plan runs a quarter off the right edge on purpose: a teaser that invites a tap. */
+              <div className="absolute inset-0 flex items-center justify-start p-6 [container-type:size]">
+                <RoomStage
+                  src={first.layoutImage}
+                  alt={`Floor plan of unit ${first.unitNumber}`}
+                  plan={{ aspect: first.highlight.aspect, rooms: [] }}
+                  frame={first.highlight.mine[0]?.points}
+                  view={first.highlight.view}
+                  cardView={first.highlight.homeView}
+                  turn={homeTurn(first.highlight)}
+                  peek={0.75}
+                  selectedIds={[]}
+                  onSelect={() => {}}
+                  tone={blue ? "blue" : "paper"}
+                  veilColor={blue ? undefined : "#f3efe5"}
+                  interactive={false}
+                />
+              </div>
+            ) : first.layoutImage ? (
               // eslint-disable-next-line @next/next/no-img-element -- plain img: it is deliberately wider than the panel, so only part of the plan shows
               <img src={first.layoutImage} alt={`Floor plan of unit ${first.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-y-0 left-0 h-full w-[170%] max-w-none object-contain p-4 select-none", blue && "mix-blend-screen")} />
             ) : (
@@ -237,6 +281,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false }: { u
         aria-modal="true"
         aria-label="Your home blueprint"
         aria-hidden={!open}
+        data-no-swipe
         inert={!open || undefined}
         style={DOTS_TEXTURE}
         className={cn(
@@ -261,18 +306,47 @@ export function HomeBlueprint({ units, firstName, className, blue = false }: { u
 
         <div ref={pagerRef} onScroll={onScroll} className="no-scrollbar mt-4 flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto">
           {units.map((unit) => (
-            <div key={unit.id} className="flex w-full shrink-0 snap-center px-[var(--gutter)]">
+            <div key={unit.id} className="flex w-full shrink-0 snap-center flex-col px-[var(--gutter)]">
               {/* Full screen: the whole plan, fitted to the screen. Pinch to zoom in on a room. */}
-              <div style={blue ? BLUEPRINT_LIGHT_STYLE : undefined} className={cn("relative isolate my-1 min-w-0 flex-1 overflow-hidden rounded-3xl", !blue && PAPER)}>
-                {unit.layoutImage ? (
+              {/* Full screen is always plain blue — the drafting grid is only for the small card on Home, where it would only add noise to a plan being studied up close. */}
+              <ZoomPan label={`Floor plan of unit ${unit.unitNumber}`} className="my-1 min-h-0 min-w-0 flex-1 rounded-3xl">
+              <div style={blue ? BLUEPRINT_LIGHT_STYLE : undefined} className={cn("relative isolate size-full overflow-hidden", !blue && PAPER)}>
+                {unit.layoutImage && unit.highlight ? (
+                  /* Full screen keeps a wider margin: 3.5 grid squares all round. */
+                  <div className="absolute inset-0 flex items-center justify-center p-[42px] [container-type:size]">
+                    <RoomStage
+                      src={unit.layoutImage}
+                      alt={`Floor plan of unit ${unit.unitNumber}`}
+                      plan={{ aspect: unit.highlight.aspect, rooms: unit.highlight.rooms ?? [] }}
+                      frame={unit.highlight.mine[0]?.points}
+                      view={unit.highlight.view}
+                      cardView={unit.highlight.homeView}
+                      turn={homeTurn(unit.highlight)}
+                      fit
+                      selectedIds={roomSel[unit.id] ?? []}
+                      onSelect={(ids) => setRoomSel((prev) => ({ ...prev, [unit.id]: ids }))}
+                      tone={blue ? "blue" : "paper"}
+                      veilColor={blue ? undefined : "#f3efe5"}
+                    />
+                  </div>
+                ) : unit.layoutImage ? (
                   // eslint-disable-next-line @next/next/no-img-element -- plain img, fitted to the sheet
-                  <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-0 size-full touch-pinch-zoom object-contain p-5 select-none", blue && "mix-blend-screen")} />
+                  <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-0 size-full object-contain p-5 select-none", blue && "mix-blend-screen")} />
                 ) : (
                   <p className={cn("flex h-full items-center justify-center px-8 text-center text-sm", blue ? "text-[#cfe0f5]/80" : "text-[#6b6660]")}>
                     Your floor plan has not been uploaded yet. Please contact us if you need a copy.
                   </p>
                 )}
               </div>
+              </ZoomPan>
+              {unit.highlight?.rooms && unit.highlight.rooms.length > 0 && (
+                <RoomPicker
+                  plan={{ aspect: unit.highlight.aspect, rooms: unit.highlight.rooms }}
+                  selectedIds={roomSel[unit.id] ?? []}
+                  onSelect={(ids) => setRoomSel((prev) => ({ ...prev, [unit.id]: ids }))}
+                  className="mt-2 shrink-0"
+                />
+              )}
             </div>
           ))}
         </div>

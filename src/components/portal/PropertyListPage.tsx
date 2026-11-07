@@ -8,7 +8,8 @@ import { Car } from "lucide-react";
 import { getOwnerUnits, getOwnerParking } from "@/features/ownerPortal/queries";
 import { PARKING_TYPE_MAP } from "@/lib/parkingTypeIcons";
 import { projectRepository } from "@/features/projects/repository";
-import { resolveUnitPlan } from "@/lib/unitPlan";
+import { resolveUnitPlan, resolveParkingPlan } from "@/lib/unitPlan";
+import { getFloorNumbers } from "@/features/floors/floorNumbers";
 
 /**
  * "My Properties" (Prompt 1 §"if one owner owns multiple properties…").
@@ -38,7 +39,7 @@ export async function PropertyListPage({ base }: { base: string }) {
     );
   }
 
-  const projects = await projectRepository.list();
+  const [projects, floorNumbers] = await Promise.all([projectRepository.list(), getFloorNumbers()]);
   const projectsById = new Map(projects.map((p) => [p.id, p]));
   const parkingByProject = new Map<string, typeof parking>();
   for (const space of parking) {
@@ -59,6 +60,7 @@ export async function PropertyListPage({ base }: { base: string }) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {units.map((unit) => {
           const project = projectsById.get(unit.projectId);
+          const plan = resolveUnitPlan(unit, project, floorNumbers[unit.floorId], { forOwner: true });
           return (
             <Link
               key={unit.id}
@@ -66,7 +68,8 @@ export async function PropertyListPage({ base }: { base: string }) {
               className="bg-surface-raised group overflow-hidden rounded-[1.75rem] shadow-[0_1px_2px_rgb(var(--shadow-color)/0.06),0_14px_32px_-12px_rgb(var(--shadow-color)/0.22)] transition-[transform,box-shadow] duration-300 ease-[var(--ease-standard)] active:scale-[0.99] lg:hover:-translate-y-0.5"
             >
               <BlueprintPaper
-                src={resolveUnitPlan(unit, projectsById.get(unit.projectId)).src}
+                src={plan.src}
+                highlight={plan.highlight}
                 alt={`Floor plan of unit ${unit.unitNumber}`}
                 title={`Unit ${unit.unitNumber}`}
                 meta={[unit.sizeSqft > 0 ? `${unit.sizeSqft.toLocaleString("en-US")} sqft` : null, unit.bedrooms > 0 ? `${unit.bedrooms} bed` : null].filter(Boolean).join(" · ")}
@@ -87,12 +90,18 @@ export async function PropertyListPage({ base }: { base: string }) {
       {parking.length > 0 && (
         <section aria-label="My parking" className="flex flex-col gap-4">
           <p className="text-label text-fg-subtle uppercase">My Parking</p>
-          {[...parkingByProject.entries()].map(([projectId, spaces]) => (
+          {[...parkingByProject.entries()].map(([projectId, spaces]) => {
+            const parkingPlan = resolveParkingPlan(spaces, projectsById.get(projectId));
+            return (
             <div key={projectId} className="border-border bg-surface-raised rounded-2xl border p-5 shadow-sm">
               <p className="text-body text-fg font-semibold">{projectsById.get(projectId)?.name ?? "—"}</p>
               <p className="text-caption text-fg-subtle mt-0.5">
                 {spaces.length} {spaces.length === 1 ? "space" : "spaces"}
               </p>
+              {parkingPlan && (
+                // The parking level with this owner's own bays lit and the other bays dimmed.
+                <BlueprintPaper src={parkingPlan.src} alt="Parking plan" highlight={parkingPlan.highlight} className="mt-4 aspect-[4/3] rounded-xl" />
+              )}
               <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {spaces
                   .slice()
@@ -116,7 +125,8 @@ export async function PropertyListPage({ base }: { base: string }) {
                   })}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </section>
       )}
     </div>

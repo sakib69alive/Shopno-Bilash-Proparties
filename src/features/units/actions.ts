@@ -136,7 +136,7 @@ export async function createUnit(_prevState: UnitFormState, formData: FormData):
   let layoutImage: string | undefined;
   let galleryImages: string[] = [];
   try {
-    if (layoutFile) layoutImage = (await saveUploadedFile(layoutFile, "units")).url;
+    if (layoutFile) layoutImage = (await saveUploadedFile(layoutFile, "units", { blueprint: true })).url;
     if (galleryFiles.length > 0) {
       galleryImages = (await Promise.all(galleryFiles.map((f) => saveUploadedFile(f, "units")))).map((f) => f.url);
     }
@@ -196,7 +196,7 @@ export async function updateUnit(id: string, _prevState: UnitFormState, formData
   let galleryImages = existing.galleryImages ?? [];
   try {
     if (layoutFile) {
-      const saved = await saveUploadedFile(layoutFile, "units");
+      const saved = await saveUploadedFile(layoutFile, "units", { blueprint: true });
       if (existing.layoutImage) await deleteUploadedFile(existing.layoutImage);
       layoutImage = saved.url;
     } else if (formData.get("removeLayoutImage") === "on" && existing.layoutImage) {

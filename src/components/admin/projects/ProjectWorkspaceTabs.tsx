@@ -19,6 +19,7 @@ const TABS: Tab[] = [
   { segment: "owners", label: "Owners" },
   { segment: "distribute", label: "Distribute", permission: "unit.view" },
   { segment: "parking", label: "Parking" },
+  { segment: "floor-plans", label: "Floor plans", permission: "project.update" },
   { segment: "construction", label: "Construction", permission: "construction.view" },
   { segment: "payments", label: "Payments", permission: "finance.view" },
   { segment: "materials", label: "Materials", permission: "procurement.view" },

@@ -12,7 +12,7 @@ import { getProjectAvailability } from "@/lib/projectAvailability";
 import { cn } from "@/lib/utils";
 import { EmptyCard } from "./EmptyCard";
 
-const STATUS_ORDER: ProjectStatus[] = ["ongoing", "near-completion", "upcoming", "planning", "completed", "sold-out"];
+const STATUS_ORDER: ProjectStatus[] = ["ongoing", "near-completion", "upcoming", "planning", "completed", "handed-over", "sold-out"];
 
 function ShowcaseCard({ project, units, priority }: { project: Project; units: Unit[]; priority: boolean }) {
   const { available } = getProjectAvailability(project, units);

@@ -36,6 +36,7 @@ import {
   Milestone,
   ScrollText,
   DatabaseBackup,
+  Sparkles,
   Megaphone,
   UserPlus,
 } from "lucide-react";
@@ -168,6 +169,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Clients & partners",
     items: [
+      { label: "Clients overview", href: "/admin/clients", permission: "customer.view", icon: Users },
       { label: "Customers", href: "/admin/customers", permission: "customer.view", icon: Users },
       { label: "Shareholders", href: "/admin/shareholders", permission: "shareholder.view", icon: HandCoins },
       { label: "Landowners", href: "/admin/landowners", permission: "landowner.view", icon: MapPinned },
@@ -248,6 +250,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
       { label: "Roles / Permissions", href: "/admin/roles", permission: "roles.manage", icon: ShieldCheck },
       { label: "Audit Log", href: "/admin/audit", permission: "audit.view", icon: History },
       { label: "Backup & Restore", href: "/admin/settings/backup", permission: "settings.manage", icon: DatabaseBackup },
+      { label: "Blueprint AI", href: "/admin/settings/blueprint-ai", permission: "settings.manage", icon: Sparkles },
     ],
   },
   {

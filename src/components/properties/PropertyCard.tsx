@@ -45,7 +45,7 @@ export function PropertyCard({ listing, index }: { listing: PropertyListing; ind
             className={HOVER_ZOOM}
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
-          <span className="bg-bg/90 text-fg absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
+          <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-sm border border-white/25 bg-black/35 text-white px-2.5 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
             <span className={cn("size-1.5 rounded-full", UNIT_STATUS_TONE[listing.status])} aria-hidden />
             {UNIT_STATUS_LABEL[listing.status]}
           </span>
@@ -60,7 +60,9 @@ export function PropertyCard({ listing, index }: { listing: PropertyListing; ind
             <h3 className="text-h3 mt-1.5 group-hover:text-accent transition-colors duration-200">
               {listing.name}
             </h3>
-            <p className="text-caption text-fg-subtle mt-0.5 uppercase">{listing.unitType}</p>
+            <p className="text-caption text-fg-subtle mt-0.5 uppercase">
+              {listing.unitType === "Whole building" ? <span className="bg-accent-soft text-accent rounded-full px-2.5 py-0.5 font-semibold">Whole building · sold as one</span> : listing.unitType}
+            </p>
 
             {specs.length > 0 && (
               <div className="text-body-sm text-fg-muted mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5">

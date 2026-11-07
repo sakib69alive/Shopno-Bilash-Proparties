@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRightLeft, Car, Check, Home, Lock, Undo2, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
-import { distributeToOwner, moveToOwner, releaseFromOwners, type DistributeTarget } from "@/features/ownership/distributeActions";
+import { distributeToOwner, moveToOwner, releaseFromOwners, setFlatSizes, type DistributeTarget } from "@/features/ownership/distributeActions";
 
 export interface BoardUnit {
   id: string;
@@ -21,6 +21,8 @@ export interface BoardUnit {
 export interface BoardParking {
   id: string;
   number: string;
+  /** Car (default) or motorcycle space. */
+  kind?: "car" | "bike";
   ownerKey?: string;
   ownerLabel?: string;
 }
@@ -45,6 +47,7 @@ export interface DistributionBoardProps {
   parking: BoardParking[];
   people: BoardPerson[];
   canAssignParking: boolean;
+  canEditSizes?: boolean;
 }
 
 // Each person gets one of these (always shown together with their name, so colour is never the only signal).
@@ -93,7 +96,7 @@ function AnimatedNumber({ value }: { value: number }) {
  * live and before anything is saved, how many flats, how many sqft and how
  * many parking spaces that person ends up with.
  */
-export function DistributionBoard({ projectId, groups, parking, people, canAssignParking }: DistributionBoardProps) {
+export function DistributionBoard({ projectId, groups, parking, people, canAssignParking, canEditSizes }: DistributionBoardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedUnits, setSelectedUnits] = useState<Set<string>>(new Set());
@@ -190,6 +193,67 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
     setSelectedUnits(new Set());
     setSelectedParking(new Set());
     setNotice(null);
+  }
+
+  // Flat sizes in this project (free flats only), for "select every free 1,370 sqft flat" in one tap.
+  const sizeGroups = useMemo(() => {
+    const map = new Map<number, string[]>();
+    for (const u of allUnits) if (!u.ownerKey && u.sqft > 0) map.set(u.sqft, [...(map.get(u.sqft) ?? []), u.id]);
+    return [...map.entries()].sort((a, b) => a[0] - b[0]);
+  }, [allUnits]);
+
+  function toggleSize(ids: string[]) {
+    setNotice(null);
+    setSelectedUnits((prev) => {
+      const next = new Set(prev);
+      const allOn = ids.every((id) => next.has(id));
+      for (const id of ids) {
+        if (allOn) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+  }
+
+  // Flat sizes: by position letter (every A, every B…) or one flat at a time.
+  const [sizesOpen, setSizesOpen] = useState(false);
+  const [posSizes, setPosSizes] = useState<Record<string, string>>({});
+  const [oneSizes, setOneSizes] = useState<Record<string, string>>({});
+  const [sizeNote, setSizeNote] = useState<{ ok: boolean; text: string } | null>(null);
+  const positions = useMemo(() => {
+    const map = new Map<string, BoardUnit[]>();
+    for (const u of allUnits) {
+      const m = /([A-Za-z]+)$/.exec(u.number.trim());
+      if (!m) continue;
+      const key = m[1].toUpperCase();
+      map.set(key, [...(map.get(key) ?? []), u]);
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [allUnits]);
+
+  function saveSizes() {
+    const sizes: Record<string, number> = {};
+    for (const [key, text] of Object.entries(posSizes)) {
+      if (text.trim() === "") continue;
+      const n = Number(text.replace(/,/g, ""));
+      for (const u of positions.find(([k]) => k === key)?.[1] ?? []) sizes[u.id] = n;
+    }
+    for (const [id, text] of Object.entries(oneSizes)) {
+      if (text.trim() === "") continue;
+      sizes[id] = Number(text.replace(/,/g, ""));
+    }
+    if (Object.keys(sizes).length === 0) return;
+    setSizeNote(null);
+    startTransition(async () => {
+      const result = await setFlatSizes(projectId, sizes);
+      if (result.error) setSizeNote({ ok: false, text: result.error });
+      else {
+        setSizeNote({ ok: true, text: `Saved — ${result.changed ?? 0} flat${result.changed === 1 ? "" : "s"} changed.` });
+        setPosSizes({});
+        setOneSizes({});
+        router.refresh();
+      }
+    });
   }
 
   function selectAllFree() {
@@ -370,10 +434,87 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
       </aside>
 
       <div className="flex min-w-0 flex-col gap-7">
+        {canEditSizes && allUnits.length > 0 && (
+          <div className="border-border bg-surface-raised rounded-xl border p-4">
+            <button type="button" onClick={() => setSizesOpen((v) => !v)} aria-expanded={sizesOpen} className="flex w-full items-center justify-between gap-3 text-left">
+              <span>
+                <span className="text-label text-fg-subtle block uppercase">Flat sizes</span>
+                <span className="text-body-sm text-fg-muted">Set sqft for every A flat, every B flat… or one flat at a time.</span>
+              </span>
+              <span className="text-accent shrink-0 text-sm font-semibold">{sizesOpen ? "Close" : "Edit sizes"}</span>
+            </button>
+            {sizesOpen && (
+              <div className="mt-4 flex flex-col gap-4">
+                {positions.length > 1 && (
+                  <div>
+                    <p className="text-caption text-fg-subtle mb-2 uppercase">By position — fills every flat with that letter</p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {positions.map(([key, list]) => (
+                        <label key={key} className="text-caption text-fg-subtle flex flex-col gap-1">
+                          Every {key} ({list.length})
+                          <input
+                            inputMode="numeric"
+                            value={posSizes[key] ?? ""}
+                            onChange={(e) => setPosSizes((p) => ({ ...p, [key]: e.target.value }))}
+                            placeholder={formatSqft(list[0].sqft)}
+                            className="text-body-sm border-border-strong bg-surface text-fg h-10 rounded-md border px-3 outline-none focus:border-accent"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <p className="text-caption text-fg-subtle mb-2 uppercase">One flat at a time — wins over the position above</p>
+                  <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 lg:grid-cols-6">
+                    {allUnits.map((u) => (
+                      <label key={u.id} className="text-caption text-fg-subtle flex flex-col gap-1">
+                        {u.number}
+                        <input
+                          inputMode="numeric"
+                          value={oneSizes[u.id] ?? ""}
+                          onChange={(e) => setOneSizes((p) => ({ ...p, [u.id]: e.target.value }))}
+                          placeholder={formatSqft(u.sqft)}
+                          className="text-body-sm border-border-strong bg-surface text-fg h-9 rounded-md border px-2 outline-none focus:border-accent"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button type="button" size="sm" onClick={saveSizes} loading={isPending} disabled={Object.values(posSizes).every((v) => !v.trim()) && Object.values(oneSizes).every((v) => !v.trim())}>
+                    <Check aria-hidden className="size-4" /> Save sizes
+                  </Button>
+                  {sizeNote && <span className={cn("text-body-sm", sizeNote.ok ? "text-success" : "text-error")}>{sizeNote.text}</span>}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <Button type="button" variant="outline" size="sm" onClick={selectAllFree} disabled={totalFree === 0}>
             Select all free flats
           </Button>
+          {sizeGroups.length > 1 && (
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <span className="text-caption text-fg-subtle uppercase">Select by size</span>
+              {sizeGroups.map(([size, ids]) => {
+                const on = ids.every((id) => selectedUnits.has(id));
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleSize(ids)}
+                    className={cn("text-body-sm rounded-full border px-3 py-1 transition-colors active:scale-95", on ? "border-accent bg-accent text-accent-foreground" : "border-border-strong bg-surface-raised hover:border-accent")}
+                  >
+                    {formatSqft(size)} sqft <span className="opacity-70">· {ids.length} free</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
           <p className="text-caption text-fg-subtle">Tap to select. Shift-tap a second flat to select everything between. Given to the wrong person? Tap their coloured flat, pick the right person, press Move.</p>
         </div>
 
@@ -425,14 +566,17 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
           )
         )}
 
-        {parking.length > 0 && (
-          <section className="flex flex-col gap-2.5">
+        {(["car", "bike"] as const).map((kind) => {
+          const spaces = parking.filter((p) => (p.kind ?? "car") === kind);
+          if (spaces.length === 0) return null;
+          return (
+          <section key={kind} className="flex flex-col gap-2.5">
             <h3 className="text-label text-fg-subtle flex items-center gap-1.5 uppercase">
               <Car aria-hidden className="size-3.5" />
-              Parking
+              {kind === "bike" ? "Motorcycle parking" : parking.some((p) => p.kind === "bike") ? "Car parking" : "Parking"}
             </h3>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(5.25rem,1fr))] gap-2.5">
-              {parking.map((space) => {
+              {spaces.map((space) => {
                 const selected = selectedParking.has(space.id);
                 const owned = !!space.ownerKey;
                 return (
@@ -460,7 +604,8 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
               })}
             </div>
           </section>
-        )}
+          );
+        })}
       </div>
     </div>
   );

@@ -55,7 +55,8 @@ export async function updateCompanySettings(_prevState: SettingsFormState, formD
   const impactLandownerPartnershipsRaw = String(formData.get("impactLandownerPartnerships") ?? "").trim();
   const requireOwnerPin = formData.get("requireOwnerPin") === "on";
   const showPublicSignInLink = formData.get("showPublicSignInLink") === "on";
-  const portalHomeBlueBlueprint = formData.get("portalHomeBlueBlueprint") === "on";
+  const lookRaw = formData.get("portalHomeLook");
+  const portalHomeLook: "cream" | "blue" | "grid" = lookRaw === "cream" || lookRaw === "blue" ? lookRaw : "grid";
 
   if (!legalName || legalName.length < 2) return { error: "Enter a legal name." };
   if (!displayName || displayName.length < 2) return { error: "Enter a display name." };
@@ -114,7 +115,7 @@ export async function updateCompanySettings(_prevState: SettingsFormState, formD
     impactLandownerPartnerships: Number.isFinite(impactLandownerPartnerships) ? impactLandownerPartnerships : undefined,
     requireOwnerPin,
     showPublicSignInLink,
-    portalHomeBlueBlueprint,
+    portalHomeLook,
     updatedBy: user.id,
     updatedAt: new Date().toISOString(),
   });

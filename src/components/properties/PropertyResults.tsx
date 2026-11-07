@@ -1,5 +1,6 @@
 "use client";
 
+import { compareByOrder } from "@/lib/sortOrder";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { buttonVariants } from "@/components/ui/Button";
@@ -54,6 +55,9 @@ export function PropertyResults({ listings }: { listings: PropertyListing[] }) {
   const sorted = useMemo(
     () =>
       [...filtered].sort((a, b) => {
+        // The admin's own order wins (projects first, then that project's properties); unordered items fall through to the rules below.
+        const byAdmin = compareByOrder(a.project, b.project) || compareByOrder(a, b);
+        if (byAdmin !== 0) return byAdmin;
         const byStatus = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
         if (byStatus !== 0) return byStatus;
         const byFeatured = Number(b.project.featured) - Number(a.project.featured);

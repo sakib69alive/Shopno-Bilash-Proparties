@@ -56,7 +56,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
       <ProjectIntroduction project={project} />
       <ProjectFacts project={project} />
       <MediaExperience videoUrl={project.videoUrl} tour360Url={project.tour360Url} title={project.name} />
-      <ProjectBlueprints blueprints={project.blueprints} />
+      <ProjectBlueprints blueprints={project.blueprints} hidden={project.blueprintsHidden} hideZoom={project.blueprintZoomHidden} />
       <ProjectDesignStory project={project} />
       <ProjectLocation project={project} />
       <Gallery images={project.gallery} label="Gallery" />

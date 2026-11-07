@@ -156,7 +156,7 @@ export function HomeM({
       {/* ---------- Landowner invitation ---------- */}
       <section className="px-[var(--gutter)]">
         <div className="bg-accent text-accent-foreground relative overflow-hidden rounded-[var(--m-radius-hero)] p-6">
-          <div aria-hidden className="bg-premium/25 absolute -right-12 -bottom-12 size-56 rounded-full blur-3xl" />
+          <div aria-hidden className="absolute -right-12 -bottom-12 size-56 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_35%,transparent),transparent)]" />
           <Skyline className="absolute right-[-3rem] bottom-0 w-80 text-white/15" />
           <span aria-hidden className="bg-premium relative mb-4 block h-px w-12" />
           <h2 className="font-serif-display relative max-w-[15rem] text-[2.125rem] leading-[1.05] text-balance">

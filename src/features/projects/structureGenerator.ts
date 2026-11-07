@@ -23,6 +23,8 @@ export interface StructureSpec {
   avgSqft?: number;
   exceptions: FloorException[];
   parkingSpaces: number;
+  /** Motorcycle spaces (optional — leave out or 0 for none). Made as M-01, M-02, … */
+  bikeSpaces?: number;
 }
 
 export interface StructureResult {
@@ -64,6 +66,7 @@ export function validateStructure(spec: StructureSpec): string | null {
   if (spec.floors < 1 || spec.floors > 100) return "Floors must be between 1 and 100.";
   if (spec.unitsPerFloor < 0 || spec.unitsPerFloor > 50) return "Flats per floor must be between 0 and 50.";
   if (spec.parkingSpaces < 0 || spec.parkingSpaces > 500) return "Parking spaces must be between 0 and 500.";
+  if ((spec.bikeSpaces ?? 0) < 0 || (spec.bikeSpaces ?? 0) > 1000) return "Motorcycle spaces must be between 0 and 1000.";
   for (const ex of spec.exceptions) {
     if (ex.fromFloor < 1 || ex.toFloor > spec.floors || ex.fromFloor > ex.toFloor) {
       return `A "different floor" row points at floor ${ex.fromFloor === ex.toFloor ? ex.fromFloor : `${ex.fromFloor}-${ex.toFloor}`}, which this project doesn't have (it has ${spec.floors} floors).`;
@@ -161,6 +164,20 @@ export async function generateProjectStructure(projectId: ID, userId: ID, spec: 
     result.parking += 1;
   }
 
+  for (let p = 1; p <= (spec.bikeSpaces ?? 0); p++) {
+    await parkingRepository.create({
+      id: randomUUID(),
+      projectId,
+      parkingNumber: `M-${String(p).padStart(2, "0")}`,
+      type: "bike",
+      status: "available",
+      createdAt: now,
+      updatedAt: now,
+      createdBy: userId,
+    });
+    result.parking += 1;
+  }
+
   return result;
 }
 
@@ -177,7 +194,8 @@ export function parseStructureSpec(formData: FormData): { spec: StructureSpec } 
 
   const floors = num("floorCount");
   const parkingSpaces = num("parkingCount");
-  if (floors === 0 && parkingSpaces === 0) return null;
+  const bikeSpaces = num("bikeParkingCount");
+  if (floors === 0 && parkingSpaces === 0 && bikeSpaces === 0) return null;
 
   const exFloor = formData.getAll("exFloor").map((v) => String(v).trim());
   const exUnits = formData.getAll("exUnits").map((v) => String(v).trim());
@@ -202,6 +220,7 @@ export function parseStructureSpec(formData: FormData): { spec: StructureSpec } 
     avgSqft: avgSqft > 0 ? avgSqft : undefined,
     exceptions,
     parkingSpaces,
+    bikeSpaces,
   };
 
   if (floors === 0) return { spec: { ...spec, floors: 0, unitsPerFloor: 0, exceptions: [] } };

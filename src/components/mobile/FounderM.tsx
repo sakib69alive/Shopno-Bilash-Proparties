@@ -109,7 +109,7 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
           ) : (
             <>
               <div aria-hidden className="absolute inset-0 bg-[radial-gradient(90%_60%_at_50%_0%,var(--color-accent),transparent_75%)]" />
-              <div aria-hidden className="bg-premium/25 absolute -top-16 left-1/2 size-64 -translate-x-1/2 rounded-full blur-3xl" />
+              <div aria-hidden className="absolute -top-16 left-1/2 size-64 -translate-x-1/2 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_35%,transparent),transparent)]" />
               <span
                 aria-hidden
                 className="font-serif-display absolute top-16 left-1/2 -translate-x-1/2 text-[7rem] leading-none text-white/20"
@@ -123,7 +123,7 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
             aria-hidden
             className="pointer-events-none absolute inset-2.5 rounded-[calc(var(--m-radius-hero)-10px)] border border-white/20"
           />
-          <span className="border-premium/50 absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border bg-black/25 px-3.5 py-1.5 text-[10.5px] font-semibold tracking-[0.2em] uppercase backdrop-blur-sm">
+          <span className="border-premium/50 absolute top-6 left-6 inline-flex items-center gap-2 rounded-full border bg-black/40 px-3.5 py-1.5 text-[10.5px] font-semibold tracking-[0.2em] uppercase">
             <span aria-hidden className="bg-premium size-1.5 rounded-full" />
             The person behind the vision
           </span>
@@ -219,7 +219,7 @@ export function FounderM({ profile, members }: { profile: FounderProfile; member
           {profile.statement && (
             <section className="px-[var(--gutter)]">
               <div className="bg-fg relative overflow-hidden rounded-[var(--m-radius-hero)] p-6 text-white">
-                <div aria-hidden className="bg-premium/20 absolute -right-10 -bottom-10 size-52 rounded-full blur-3xl" />
+                <div aria-hidden className="absolute -right-10 -bottom-10 size-52 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_28%,transparent),transparent)]" />
                 <Quote aria-hidden className="text-premium relative size-9" />
                 <p className="font-serif-display relative mt-4 text-[1.875rem] leading-[1.15] text-balance">{profile.statement}</p>
                 <p className="relative mt-5 text-xs font-semibold tracking-[0.2em] text-white/60 uppercase">— {profile.name}</p>

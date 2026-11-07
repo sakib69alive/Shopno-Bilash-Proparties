@@ -1,6 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getCurrentUser } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
+import { recordAuditEvent } from "@/features/audit/repository";
 import { assignUnitToShareholding, unassignUnitFromShareholding } from "@/features/shareholders/shareholdingActions";
 import { createLandownerAllocation, deleteLandownerAllocationByUnit } from "@/features/landowners/landownerAllocationActions";
 import { assignParkingToOwner, releaseParkingFromOwner } from "@/features/parking/actions";
@@ -135,4 +138,26 @@ export async function moveToOwner(projectId: string, target: DistributeTarget, u
   const released = await releaseFromOwners(projectId, unitIds, parkingIds);
   const given = await distributeToOwner(projectId, target, released.releasedUnitIds ?? [], released.releasedParkingIds ?? []);
   return { done: given.done, problems: [...released.problems, ...given.problems] };
+}
+
+/**
+ * Set the size of many flats at once (the "Flat sizes" panel on the Distribute board): every flat in `sizes` gets its new sqft. Only
+ * flats of this project are touched, and each change is recorded in the audit trail.
+ */
+export async function setFlatSizes(projectId: string, sizes: Record<string, number>): Promise<{ error?: string; changed?: number }> {
+  const user = await getCurrentUser();
+  if (!user || !hasPermission(user.role, "unit.manage")) return { error: "You don't have permission to change flat sizes." };
+  let changed = 0;
+  for (const [unitId, sizeSqft] of Object.entries(sizes)) {
+    if (!Number.isFinite(sizeSqft) || sizeSqft <= 0 || sizeSqft > 100000) return { error: "Every size must be between 1 and 100,000 sqft." };
+    const unit = await unitRepository.findById(unitId);
+    if (!unit || unit.projectId !== projectId) return { error: "One of those flats isn't in this project." };
+    if (unit.sizeSqft === sizeSqft) continue;
+    await unitRepository.update(unitId, { sizeSqft });
+    await recordAuditEvent({ actorUserId: user.id, action: "unit.resize", entityType: "Unit", entityId: unitId, previousValue: { sizeSqft: unit.sizeSqft }, newValue: { sizeSqft } });
+    changed += 1;
+  }
+  revalidatePath(`/admin/projects/${projectId}/distribute`);
+  revalidatePath(`/admin/projects/${projectId}/units`);
+  return { changed };
 }

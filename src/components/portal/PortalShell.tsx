@@ -64,6 +64,13 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
   const [scrolled, setScrolled] = useState(false);
   // Optimistic highlight: the capsule moves the instant a tab is tapped, not after the next page has loaded.
   const [tapped, setTapped] = useState<{ href: string; from: string } | null>(null);
+  // Same glass as the public site's bottom bar; weak phones / reduced-motion get the cheap flat tint (no backdrop blur).
+  const [lite, setLite] = useState(false);
+  useEffect(() => {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const weak = (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) || (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 4);
+    if (weak || window.matchMedia("(prefers-reduced-motion: reduce)").matches) setLite(true);
+  }, []);
   const pending = tapped && tapped.from === pathname ? tapped.href : null;
 
   useEffect(() => {
@@ -90,6 +97,8 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
     const hrefs = tabHrefs.split("|");
     const currentIndex = hrefs.findIndex((h) => (h === homeHref ? pathname === h : pathname.startsWith(h)));
     if (currentIndex < 0) return;
+    // No page-swipe on the Home screen: there the blueprint card swipes between residences, and the two gestures collided.
+    if (pathname === homeHref) return;
 
     let start: { x: number; y: number; t: number } | null = null;
 
@@ -125,6 +134,13 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
       if (!quick || Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx) * 0.5) return;
       const next = hrefs[currentIndex + (dx < 0 ? 1 : -1)];
       if (!next) return;
+      // Click the bottom-bar link instead of pushing the route: a swipe then runs exactly what a tap runs, including
+      // PortalPageLoader's "Entering …" ceremony, which listens for link clicks (a bare push skipped it).
+      const link = document.querySelector<HTMLAnchorElement>(`nav[aria-label="Portal"] a[href="${next}"]`);
+      if (link) {
+        link.click();
+        return;
+      }
       setTapped({ href: next, from: pathname });
       router.push(next);
     }
@@ -236,7 +252,19 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
 
         {/* Phone bottom navigation — floating capsule; the current tab grows into a green pill showing its name. */}
         <nav aria-label="Portal" className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-30 lg:hidden">
-          <div className="bg-bg border-border flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]">
+          <div
+            style={{ borderColor: "rgb(255 255 255 / 0.28)" }}
+            className="relative isolate flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]"
+          >
+            <div
+              aria-hidden
+              style={
+                lite
+                  ? { backgroundColor: "rgb(28 27 25 / 0.86)" }
+                  : { backgroundColor: "rgb(28 27 25 / 0.42)", backdropFilter: "blur(22px) saturate(180%)", WebkitBackdropFilter: "blur(22px) saturate(180%)" }
+              }
+              className="pointer-events-none absolute inset-0 -z-10 rounded-full"
+            />
             {tabBarItems.map((item) => {
               const Icon = NAV_ICONS[item.label];
               const active = (pending ?? tabBarItems.find((i) => isActive(i.href))?.href) === item.href;
@@ -249,7 +277,7 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
                   onClick={() => setTapped({ href: item.href, from: pathname })}
                   className={cn(
                     "relative flex h-12 min-w-0 touch-manipulation items-center justify-center gap-2 overflow-hidden rounded-full text-sm font-semibold [-webkit-tap-highlight-color:transparent] transition-[flex-grow,background-color,color] duration-200 ease-[var(--ease-standard)]",
-                    active ? "bg-accent text-accent-foreground grow-[2.4] px-3" : "text-fg-muted grow active:bg-surface",
+                    active ? "bg-accent/90 text-accent-foreground grow-[2.4] px-3" : "grow text-white active:bg-white/15",
                   )}
                 >
                   {Icon && <Icon aria-hidden className="size-[22px] shrink-0" strokeWidth={active ? 2.25 : 1.75} />}

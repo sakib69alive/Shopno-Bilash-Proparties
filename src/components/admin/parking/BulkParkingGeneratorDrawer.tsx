@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -45,7 +46,7 @@ export function BulkParkingGeneratorDrawer({ open, onClose, projectId, buildings
 
   return (
     <Drawer open={open} onClose={onClose} side="right" title="Generate Parking">
-      <form action={formAction} className="flex flex-col gap-5 p-5">
+      <PersistForm state={state} action={formAction} className="flex flex-col gap-5 p-5">
         <input type="hidden" name="projectId" value={projectId} />
         {state.error && (
           <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
@@ -88,7 +89,7 @@ export function BulkParkingGeneratorDrawer({ open, onClose, projectId, buildings
         <div className="flex items-center gap-3">
           <SubmitButton />
         </div>
-      </form>
+      </PersistForm>
     </Drawer>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -46,7 +47,7 @@ export function BulkStructureGeneratorDrawer({ open, onClose, buildings }: BulkS
 
   return (
     <Drawer open={open} onClose={onClose} side="right" title="Generate Structure">
-      <form action={formAction} className="flex flex-col gap-5 p-5">
+      <PersistForm state={state} action={formAction} className="flex flex-col gap-5 p-5">
         {state.error && (
           <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
             <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -80,7 +81,7 @@ export function BulkStructureGeneratorDrawer({ open, onClose, buildings }: BulkS
         <div className="flex items-center gap-3">
           <SubmitButton />
         </div>
-      </form>
+      </PersistForm>
     </Drawer>
   );
 }

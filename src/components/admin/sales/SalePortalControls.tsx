@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle, Eye, EyeOff, Trash2 } from "lucide-react";
@@ -111,7 +112,7 @@ export function SalePortalControls({
           </ul>
         )}
 
-        <form ref={formRef} action={formAction} className="flex flex-col gap-3">
+        <PersistForm ref={formRef} state={state} action={formAction} className="flex flex-col gap-3">
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2.5">
               <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -137,7 +138,7 @@ export function SalePortalControls({
           <div>
             <Submit>Apply change</Submit>
           </div>
-        </form>
+        </PersistForm>
       </section>
     </div>
   );

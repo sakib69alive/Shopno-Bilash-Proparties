@@ -140,3 +140,28 @@ export async function listAllStoredFiles(): Promise<{ relativePath: string; kind
 
   return files;
 }
+
+/**
+ * Reads a file wherever it actually lives: Netlify Blobs first, then local disk. The `/api/uploads/...` route uses
+ * this so one URL scheme works on every host — a Netlify demo, a VPS with a real disk, or a restore of a backup made
+ * on the other kind of host (the backup carries the files; it can't carry "which backend they were on").
+ */
+export async function readFromAnyStore(relativePath: string): Promise<Buffer | null> {
+  try {
+    const fromBlob = await blobRead(relativePath);
+    if (fromBlob) return fromBlob;
+  } catch (error) {
+    if (!isMissingBlobsEnvironment(error)) throw error;
+  }
+  return diskRead(relativePath);
+}
+
+/** Counterpart of `readFromAnyStore` — removes the file from whichever backend holds it. */
+export async function removeFromAnyStore(relativePath: string): Promise<void> {
+  try {
+    await blobRemove(relativePath);
+  } catch (error) {
+    if (!isMissingBlobsEnvironment(error)) throw error;
+  }
+  await diskRemove(relativePath);
+}

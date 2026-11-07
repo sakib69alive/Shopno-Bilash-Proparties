@@ -1,3 +1,4 @@
+import { compareByOrder } from "@/lib/sortOrder";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 export function PropertiesFeatured({ listings }: { listings: PropertyListing[] }) {
   const featured = [...listings]
     .filter((l) => l.status === "available")
-    .sort((a, b) => Number(b.project.featured) - Number(a.project.featured))
+    .sort((a, b) => compareByOrder(a.project, b.project) || compareByOrder(a, b) || Number(b.project.featured) - Number(a.project.featured))
     .slice(0, 2);
 
   if (featured.length === 0) return null;

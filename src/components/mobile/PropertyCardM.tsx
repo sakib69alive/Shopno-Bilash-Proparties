@@ -44,7 +44,7 @@ export function PropertyCardM({ listing, layout = "full", className }: PropertyC
             alt={listing.coverImage.alt}
             sizes={layout === "rail" ? "(min-width: 640px) 300px, 72vw" : "(min-width: 768px) 50vw, 100vw"}
           />
-          <span className="bg-bg text-fg absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
+          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/35 text-white px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase">
             <span className={cn("size-1.5 rounded-full", UNIT_STATUS_TONE[listing.status])} aria-hidden />
             {UNIT_STATUS_LABEL[listing.status]}
           </span>
@@ -53,6 +53,7 @@ export function PropertyCardM({ listing, layout = "full", className }: PropertyC
 
         <div className="p-4">
           <h3 className="text-h4 line-clamp-1">{listing.name}</h3>
+          {listing.unitType === "Whole building" && <span className="bg-accent-soft text-accent mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold">Whole building · sold as one</span>}
           {listing.price ? (
             <p className="text-accent mt-1 text-lg font-semibold">{listing.price}</p>
           ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
@@ -40,7 +41,7 @@ export function BuildingForm({ action, building, projectId, submitLabel, onSucce
   }, {});
 
   return (
-    <form action={formAction} className="flex flex-col gap-5 p-5">
+    <PersistForm state={state} action={formAction} className="flex flex-col gap-5 p-5">
       <input type="hidden" name="projectId" value={projectId} />
 
       {state.error && (
@@ -58,6 +59,6 @@ export function BuildingForm({ action, building, projectId, submitLabel, onSucce
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />
       </div>
-    </form>
+    </PersistForm>
   );
 }

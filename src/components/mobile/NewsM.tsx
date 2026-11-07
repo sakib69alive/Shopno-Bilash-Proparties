@@ -59,7 +59,7 @@ export function NewsM({ articles }: { articles: NewsArticle[] }) {
                 containerClassName="absolute inset-0"
               />
               <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/5" />
-              <span className="bg-bg text-fg absolute top-4 left-4 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
+              <span className="absolute top-4 left-4 rounded-full border border-white/25 bg-black/35 text-white px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
                 {lead.featured ? "Featured" : "Latest"} · {lead.category}
               </span>
               <div className="absolute inset-x-5 bottom-5 text-white">

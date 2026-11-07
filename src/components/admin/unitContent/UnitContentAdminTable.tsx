@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpToLine, Pencil, Trash2 } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { IconButton } from "@/components/ui/IconButton";
 import { Button, buttonVariants } from "@/components/ui/Button";
 import { UNIT_STATUS_LABEL, type Unit, type UnitStatus } from "@/content/units";
-import { deleteUnitContent, deleteUnitsContent, setUnitStatus } from "@/features/unitContent/actions";
+import { deleteUnitContent, deleteUnitsContent, moveUnitContent, setUnitStatus } from "@/features/unitContent/actions";
+import type { MoveDirection } from "@/lib/sortOrder";
 import { cn } from "@/lib/utils";
 
 type Row = Unit & { projectName: string };
@@ -56,7 +57,33 @@ export function UnitContentAdminTable({ units, projects, initialProject = "", ca
     });
   }
 
+  // Order is kept per project: a unit moves among the units of its OWN project, in the order shown here.
+  function handleMove(unit: Row, direction: MoveDirection) {
+    startTransition(async () => {
+      await moveUnitContent(unit.id, direction);
+    });
+  }
+
   const columns: DataTableColumn<Row>[] = [
+    ...(canUpdate
+      ? [
+          {
+            key: "order",
+            header: "Order",
+            render: (u: Row) => {
+              const group = rows.filter((x) => x.projectSlug === u.projectSlug);
+              const index = group.findIndex((x) => x.id === u.id);
+              return (
+                <span className="flex items-center gap-0.5">
+                  <IconButton icon={ArrowUpToLine} label={`Move ${u.name} to the top of its project`} size="sm" disabled={isPending || index === 0} onClick={() => handleMove(u, "top")} />
+                  <IconButton icon={ArrowUp} label={`Move ${u.name} up`} size="sm" disabled={isPending || index === 0} onClick={() => handleMove(u, "up")} />
+                  <IconButton icon={ArrowDown} label={`Move ${u.name} down`} size="sm" disabled={isPending || index === group.length - 1} onClick={() => handleMove(u, "down")} />
+                </span>
+              );
+            },
+          } satisfies DataTableColumn<Row>,
+        ]
+      : []),
     { key: "name", header: "Name", render: (u) => <span className="text-fg">{u.name}</span> },
     { key: "project", header: "Project", render: (u) => u.projectName },
     { key: "unitType", header: "Type", render: (u) => u.unitType },

@@ -2,6 +2,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { resolveOwnerContext } from "@/lib/ownerContext";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { OwnerDashboard } from "@/components/portal/OwnerDashboard";
+import { getFloorNumbers } from "@/features/floors/floorNumbers";
+import { cookies } from "next/headers";
+import { HOME_FLAT_COOKIE } from "@/lib/homeFlat";
 import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import {
   getOwnerUnits,
@@ -43,10 +46,16 @@ export async function OwnerHomePage({ base }: { base: string }) {
     getOwnerSaleSummaries(context.ownerType, context.ownerId),
   ]);
 
+  const floorNumbers = await getFloorNumbers();
+  const initialFlatId = (await cookies()).get(HOME_FLAT_COOKIE)?.value;
+
   return (
     <OwnerDashboard
+      floorNumbers={floorNumbers}
+      initialFlatId={initialFlatId}
       base={base}
-      blueBlueprint={settings?.portalHomeBlueBlueprint !== false}
+      blueBlueprint={(user.portalLook ?? settings?.portalHomeLook ?? "grid") !== "cream"}
+      gridBlueprint={(user.portalLook ?? settings?.portalHomeLook ?? "grid") === "grid"}
       contactPhone={settings?.phone || undefined}
       firstName={user.name.split(" ")[0]}
       units={units}

@@ -139,6 +139,13 @@ export default async function AdminSettingsPage() {
           <span className="text-body-sm text-fg">Backup & Restore — download or restore all system data</span>
         </Link>
 
+        <Link
+          href="/admin/settings/blueprint-ai"
+          className="border-border hover:border-fg-subtle group flex items-center justify-between rounded-lg border p-4 transition-colors lg:col-span-2"
+        >
+          <span className="text-body-sm text-fg">Blueprint AI — master prompts to draw or edit floor plans with an AI, and a plan checker</span>
+        </Link>
+
         <section>
           <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
           <div className="grid grid-cols-2 gap-4">

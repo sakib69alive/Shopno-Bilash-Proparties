@@ -34,7 +34,7 @@ import { computeContributionState, computeInstallmentObligationState } from "@/l
 import { derivePhaseProgress, computeOverallProgress, deriveScheduleDelay } from "@/lib/constructionProgress";
 import { isOwnerVisible } from "@/lib/documentVisibility";
 import { summarizeSale } from "@/lib/salePayments";
-import { liveInstallmentStatus, type LiveInstallmentStatus } from "@/lib/installmentStatus";
+import { allocateInstallments, type LiveInstallmentStatus } from "@/lib/installmentStatus";
 import type { OwnerType } from "@/types/finance/costAllocation";
 import type { OwnershipRecord } from "@/types/ownership";
 import type { Sale, Booking } from "@/types/sales";
@@ -465,7 +465,7 @@ export interface OwnerSaleSummary {
   agreedPrice: number;
   adjustments: { id: ID; date: string; amount: number; reason: string }[];
   /** The scheduled installments of this flat, in due order, each with its live status (paid / overdue / due soon / upcoming). */
-  installments: { id: ID; number: number; dueDate: string; amount: number; status: LiveInstallmentStatus; paidDate?: string }[];
+  installments: { id: ID; number: number; dueDate: string; amount: number; status: LiveInstallmentStatus; paidDate?: string; paidAmount: number; remaining: number }[];
   /** False when the office has switched this flat's money details off for the owner: every figure above is then blank, never sent to the page. */
   visible: boolean;
 }
@@ -513,10 +513,17 @@ export async function getOwnerSaleSummaries(ownerType: OwnerType, ownerId: ID): 
       return {
         agreedPrice: summary.agreedPrice,
         adjustments: [...(sale.priceAdjustments ?? [])].sort((a, b) => b.date.localeCompare(a.date)),
-        installments: allInstallments
-          .filter((i) => i.saleId === sale.id || (!i.saleId && i.contractId === sale.id))
-          .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.installmentNumber - b.installmentNumber)
-          .map((i) => ({ id: i.id, number: i.installmentNumber, dueDate: i.dueDate, amount: i.amount.amount, status: liveInstallmentStatus(i), paidDate: i.paidDate })),
+        installments: (() => {
+          const own = allInstallments.filter((i) => i.saleId === sale.id || (!i.saleId && i.contractId === sale.id));
+          // Money is paid against the flat; fill the installments in due order so a part-payment shows what is still owed on it.
+          const shares = allocateInstallments(own.map((i) => ({ id: i.id, amount: i.amount.amount, status: i.status, paidDate: i.paidDate, dueDate: i.dueDate })), summary.paid);
+          return own
+            .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.installmentNumber - b.installmentNumber)
+            .map((i) => {
+              const share = shares.get(i.id)!;
+              return { id: i.id, number: i.installmentNumber, dueDate: i.dueDate, amount: i.amount.amount, status: share.status, paidDate: i.paidDate, paidAmount: share.paidAmount, remaining: share.remaining };
+            });
+        })(),
         visible: true,
         saleId: sale.id,
         unitId: sale.unitId,
@@ -556,7 +563,12 @@ export interface OwnerProjectProgress {
 }
 
 export async function getOwnerConstructionProgress(ownerType: OwnerType, ownerId: ID): Promise<OwnerProjectProgress[]> {
-  const projects = await getOwnerProjects(ownerType, ownerId);
+  const [allProjects, ownUnits] = await Promise.all([getOwnerProjects(ownerType, ownerId), getOwnerUnits(ownerType, ownerId)]);
+  // A project is left out when the office switched construction off for every flat this owner has in it.
+  const projects = allProjects.filter((p) => {
+    const mine = ownUnits.filter((u) => u.projectId === p.id);
+    return mine.length === 0 || mine.some((u) => !u.hideConstructionFromOwner);
+  });
   return Promise.all(
     projects.map(async (p) => {
       const stats = await getProjectWorkspaceStats(p.id);
@@ -637,6 +649,7 @@ export interface OwnerConstructionDetail {
 export async function getOwnerConstructionDetail(ownerType: OwnerType, ownerId: ID, unitId: ID): Promise<OwnerConstructionDetail | null> {
   const unitIds = await getOwnerUnitIds(ownerType, ownerId);
   if (!unitIds.has(unitId)) return null;
+  if ((await unitRepository.findById(unitId))?.hideConstructionFromOwner) return null;
 
   const [units, projects, buildings, floors, allPhases, allTasks, allMilestones, allRevisions, allActivity, allDocuments] = await Promise.all([
     unitRepository.list(),

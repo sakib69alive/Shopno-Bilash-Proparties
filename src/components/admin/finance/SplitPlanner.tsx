@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { formatBDT } from "@/lib/format";
 import { generateContributions, updateUnitSizes } from "@/features/costAllocations/actions";
-import { computeSplitPlan, type SplitBasis, type SplitOverride } from "@/features/costAllocations/splitPlan";
+import { computeSplitOnTop, computeSplitPlan, type SplitBasis, type SplitOverride } from "@/features/costAllocations/splitPlan";
 
 export interface PlannerUnit {
   id: string;
@@ -60,6 +60,8 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
   const [focusId, setFocusId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState<SplitOverride["mode"]>("extraPercent");
   const [editValue, setEditValue] = useState("");
+  // "Keep everyone else's amount": a custom amount is added ON TOP of the budget instead of being taken from the other flats.
+  const [onTop, setOnTop] = useState(false);
   const [parkingAmounts, setParkingAmounts] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | undefined>();
   // Sizes typed in here (a flat that is really bigger or smaller than on file). They drive the sums on screen, and are saved to the flat when you press Save.
@@ -98,8 +100,17 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     [totalAmount, chosen, basis, overrides, sizes],
   );
 
+  const onTopPlan = useMemo(
+    () => computeSplitOnTop(totalAmount, chosen.map((u) => ({ id: u.id, sqft: sq(u) })), basis, overrides),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [totalAmount, chosen, basis, overrides, sizes],
+  );
+  const hasCustom = Object.keys(overrides).some((id) => selected.has(id));
+  const topMode = onTop && hasCustom;
+  /** The figures shown and saved: the shared-out plan, or (with the tick) the "on top" one. */
+  const shown: Record<string, number> = topMode ? onTopPlan.amounts : plan.amounts;
   const parkingTotal = Object.values(parkingAmounts).reduce((s, v) => s + (Number(v) || 0), 0);
-  const maxAmount = Math.max(1, ...chosen.map((u) => plan.amounts[u.id] ?? 0));
+  const maxAmount = Math.max(1, ...chosen.map((u) => shown[u.id] ?? 0));
   const focus = focusId ? units.find((u) => u.id === focusId) : undefined;
 
   const ownerOrder = useMemo(() => [...new Set(sorted.map((u) => u.ownerLabel))], [sorted]);
@@ -107,14 +118,14 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     const map = new Map<string, { amount: number; count: number; sqft: number }>();
     for (const u of chosen) {
       const row = map.get(u.ownerLabel) ?? { amount: 0, count: 0, sqft: 0 };
-      row.amount += plan.amounts[u.id] ?? 0;
+      row.amount += shown[u.id] ?? 0;
       row.count += 1;
       row.sqft += sq(u);
       map.set(u.ownerLabel, row);
     }
     return [...map.entries()].sort((a, b) => b[1].amount - a[1].amount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chosen, plan.amounts, sizes]);
+  }, [chosen, shown, sizes]);
   const maxOwner = Math.max(1, ...ownerTotals.map(([, r]) => r.amount));
 
   function select(ids: string[], on: boolean) {
@@ -170,7 +181,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     setError(undefined);
     startTransition(async () => {
       const customUnitAmounts: Record<string, number> = {};
-      for (const u of chosen) customUnitAmounts[u.id] = plan.amounts[u.id] ?? 0;
+      for (const u of chosen) customUnitAmounts[u.id] = shown[u.id] ?? 0;
       const customParkingAmounts = Object.fromEntries(Object.entries(parkingAmounts).map(([k, v]) => [k, Number(v) || 0]));
       const changedSizes = Object.fromEntries(Object.entries(sizes).filter(([id, v]) => v !== units.find((u) => u.id === id)?.sizeSqft));
       if (Object.keys(changedSizes).length > 0) {
@@ -180,7 +191,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
           return;
         }
       }
-      const result = await generateContributions(costAllocationId, customUnitAmounts, customParkingAmounts);
+      const result = await generateContributions(costAllocationId, customUnitAmounts, customParkingAmounts, topMode ? { baseUnitAmounts: onTopPlan.base } : undefined);
       if (result.error) {
         setError(result.error);
         return;
@@ -202,7 +213,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     <div className="border-accent bg-surface-raised flex flex-col gap-3 rounded-lg border-2 p-3">
       <p className="text-body-sm">
         <span className="font-semibold">{focus.unitNumber}</span> · {focus.ownerLabel}
-        {selected.has(focus.id) && plan.amounts[focus.id] !== undefined && <span className="text-fg-muted"> — pays {formatBDT(plan.amounts[focus.id])} now</span>}
+        {selected.has(focus.id) && shown[focus.id] !== undefined && <span className="text-fg-muted"> — pays {formatBDT(shown[focus.id])} now</span>}
       </p>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-caption text-fg-subtle flex flex-col gap-1">
@@ -307,7 +318,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
                     {floor.units.map((u) => {
                       const on = selected.has(u.id);
                       const custom = overrides[u.id];
-                      const amount = plan.amounts[u.id];
+                      const amount = shown[u.id];
                       return (
                         <div key={u.id} className="relative">
                         <button
@@ -376,6 +387,16 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
             <p className="text-body-sm text-fg-muted">Tap the small pencil on a flat to change its size or how much it pays — more or less by a %, by taka, or an exact amount. The other flats cover the difference automatically.</p>
           )}
 
+          <label className="text-body-sm border-border-strong bg-surface-raised flex cursor-pointer items-start gap-3 rounded-lg border px-3.5 py-3">
+            <input type="checkbox" checked={onTop} onChange={(e) => setOnTop(e.target.checked)} className="accent-accent mt-0.5 size-5 shrink-0" />
+            <span>
+              <span className="font-semibold">Keep everyone else&apos;s amount — add the extra on top</span>
+              <span className="text-fg-subtle block">
+                Tick this and a flat given more (or less) changes only the total: the other flats pay what they would have paid anyway. Without the tick, the others cover the difference and the total stays {formatBDT(totalAmount)}.
+              </span>
+            </span>
+          </label>
+
           {overrideEntries.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {overrideEntries.map(([id, o]) => {
@@ -437,17 +458,25 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
           <h3 className="text-label text-fg-subtle uppercase">What happens now</h3>
           <p className="text-body">
-            {chosen.length === 0
+            {topMode
+              ? `Budget ${formatBDT(totalAmount)} · extra ${onTopPlan.extra >= 0 ? "+" : "−"}${formatBDT(Math.abs(onTopPlan.extra))} · new total ${formatBDT(onTopPlan.newTotal)}.`
+              : chosen.length === 0
               ? "Tap flats to choose who pays."
               : plan.error
                 ? "Fix the problem shown below."
                 : `${formatBDT(totalAmount)} is divided between ${chosen.length} flat${chosen.length === 1 ? "" : "s"}.${plan.sharedCount > 0 ? ` On average each flat pays about ${formatBDT(Math.round(Math.max(0, plan.sharedTotal) / plan.sharedCount))}.` : ""}`}
           </p>
           <div className="grid grid-cols-2 gap-2 text-center">
-            <Stat label="Total to collect" value={formatBDT(totalAmount)} />
+            <Stat label={topMode ? "New total to collect" : "Total to collect"} value={formatBDT(topMode ? onTopPlan.newTotal : totalAmount)} />
             <Stat label="Flats paying" value={String(chosen.length)} />
           </div>
-          {plan.error ? (
+          {topMode ? (
+            <div className="bg-warning-soft text-body-sm flex flex-col gap-1 rounded-md px-3 py-2">
+              <p className="flex justify-between"><span>Budget as planned</span><span className="font-semibold tabular-nums">{formatBDT(totalAmount)}</span></p>
+              <p className="flex justify-between"><span>{onTopPlan.extra >= 0 ? "Extra added on top" : "Taken off"}</span><span className="font-semibold tabular-nums">{formatBDT(Math.abs(onTopPlan.extra))}</span></p>
+              <p className="flex justify-between border-t border-warning/30 pt-1"><span>New total</span><span className="font-semibold tabular-nums">{formatBDT(onTopPlan.newTotal)}</span></p>
+            </div>
+          ) : plan.error ? (
             <p role="alert" className="bg-error-soft text-error text-body-sm rounded-md px-3 py-2">{plan.error}</p>
           ) : chosen.length === 0 ? (
             <p className="text-body-sm text-fg-muted">Pick at least one flat.</p>
@@ -463,7 +492,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
           ) : (
             <ul className="flex flex-col gap-1.5">
               {chosen.map((u) => {
-                const amount = plan.amounts[u.id] ?? 0;
+                const amount = shown[u.id] ?? 0;
                 const custom = !!overrides[u.id];
                 return (
                   <li key={u.id}>
@@ -520,7 +549,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
           )}
         </div>
 
-        <Button type="button" onClick={handleConfirm} loading={isPending} disabled={chosen.length === 0 || !!plan.error} className="w-full">
+        <Button type="button" onClick={handleConfirm} loading={isPending} disabled={chosen.length === 0 || (!topMode && !!plan.error)} className="w-full">
           Save &amp; send to clients
         </Button>
         <p className="text-caption text-fg-subtle text-center">Each owner gets the amount and last date in their app.</p>

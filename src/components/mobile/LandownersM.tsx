@@ -117,7 +117,7 @@ export function LandownersM({ projects }: { projects: Project[] }) {
     return () => window.removeEventListener("hashchange", applyHash);
   }, []);
 
-  const opportunities = projects.filter((p) => p.status !== "completed" && p.status !== "sold-out").slice(0, 4);
+  const opportunities = projects.filter((p) => p.status !== "completed" && p.status !== "handed-over" && p.status !== "sold-out").slice(0, 4);
   const path = side === "landowner" ? twoPaths.landowner : twoPaths.investor;
 
   function goToEnquiry() {
@@ -194,7 +194,7 @@ export function LandownersM({ projects }: { projects: Project[] }) {
             side === "landowner" ? "bg-accent" : "bg-fg",
           )}
         >
-          <div aria-hidden className="bg-premium/25 absolute -top-12 -right-12 size-52 rounded-full blur-3xl" />
+          <div aria-hidden className="absolute -top-12 -right-12 size-52 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_35%,transparent),transparent)]" />
           <Rule className="relative mb-5" />
           <p className="relative text-[11px] font-semibold tracking-[0.3em] text-white/60 uppercase">{path.label}</p>
           <h2 className="font-serif-display relative mt-3 text-[2.125rem] leading-[1.06] text-balance">{path.title}</h2>

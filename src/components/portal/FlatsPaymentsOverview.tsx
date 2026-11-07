@@ -78,7 +78,7 @@ export function FlatsPaymentsOverview({ summaries }: { summaries: OwnerSaleSumma
                       </span>
                       {next && (
                         <span>
-                          Next {formatBDT(next.amount)} · {formatDate(new Date(next.dueDate))} · {INSTALLMENT_STATUS_LABEL[next.status]}
+                          Next {formatBDT(next.remaining)} · {formatDate(new Date(next.dueDate))} · {INSTALLMENT_STATUS_LABEL[next.status]}
                         </span>
                       )}
                     </span>

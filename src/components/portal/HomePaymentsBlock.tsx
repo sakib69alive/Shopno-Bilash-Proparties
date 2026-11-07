@@ -16,6 +16,9 @@ export interface FlatInstallment {
   amount: number;
   status: LiveInstallmentStatus;
   paidDate?: string;
+  /** Part-payments: how much of this installment is covered, and what is still owed. */
+  paidAmount?: number;
+  remaining?: number;
 }
 
 export interface FlatPay {
@@ -43,12 +46,14 @@ const EYEBROW = "text-accent text-[0.6875rem] font-semibold tracking-[0.24em] up
 /** Plain words for the live state of an installment: Paid, Pending (not due yet), Due soon, Overdue. */
 const STATUS_WORD: Record<LiveInstallmentStatus, string> = {
   paid: "Paid",
+  partial: "Partly paid",
   upcoming: "Pending",
   "due-soon": "Due soon",
   overdue: "Overdue",
 };
 const STATUS_STYLE: Record<LiveInstallmentStatus, string> = {
   paid: "bg-success-soft text-success",
+  partial: "bg-warning-soft text-warning",
   upcoming: "bg-surface text-fg-muted",
   "due-soon": "bg-warning-soft text-warning",
   overdue: "bg-error-soft text-error",
@@ -119,6 +124,11 @@ function FlatDetail({ flat, base }: { flat: HomePaymentFlat; base: string }) {
                 <span className="min-w-0">
                   <span className="text-fg block text-sm font-semibold">Installment {i.number}</span>
                   <span className="text-fg-subtle block text-xs">{i.status === "paid" && i.paidDate ? `Paid ${formatDate(new Date(i.paidDate))}` : `Due ${formatDate(new Date(i.dueDate))}`}</span>
+                  {i.paidAmount !== undefined && i.paidAmount > 0 && i.status !== "paid" && (
+                    <span className="text-warning block text-xs font-medium">
+                      {formatBDT(i.paidAmount)} paid · {formatBDT(i.remaining ?? 0)} left
+                    </span>
+                  )}
                 </span>
                 <span className="flex shrink-0 flex-col items-end gap-1">
                   <span className="text-fg text-sm font-semibold tabular-nums">{formatBDT(i.amount)}</span>

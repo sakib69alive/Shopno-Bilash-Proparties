@@ -126,7 +126,7 @@ export function ConstructionOverviewM({ items, underway }: { items: TrackedProje
         <>
           <section className="px-[var(--gutter)]">
             <div className="bg-fg relative overflow-hidden rounded-[var(--m-radius-hero)] p-6 text-white">
-              <div aria-hidden className="bg-premium/25 absolute -top-12 -right-12 size-52 rounded-full blur-3xl" />
+              <div aria-hidden className="absolute -top-12 -right-12 size-52 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_35%,transparent),transparent)]" />
               <span className="bg-white/15 relative flex size-12 items-center justify-center rounded-full">
                 <Hammer aria-hidden className="size-5" />
               </span>
@@ -360,7 +360,7 @@ export function ConstructionDetailM({ project, progress, hasUnits }: { project: 
         <section className="flex flex-col gap-4 px-[var(--gutter)]">
           {latest && (
             <div className="bg-accent text-accent-foreground relative overflow-hidden rounded-[var(--m-radius-hero)] p-5">
-              <div aria-hidden className="bg-premium/25 absolute -top-10 -right-10 size-44 rounded-full blur-3xl" />
+              <div aria-hidden className="absolute -top-10 -right-10 size-44 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_35%,transparent),transparent)]" />
               <p className="relative text-[11px] font-semibold tracking-[0.3em] text-white/60 uppercase">Currently</p>
               <p className="font-serif-display relative mt-2 text-[1.875rem] leading-[1.1] text-balance">{latest.phase}</p>
               <p className="relative mt-2 text-[0.9375rem] leading-relaxed text-white/75">{latest.description}</p>
@@ -386,7 +386,7 @@ export function ConstructionDetailM({ project, progress, hasUnits }: { project: 
       {/* ---------- Closing ---------- */}
       <section className="px-[var(--gutter)]">
         <div className="bg-fg relative overflow-hidden rounded-[var(--m-radius-hero)] p-6 text-white">
-          <div aria-hidden className="bg-premium/20 absolute -right-10 -bottom-10 size-52 rounded-full blur-3xl" />
+          <div aria-hidden className="absolute -right-10 -bottom-10 size-52 [background:radial-gradient(closest-side,color-mix(in_srgb,var(--color-premium)_28%,transparent),transparent)]" />
           <span aria-hidden className="bg-premium relative mb-5 block h-px w-12" />
           <p className="relative text-[11px] font-semibold tracking-[0.3em] text-white/60 uppercase">{project.name}</p>
           <p className="font-serif-display relative mt-3 text-[2rem] leading-[1.08] text-balance">Watch this project take shape.</p>

@@ -46,7 +46,7 @@ export function UnitDetailM({ unit, project, otherUnits }: { unit: Unit; project
           sizes="(min-width: 768px) 90vw, 100vw"
         >
           <SaveButton id={unit.id} name={unit.name} className="absolute top-3 right-3 z-10 size-11" />
-          <span className="bg-bg text-fg absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
+          <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-black/35 text-white px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase">
             <span className={cn("size-1.5 rounded-full", UNIT_STATUS_TONE[unit.status])} aria-hidden />
             {UNIT_STATUS_LABEL[unit.status]}
           </span>

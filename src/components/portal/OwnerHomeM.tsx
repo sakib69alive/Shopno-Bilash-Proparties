@@ -11,9 +11,13 @@ import type { OwnerNextInstallment } from "@/features/ownerPortal/queries";
 export interface OwnerHomeMProps {
   base: string;
   blueBlueprint?: boolean;
+  /** With `blueBlueprint`: draw the drafting grid on the blue (the "Blue with grid" look). */
+  gridBlueprint?: boolean;
   /** The office phone number, for the "call us" link under the payments note. */
   contactPhone?: string;
   firstName: string;
+  /** The flat the owner chose last time (from a cookie), so a refresh opens the same one. */
+  initialFlatId?: string;
   units: HomeBlueprintUnit[];
   totalPayable: number;
   totalPaid: number;
@@ -72,12 +76,12 @@ export function OwnerHomeM(p: OwnerHomeMProps) {
   const flat = p.flatPayments;
 
   return (
-    <HomeFlatProvider unitIds={p.units.map((u) => u.id)}>
+    <HomeFlatProvider unitIds={p.units.map((u) => u.id)} initialId={p.initialFlatId}>
     <div className="px-[var(--gutter)] pb-8 lg:hidden">
       {/* First screen: sized to what is left between the top bar and the tab bar. */}
       <div className="flex min-h-[calc(100svh-4.25rem-6.5rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] flex-col gap-5 pt-4">
         {p.units.length > 0 ? (
-          <HomeBlueprint units={p.units} firstName={p.firstName} blue={p.blueBlueprint} className="flex-1" />
+          <HomeBlueprint units={p.units} firstName={p.firstName} blue={p.blueBlueprint} grid={p.gridBlueprint} className="flex-1" />
         ) : (
           <p className="text-fg-muted border-border flex-1 rounded-3xl border border-dashed p-6 text-sm">
             No residence is linked to your account yet. Please contact Shopno Bilash Properties Ltd.

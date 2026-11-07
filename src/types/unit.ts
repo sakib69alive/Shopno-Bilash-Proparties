@@ -45,6 +45,12 @@ export interface Unit extends AuditFields {
 
   status: UnitStatus;
 
+  /** The Admin has switched these off for the owner of this flat (Clients page → their panel): nothing of it reaches the owner's portal. */
+  hidePlanFromOwner?: boolean;
+  /** Blueprint distribution: the admin chose this specific whole-floor plan (`BuildingFloorPlan.id`) for this flat's owner, instead of the one picked automatically by floor. */
+  planFloorPlanId?: ID;
+  hideConstructionFromOwner?: boolean;
+
   // Ownership/allocation — at most one of these is set at a time.
   customerId?: ID;
   shareholderId?: ID;

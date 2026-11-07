@@ -129,8 +129,11 @@ export function BottomSheet({ open, onClose, title, children, className, texture
         className={cn(
           textured ? "bg-surface" : "bg-bg",
           "absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col rounded-t-[var(--m-radius-hero)]",
-          !dragging && "transition-transform duration-300 ease-[var(--ease-standard)]",
-          !dragging && (open ? "translate-y-0" : "translate-y-full"),
+          // `invisible` when closed (flips only after the slide-out finishes): translate-y-full alone parks the panel just
+          // below the fixed layer, and when Android's URL bar collapses mid-scroll the layer's bottom edge lifts and the
+          // closed sheet peeks up over the tab bar.
+          !dragging && "transition-[transform,visibility] duration-300 ease-[var(--ease-standard)]",
+          !dragging && (open ? "visible translate-y-0" : "invisible translate-y-full"),
         )}
       >
         <div

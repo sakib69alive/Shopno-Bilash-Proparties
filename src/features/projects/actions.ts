@@ -93,7 +93,7 @@ async function buildUnitTypes(formData: FormData, existing: UnitType[] = []): Pr
 
       let image = previous?.image && urls[i] === previous.image ? previous.image : undefined;
       if (file) {
-        const saved = await saveUploadedFile(file, "projects");
+        const saved = await saveUploadedFile(file, "projects", { blueprint: true });
         if (previous?.image) await deleteUploadedFile(previous.image);
         image = saved.url;
       }
@@ -273,7 +273,7 @@ export async function createProject(_prevState: ProjectFormState, formData: Form
   await recordAuditEvent({ actorUserId: user.id, action: "project.create", entityType: "Project", entityId: id });
 
   let builtStructure = false;
-  if (structureSpec && (structureSpec.floors > 0 || structureSpec.parkingSpaces > 0)) {
+  if (structureSpec && (structureSpec.floors > 0 || structureSpec.parkingSpaces > 0 || (structureSpec.bikeSpaces ?? 0) > 0)) {
     const built = await generateProjectStructure(id, user.id, structureSpec);
     // The summary counts on the project follow what was really created.
     await projectRepository.update(id, {

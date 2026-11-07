@@ -1,4 +1,5 @@
 import type { AuditFields, ID, Money } from "./common";
+import type { PlanRoom, PlanView } from "@/lib/planRooms";
 
 export type ProjectStatus =
   | "upcoming"
@@ -28,6 +29,39 @@ export interface UnitType {
   name: string;
   positionCode?: string;
   image?: string;
+}
+
+/** One flat's footprint on a whole-floor plan: a closed polygon, every point as a 0–1 fraction of the plan's width/height (so it survives any screen size). */
+export interface FlatArea {
+  /** "flat" (default) or "parking" — a parking bay marked on the ground / parking-level plan, keyed by the space's number (P-01). */
+  kind?: "flat" | "parking";
+  /** The flat's position code on the floor — "A" for 1A, 2A, 3A… (same idea as `UnitType.positionCode`). */
+  key: string;
+  points: [number, number][];
+  /** Degrees (clockwise) this flat is turned on the client's Home card — for a flat drawn at a different angle from the rest of the floor. */
+  turn?: number;
+}
+
+/**
+ * A whole-floor plan of the building, drawn once and shared by many floors — the architect's "typical floor". An owner opening
+ * their flat sees this plan with their own flat's `areas` entry lit and the other flats dimmed. `floors` lists the floor numbers
+ * (ground = 0) that use this plan; an EMPTY list means "every floor no other plan claims", so a building with one typical plan
+ * and a different ground floor or penthouse needs only the exceptions listed. Resolved at read time — see `lib/unitPlan.ts`.
+ */
+export interface BuildingFloorPlan {
+  id: ID;
+  name: string;
+  image: string;
+  /** width ÷ height of the drawing (from its viewBox), so the highlight can be laid exactly over it. */
+  aspect: number;
+  floors: number[];
+  areas: FlatArea[];
+  /** Rooms marked on the drawing (by hand or from `data-room` markers): the client app shows the ones inside the owner's own flat as buttons. */
+  rooms?: PlanRoom[];
+  /** The admin's own placement (tilt / zoom / shift) of this plan on the client app. */
+  view?: PlanView;
+  /** Zoom / shift of one flat on the client's Home card (the flat cut out of this plan), set from Blueprint AI → Distribution. */
+  homeView?: PlanView;
 }
 
 export interface Project extends AuditFields {
@@ -78,6 +112,9 @@ export interface Project extends AuditFields {
 
   /** Blueprint designs shared across this project's flats. A flat can still override with its own custom plan (`Unit.layoutImage`). */
   unitTypes?: UnitType[];
+
+  /** Whole-floor plans of the building (typical floor + exceptions), with each flat's area marked — shown to owners with their own flat highlighted. */
+  floorPlans?: BuildingFloorPlan[];
 }
 
 export type BuildingStatus = "planning" | "under-construction" | "completed";

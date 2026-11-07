@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
@@ -118,7 +119,7 @@ export function PhaseCostPanel({ phaseId, projectId, summary, purchases, expense
       )}
 
       {canManage && (
-        <form action={formAction} className="border-border flex flex-col gap-3 rounded-md border p-3">
+        <PersistForm state={state} action={formAction} className="border-border flex flex-col gap-3 rounded-md border p-3">
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2">
               <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
@@ -157,7 +158,7 @@ export function PhaseCostPanel({ phaseId, projectId, summary, purchases, expense
           <div>
             <SubmitButton />
           </div>
-        </form>
+        </PersistForm>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
@@ -84,7 +85,7 @@ export function SaleForm({
   const basePriceDefault = sale?.basePrice.amount ?? defaultAgreedPrice ?? selectedUnit?.finalPrice.amount;
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {bookingId && <input type="hidden" name="bookingId" value={bookingId} />}
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
@@ -152,6 +153,6 @@ export function SaleForm({
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />
       </div>
-    </form>
+    </PersistForm>
   );
 }

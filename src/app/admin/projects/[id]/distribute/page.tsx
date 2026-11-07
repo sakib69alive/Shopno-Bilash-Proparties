@@ -152,6 +152,7 @@ export default async function ProjectDistributePage({ params }: PageProps) {
     .map((p) => ({
       id: p.id,
       number: p.parkingNumber,
+      kind: p.type === "bike" ? ("bike" as const) : ("car" as const),
       ownerKey: p.ownerType && p.ownerId ? `${p.ownerType}:${p.ownerId}` : undefined,
       ownerLabel: p.ownerType && p.ownerId ? labelFor(p.ownerType, p.ownerId) : undefined,
     }));
@@ -161,7 +162,7 @@ export default async function ProjectDistributePage({ params }: PageProps) {
       <p className="text-body-sm text-fg-muted max-w-2xl">
         Pick who receives, tap their flats and parking spaces, and watch their total change before you save. Flats already sold to a customer are locked.
       </p>
-      <DistributionBoard projectId={id} groups={groups} parking={parking} people={people} canAssignParking={hasPermission(user.role, "parking.manage")} />
+      <DistributionBoard projectId={id} groups={groups} parking={parking} people={people} canAssignParking={hasPermission(user.role, "parking.manage")} canEditSizes={hasPermission(user.role, "unit.manage")} />
     </div>
   );
 }

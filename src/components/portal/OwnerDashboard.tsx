@@ -35,6 +35,7 @@ export interface OwnerDashboardProps {
   base: string;
   /** Floor plans on the blue blueprint sheet (admin setting) instead of the classic cream paper. */
   blueBlueprint?: boolean;
+  gridBlueprint?: boolean;
   contactPhone?: string;
   firstName: string;
   units: Unit[];
@@ -46,6 +47,10 @@ export interface OwnerDashboardProps {
   progress: OwnerProjectProgress[];
   documents: Document[];
   notifications: Notification[];
+  /** floorId → floor number, so each flat picks the right whole-floor plan. */
+  floorNumbers?: Record<string, number>;
+  /** The flat chosen last time on the phone Home screen. */
+  initialFlatId?: string;
   /** The flat-purchase payments (price / received / remaining), customers only. */
   saleSummaries?: OwnerSaleSummary[];
 }
@@ -108,6 +113,7 @@ function StatPanel({
 export function OwnerDashboard({
   base,
   blueBlueprint = false,
+  gridBlueprint = false,
   contactPhone,
   firstName,
   units,
@@ -119,6 +125,8 @@ export function OwnerDashboard({
   documents,
   notifications,
   saleSummaries = [],
+  floorNumbers = {},
+  initialFlatId,
 }: OwnerDashboardProps) {
   const unreadCount = notifications.filter(
     (n) => (n.status ?? (n.readAt ? "read" : "unread")) === "unread",
@@ -142,17 +150,24 @@ export function OwnerDashboard({
       <OwnerHomeM
         base={base}
         blueBlueprint={blueBlueprint}
+        gridBlueprint={gridBlueprint}
         contactPhone={contactPhone}
         firstName={firstName}
+        initialFlatId={initialFlatId}
         units={units.map((u) => ({
           id: u.id,
           unitNumber: u.unitNumber,
           projectName:
             projects.find((p) => p.id === u.projectId)?.name ?? "Your property",
-          layoutImage: resolveUnitPlan(
-            u,
-            projects.find((p) => p.id === u.projectId),
-          ).src,
+          ...(() => {
+            const plan = resolveUnitPlan(
+              u,
+              projects.find((p) => p.id === u.projectId),
+              floorNumbers[u.floorId],
+              { forOwner: true },
+            );
+            return { layoutImage: plan.src, highlight: plan.highlight };
+          })(),
           bedrooms: u.bedrooms,
           bathrooms: u.bathrooms,
           balconies: u.balconies,
@@ -183,7 +198,7 @@ export function OwnerDashboard({
                 last: last ? { amount: last.amount, date: last.date, method: last.method } : null,
                 next: (() => {
                   const open = shown.flatMap((x) => x.installments).filter((i) => i.status !== "paid").sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-                  return open[0] ? { amount: open[0].amount, dueDate: open[0].dueDate, status: open[0].status, left: open.length } : null;
+                  return open[0] ? { amount: open[0].remaining, dueDate: open[0].dueDate, status: open[0].status, left: open.length } : null;
                 })(),
               };
             })()
@@ -208,7 +223,7 @@ export function OwnerDashboard({
                         remaining: visible.remaining,
                         percent: visible.price > 0 ? Math.min(100, Math.round((visible.paid / visible.price) * 100)) : 0,
                         last: last ? { amount: last.amount, date: last.date, method: last.method } : null,
-                        next: open[0] ? { amount: open[0].amount, dueDate: open[0].dueDate, status: open[0].status, left: open.length } : null,
+                        next: open[0] ? { amount: open[0].remaining, dueDate: open[0].dueDate, status: open[0].status, left: open.length } : null,
                         installments: visible.installments,
                       }
                     : null,

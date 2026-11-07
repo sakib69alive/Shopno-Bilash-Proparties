@@ -14,7 +14,7 @@ import { projectContentRepository } from "@/features/projectContent/repository";
 export async function ProjectOpportunities() {
   const projects = await projectContentRepository.list();
   const opportunities = projects
-    .filter((p) => p.status !== "completed" && p.status !== "sold-out")
+    .filter((p) => p.status !== "completed" && p.status !== "handed-over" && p.status !== "sold-out")
     .slice(0, 2);
 
   if (opportunities.length === 0) return null;

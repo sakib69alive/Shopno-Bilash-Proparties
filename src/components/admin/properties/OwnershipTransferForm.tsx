@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle, ArrowRightLeft } from "lucide-react";
@@ -57,7 +58,7 @@ export function OwnershipTransferForm({ unitId, currentOwnerLabel, customerOptio
   }
 
   return (
-    <form action={formAction} className="bg-surface flex flex-col gap-3 rounded-md p-3">
+    <PersistForm state={state} action={formAction} className="bg-surface flex flex-col gap-3 rounded-md p-3">
       <p className="text-caption text-fg-subtle">Transferring from {currentOwnerLabel} to a new customer.</p>
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-2.5 py-2">
@@ -83,6 +84,6 @@ export function OwnershipTransferForm({ unitId, currentOwnerLabel, customerOptio
           Cancel
         </Button>
       </div>
-    </form>
+    </PersistForm>
   );
 }

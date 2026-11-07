@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
@@ -45,7 +46,7 @@ export function BookingForm({ action, booking, units, customers, projects, sales
     .map((u) => ({ value: u.id, label: `${u.unitNumber} — ${projectsById.get(u.projectId)?.name ?? "Unknown project"}` }));
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -103,6 +104,6 @@ export function BookingForm({ action, booking, units, customers, projects, sales
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />
       </div>
-    </form>
+    </PersistForm>
   );
 }

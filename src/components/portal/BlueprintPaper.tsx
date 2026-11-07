@@ -1,5 +1,7 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { PlanHighlightLayer } from "@/components/portal/PlanHighlight";
+import type { PlanHighlight } from "@/lib/unitPlan";
 
 /**
  * The drawing sheet every floor plan sits on in the owner portal — an
@@ -24,11 +26,14 @@ export const BLUEPRINT_PAPER_STYLE: CSSProperties = {
 };
 
 /**
- * The lighter, brighter blue sheet used on the client Home screen when the
- * admin turns the blue look on (Settings → Client app look). The My Property
- * pages use the deep midnight sheet above instead.
+ * The plain blue used on the client Home screen when the Blue look is chosen (company default in Settings, or the
+ * client's own pick in Profile → Appearance). A single clean blue — no grid, glow or vignette — the same way the Cream
+ * look is a single clean cream. The My Property pages keep the deep midnight sheet with its grid above.
  */
-export const BLUEPRINT_LIGHT_STYLE: CSSProperties = {
+export const BLUEPRINT_LIGHT_STYLE: CSSProperties = { backgroundColor: "#1d5aa6" };
+
+/** The Blue-with-grid look: the same blue with a soft light pool and a fine drafting grid (a stronger line every fifth square). */
+export const BLUEPRINT_GRID_STYLE: CSSProperties = {
   backgroundColor: "#1d5aa6",
   backgroundImage: [
     "radial-gradient(ellipse 75% 65% at 50% 45%, rgba(120, 175, 235, 0.38), rgba(120, 175, 235, 0) 72%)",
@@ -65,6 +70,9 @@ export function BlueprintPaper({
   title,
   meta,
   emptyText = "Floor plan coming soon",
+  highlight,
+  highlightLabel,
+  children,
 }: {
   src?: string;
   alt: string;
@@ -72,6 +80,11 @@ export function BlueprintPaper({
   title?: string;
   meta?: string;
   emptyText?: string;
+  /** A whole-floor plan with this owner's flat lit up and the others dimmed (see `PlanHighlightLayer`). */
+  highlight?: PlanHighlight;
+  highlightLabel?: string;
+  /** Draw this on the sheet instead of the plain drawing (the interactive room plan) — it fills the sheet's drawing area. */
+  children?: ReactNode;
 }) {
   return (
     <div style={BLUEPRINT_PAPER_STYLE} className={cn("relative isolate overflow-hidden", className)}>
@@ -82,7 +95,21 @@ export function BlueprintPaper({
       <Corner className="bottom-2 left-2 border-b border-l" />
       <Corner className="right-2 bottom-2 border-r border-b" />
 
-      {src ? (
+      {children ? (
+        <div className={cn("absolute top-9 right-9 left-9 flex items-center justify-center [container-type:size]", title ? "bottom-14" : "bottom-9")}>{children}</div>
+      ) : src && highlight ? (
+        <PlanHighlightLayer
+          src={src}
+          alt={alt}
+          highlight={highlight}
+          dim="#0d2540"
+          tone="dark"
+          label={highlightLabel}
+          imgStyle={BLUEPRINT_LINE_STYLE}
+          imgClassName="mix-blend-screen"
+          className={cn("absolute top-9 right-9 left-9", title ? "bottom-14" : "bottom-9")}
+        />
+      ) : src ? (
         // eslint-disable-next-line @next/next/no-img-element -- plain img: arbitrary uploaded drawings, shown whole inside the sheet
         <img
           src={src}

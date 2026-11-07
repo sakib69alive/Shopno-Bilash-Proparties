@@ -1,6 +1,7 @@
 import { createPrismaRepository } from "@/lib/prismaRepository";
 import type { Repository } from "@/lib/repository";
 import type { Unit } from "@/content/units";
+import { sortByOrder } from "@/lib/sortOrder";
 
 /**
  * Website CMS — Properties (public unit listings, `content/units.ts`'s
@@ -19,7 +20,13 @@ import type { Unit } from "@/content/units";
  * static file directly, kept for any caller that genuinely needs
  * synchronous access.
  */
-export const unitContentRepository: Repository<Unit> = createPrismaRepository<Unit>("unitContent");
+const unitContentBase = createPrismaRepository<Unit>("unitContent");
+
+/** `list()` returns units in the admin-chosen order (Admin → Website → Properties → arrows). */
+export const unitContentRepository: Repository<Unit> = {
+  ...unitContentBase,
+  list: async () => sortByOrder(await unitContentBase.list()),
+};
 
 export async function findUnitContentBySlug(projectSlug: string, unitSlug: string): Promise<Unit | null> {
   const all = await unitContentRepository.list();

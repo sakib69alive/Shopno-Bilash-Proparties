@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
+import { computeMove, type MoveDirection } from "@/lib/sortOrder";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectContentRepository, slugifyProjectName } from "@/features/projectContent/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
 import { checkMapField } from "@/lib/mapLinks";
+import { roomsFromForm, prepareBlueprintFile } from "@/features/planRooms/fromForm";
 import { checkTourField, checkVideoField } from "@/lib/mediaLinks";
 import { PLACEHOLDER_IMAGE, resolveCoverAndGallery } from "@/lib/photoUploads";
 import {
@@ -29,6 +31,7 @@ const PROJECT_STATUSES: ProjectStatus[] = [
   "ongoing",
   "near-completion",
   "completed",
+  "handed-over",
   "sold-out",
 ];
 
@@ -49,10 +52,10 @@ function toOptionalNumber(raw: string): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-const BLUEPRINT_FIELD: Record<BlueprintKind, { file: string; remove: string; label?: string }> = {
-  garage: { file: "blueprintGarage", remove: "removeBlueprintGarage" },
-  floor: { file: "blueprintFloor", remove: "removeBlueprintFloor", label: "blueprintFloorLabel" },
-  roof: { file: "blueprintRoof", remove: "removeBlueprintRoof" },
+const BLUEPRINT_FIELD: Record<BlueprintKind, { file: string; remove: string; rooms: string; label?: string }> = {
+  garage: { file: "blueprintGarage", remove: "removeBlueprintGarage", rooms: "blueprintRoomsGarage" },
+  floor: { file: "blueprintFloor", remove: "removeBlueprintFloor", rooms: "blueprintRoomsFloor", label: "blueprintFloorLabel" },
+  roof: { file: "blueprintRoof", remove: "removeBlueprintRoof", rooms: "blueprintRoomsRoof" },
 };
 
 function getBlueprintFile(formData: FormData, name: string): File | null {
@@ -79,7 +82,9 @@ async function resolveBlueprints(
     const current = existing?.find((b) => b.kind === kind);
     const customLabel = field.label ? String(formData.get(field.label) ?? "").trim() : "";
     const label = customLabel || BLUEPRINT_KIND_LABEL[kind];
-    const file = getBlueprintFile(formData, field.file);
+    const picked = getBlueprintFile(formData, field.file);
+    // Turned upright / trimmed first, so the saved drawing and its room markers agree.
+    const file = picked ? (await prepareBlueprintFile(picked)).file : null;
 
     if (file) {
       let saved;
@@ -89,11 +94,15 @@ async function resolveBlueprints(
         return { error: err instanceof Error ? err.message : "Couldn't save that blueprint." };
       }
       if (current) await deleteUploadedFile(current.image.src);
-      result.push({ kind, label, image: { src: saved.url, alt: `${BLUEPRINT_KIND_LABEL[kind]} blueprint of ${projectName}` } });
+      const planRooms = await roomsFromForm(formData, field.rooms, file);
+      result.push({ kind, label, image: { src: saved.url, alt: `${BLUEPRINT_KIND_LABEL[kind]} blueprint of ${projectName}` }, ...(planRooms ? { planRooms } : {}) });
     } else if (current && formData.get(field.remove) === "on") {
       await deleteUploadedFile(current.image.src);
     } else if (current) {
-      result.push({ ...current, label });
+      const planRooms = await roomsFromForm(formData, field.rooms, null, current.planRooms);
+      const { planRooms: _old, ...rest } = current;
+      void _old;
+      result.push({ ...rest, label, ...(planRooms ? { planRooms } : {}) });
     }
   }
 
@@ -352,4 +361,31 @@ export async function deleteProjectContent(id: string): Promise<void> {
   revalidatePath("/landowners");
   revalidatePath("/services");
   revalidatePath("/construction");
+}
+
+/**
+ * Admin → Website → Projects → the arrows: put a project earlier or later on the public site (or straight to the
+ * top). Only the order numbers change; the public pages read them through `projectContentRepository.list()`.
+ */
+export async function moveProjectContent(id: string, direction: MoveDirection): Promise<void> {
+  const user = await requireContentPermission("content.update");
+  if (direction !== "up" && direction !== "down" && direction !== "top") return;
+
+  const all = await projectContentRepository.list(); // already in display order
+  const changes = computeMove(
+    all.map((p) => p.id),
+    new Map(all.map((p) => [p.id, p.sortOrder])),
+    id,
+    direction,
+  );
+  for (const [projectId, sortOrder] of changes) await projectContentRepository.update(projectId, { sortOrder });
+  if (changes.size === 0) return;
+
+  await recordAuditEvent({ actorUserId: user.id, action: "content.project.reorder", entityType: "Project", entityId: id });
+
+  revalidatePath("/projects");
+  revalidatePath("/properties");
+  revalidatePath("/admin/content/projects");
+  revalidatePath("/sitemap");
+  revalidatePath("/", "layout");
 }

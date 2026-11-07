@@ -45,6 +45,7 @@ export function StructureBuilder() {
   const [perFloor, setPerFloor] = useState("");
   const [avgSqft, setAvgSqft] = useState("");
   const [parking, setParking] = useState("");
+  const [bikes, setBikes] = useState("");
   const [rows, setRows] = useState<ExceptionRow[]>([]);
   const [nextKey, setNextKey] = useState(1);
 
@@ -120,7 +121,8 @@ export function StructureBuilder() {
               placeholder="e.g. 1200"
               helperText="Every flat starts with this size, so owners' total sqft adds up straight away."
             />
-            <Input label="Parking spaces" name="parkingCount" type="number" min={0} value={parking} onChange={(e) => setParking(e.target.value)} placeholder="e.g. 20" helperText="Made as P-01, P-02, …" />
+            <Input label="Car parking spaces" name="parkingCount" type="number" min={0} value={parking} onChange={(e) => setParking(e.target.value)} placeholder="e.g. 20" helperText="Made as P-01, P-02, …" />
+            <Input label="Motorcycle parking (optional)" name="bikeParkingCount" type="number" min={0} value={bikes} onChange={(e) => setBikes(e.target.value)} placeholder="leave empty if none" helperText="Made as M-01, M-02, … — fine to skip." />
           </div>
 
           <div className="flex flex-col gap-2.5">
@@ -159,7 +161,7 @@ export function StructureBuilder() {
 
           <div className="bg-surface flex flex-col gap-3 rounded-lg p-3">
             <p className="text-body-sm text-fg">
-              {floorCount === 0 && toInt(parking) === 0 ? (
+              {floorCount === 0 && toInt(parking) === 0 && toInt(bikes) === 0 ? (
                 "Fill the numbers above to see the result here."
               ) : (
                 <>
@@ -167,7 +169,8 @@ export function StructureBuilder() {
                     {buildingCount > 1 ? `${buildingCount} buildings × ` : ""}
                     {floorCount} floor{floorCount === 1 ? "" : "s"} = {totalUnits} flat{totalUnits === 1 ? "" : "s"}
                   </span>
-                  {toInt(parking) > 0 && <span> · {toInt(parking)} parking</span>}
+                  {toInt(parking) > 0 && <span> · {toInt(parking)} car parking</span>}
+                  {toInt(bikes) > 0 && <span> · {toInt(bikes)} motorcycle</span>}
                   {plan.sqftPerBuilding > 0 && <span className="text-fg-muted"> · {(plan.sqftPerBuilding * buildingCount).toLocaleString("en-US")} sqft in total</span>}
                 </>
               )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import Image from "next/image";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -34,7 +35,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
   const [state, formAction] = useActionState(action, {});
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -150,12 +151,36 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
       </div>
 
       <h2 className="text-label text-fg-subtle mt-2 uppercase">Client app look</h2>
-      <Switch
-        name="portalHomeBlueBlueprint"
-        label="Blue blueprint on the client's Home screen"
-        description="On (default): the floor plan on the client's Home screen sits on the blue blueprint sheet. Off: it sits on the classic cream paper instead. This only changes the client app's Home screen — the My Property pages always show the blue sheet, and nothing on the public website or in Admin changes."
-        defaultChecked={settings.portalHomeBlueBlueprint ?? true}
-      />
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-body-sm text-fg font-medium">Floor-plan look on the client&rsquo;s Home screen</legend>
+        <p className="text-caption text-fg-subtle">
+          What your clients see by default. Each client can switch it for themselves in the app under Profile → Appearance, and their own pick wins. This only changes the
+          client app&rsquo;s Home screen — the My Property pages always show the blue sheet, and nothing on the public website or in Admin changes.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {(
+            [
+              { value: "cream", title: "Cream paper", note: "The plan on a clean, plain cream background.", swatch: "bg-[#efe7d6]" },
+              { value: "blue", title: "Blue", note: "The plan as white lines on a clean, plain blue background.", swatch: "bg-[#1d5aa6]" },
+              {
+                value: "grid",
+                title: "Blue grid (default)",
+                note: "The same blue with a fine drafting grid, like a real blueprint.",
+                swatch: "bg-[#1d5aa6] [background-image:linear-gradient(rgb(255_255_255/0.28)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.28)_1px,transparent_1px)] [background-size:10px_10px]",
+              },
+            ] as const
+          ).map((option) => (
+            <label key={option.value} className="border-border-strong has-[:checked]:border-accent has-[:checked]:bg-accent-soft flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors">
+              <input type="radio" name="portalHomeLook" value={option.value} defaultChecked={(settings.portalHomeLook ?? "grid") === option.value} className="accent-accent mt-1" />
+              <span className={`${option.swatch} border-border size-9 shrink-0 rounded-md border`} aria-hidden />
+              <span>
+                <span className="text-body-sm text-fg block font-medium">{option.title}</span>
+                <span className="text-caption text-fg-muted block">{option.note}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <h2 className="text-label text-fg-subtle mt-2 uppercase">Security</h2>
       <Switch
@@ -174,6 +199,6 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
       <div className="flex items-center gap-3">
         <SubmitButton />
       </div>
-    </form>
+    </PersistForm>
   );
 }

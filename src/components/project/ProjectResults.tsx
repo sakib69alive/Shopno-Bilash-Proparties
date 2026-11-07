@@ -1,5 +1,6 @@
 "use client";
 
+import { compareByOrder } from "@/lib/sortOrder";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { buttonVariants } from "@/components/ui/Button";
@@ -48,7 +49,7 @@ export function ProjectResults({ projects }: { projects: Project[] }) {
     [projects, q, type, status, city],
   );
 
-  const sorted = useMemo(() => [...filtered].sort((a, b) => Number(b.featured) - Number(a.featured)), [filtered]);
+  const sorted = useMemo(() => [...filtered].sort((a, b) => compareByOrder(a, b) || Number(b.featured) - Number(a.featured)), [filtered]);
   const [first, ...rest] = sorted;
   const showFeaturedHero = Boolean(first?.featured);
 

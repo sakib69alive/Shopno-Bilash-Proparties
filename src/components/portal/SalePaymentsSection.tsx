@@ -14,6 +14,7 @@ import type { OwnerSaleSummary } from "@/features/ownerPortal/queries";
  */
 const STATUS_STYLE: Record<LiveInstallmentStatus, string> = {
   paid: "bg-success-soft text-success",
+  partial: "bg-warning-soft text-warning",
   overdue: "bg-error-soft text-error",
   "due-soon": "bg-warning-soft text-warning",
   upcoming: "bg-surface text-fg-muted",
@@ -101,6 +102,11 @@ export function SalePaymentsSection({ summaries }: { summaries: OwnerSaleSummary
                         <p className="text-caption text-fg-subtle mt-0.5">
                           {i.status === "paid" && i.paidDate ? `Paid ${formatDate(new Date(i.paidDate))}` : `Due ${formatDate(new Date(i.dueDate))}`}
                         </p>
+                        {i.paidAmount > 0 && i.status !== "paid" && (
+                          <p className="text-caption text-warning mt-0.5 font-medium">
+                            {formatBDT(i.paidAmount)} paid · {formatBDT(i.remaining)} left
+                          </p>
+                        )}
                       </div>
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <p className="text-body text-fg font-medium">{formatBDT(i.amount)}</p>

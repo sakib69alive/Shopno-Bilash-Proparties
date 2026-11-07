@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ZoomPan } from "@/components/plan/ZoomPan";
 import type { ImageAsset } from "@/content/shared";
 
 export interface LightboxImage extends ImageAsset {
@@ -77,6 +78,7 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
       aria-modal="true"
       aria-label={label}
       aria-hidden={!open}
+      data-no-swipe
       inert={!open || undefined}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -117,15 +119,11 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
       )}
 
       {current && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={current.src}
-          alt={current.alt}
-          className={cn(
-            "max-h-[75svh] max-w-[90vw] object-contain",
-            surface === "light" && "bg-bg max-h-[72svh] max-w-[92vw] rounded-lg p-3 sm:p-5",
-          )}
-        />
+        // Pinch to zoom the picture itself (not the page); a fresh zoom for every picture.
+        <ZoomPan key={index} label={current.alt} className={cn("h-[75svh] w-[90vw]", surface === "light" && "bg-bg h-[72svh] w-[92vw] rounded-lg")}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={current.src} alt={current.alt} draggable={false} className={cn("size-full object-contain select-none", surface === "light" && "p-3 sm:p-5")} />
+        </ZoomPan>
       )}
 
       {current && (current.caption || current.meta) && (

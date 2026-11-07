@@ -88,7 +88,8 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
     editableParking: { id: string; parkingNumber: string; ownerLabel: string }[] = [],
     tiers: UnitTier[] = [],
     installments: GoalInstallment[] | undefined,
-    goalStats;
+    goalStats,
+    extraRows: { ownerName: string; paid: number; base: number; extra: number }[] = [];
   try {
     project = await projectRepository.findById(allocation.projectId);
 
@@ -154,6 +155,19 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
         };
       }),
     );
+
+    // Budget raised "on top": who was given more or less than the normal share.
+    if (allocation.originalAmount) {
+      extraRows = contributions
+        .filter((c) => c.baseAmount && c.payableAmount.amount !== c.baseAmount.amount)
+        .map((c) => ({
+          ownerName: contributionRows.find((r) => r.contributionId === c.id)?.ownerName ?? "—",
+          paid: c.payableAmount.amount,
+          base: c.baseAmount!.amount,
+          extra: c.payableAmount.amount - c.baseAmount!.amount,
+        }))
+        .sort((a, b) => b.extra - a.extra);
+    }
 
     if (allocation.status === "draft") {
       const method = resolveAllocationMethod(allocation.allocationMethod);
@@ -362,6 +376,48 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
               <KpiCard label="Unpaid" value={goalStats.ownerCounts.unpaid} status={goalStats.ownerCounts.unpaid > 0 ? "error" : "success"} />
             </DashboardSection>
           </div>
+
+          {allocation.originalAmount && (
+            <div className="p-4 sm:p-6 pt-0">
+              <DashboardSection title="Budget — planned vs. now">
+                <KpiCard label="Budget as planned" value={allocation.originalAmount.amount} formatValue={formatBDT} />
+                <KpiCard
+                  label={allocation.totalAmount.amount >= allocation.originalAmount.amount ? "Extra on top" : "Taken off"}
+                  value={Math.abs(allocation.totalAmount.amount - allocation.originalAmount.amount)}
+                  formatValue={formatBDT}
+                  status={allocation.totalAmount.amount > allocation.originalAmount.amount ? "warning" : "success"}
+                />
+                <KpiCard label="New total" value={allocation.totalAmount.amount} formatValue={formatBDT} />
+                <KpiCard label="Average per owner" value={contributionRows.length > 0 ? Math.round(allocation.totalAmount.amount / contributionRows.length) : 0} formatValue={formatBDT} />
+              </DashboardSection>
+              {extraRows.length > 0 && (
+                <div className="border-border bg-surface-raised mt-4 rounded-lg border p-4">
+                  <h3 className="text-label text-fg-subtle mb-2 uppercase">Who paid more or less than the normal share</h3>
+                  <ul className="flex flex-col gap-1.5">
+                    {extraRows.map((r) => {
+                      const avg = contributionRows.length > 0 ? Math.round(allocation.totalAmount.amount / contributionRows.length) : 0;
+                      return (
+                        <li key={r.ownerName + r.paid} className="bg-surface flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 rounded-lg px-3 py-2">
+                          <span className="text-body-sm font-semibold">{r.ownerName}</span>
+                          <span className="text-body-sm tabular-nums">
+                            pays {formatBDT(r.paid)} <span className="text-fg-subtle">(normal {formatBDT(r.base)})</span>{" "}
+                            <span className={r.extra > 0 ? "text-warning font-semibold" : "text-success font-semibold"}>
+                              {r.extra > 0 ? "+" : "−"}
+                              {formatBDT(Math.abs(r.extra))}
+                            </span>{" "}
+                            <span className="text-fg-subtle">· {r.paid >= avg ? "above" : "below"} the {formatBDT(avg)} average by {formatBDT(Math.abs(r.paid - avg))}</span>
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="text-body-sm text-fg-muted mt-3">
+                    Together they paid {formatBDT(extraRows.reduce((sum, r) => sum + r.extra, 0))} {extraRows.reduce((sum, r) => sum + r.extra, 0) >= 0 ? "extra" : "less"} — that is exactly what the budget moved by.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="p-4 sm:p-6 pt-0">
             <h2 className="text-label text-fg-subtle mb-3 uppercase">Installment Plan</h2>

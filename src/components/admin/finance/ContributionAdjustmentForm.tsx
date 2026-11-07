@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle, Plus } from "lucide-react";
@@ -47,7 +48,7 @@ export function ContributionAdjustmentForm({ costAllocationId, contributionId }:
   }
 
   return (
-    <form action={formAction} className="bg-surface flex flex-col gap-3 rounded-md p-3">
+    <PersistForm state={state} action={formAction} className="bg-surface flex flex-col gap-3 rounded-md p-3">
       <input type="hidden" name="contributionId" value={contributionId} />
 
       {state.error && (
@@ -75,6 +76,6 @@ export function ContributionAdjustmentForm({ costAllocationId, contributionId }:
           Cancel
         </Button>
       </div>
-    </form>
+    </PersistForm>
   );
 }

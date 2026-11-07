@@ -22,12 +22,13 @@ export default async function AdminProjectContentListPage() {
   const projects = await projectContentRepository.list();
   const canCreate = hasPermission(user.role, "content.create");
   const canDelete = hasPermission(user.role, "content.delete");
+  const canReorder = hasPermission(user.role, "content.update");
 
   return (
     <>
       <AdminPageHeader
         title="Projects"
-        description="Developments shown on the public Projects pages."
+        description="Developments shown on the public Projects pages. Use the arrows to choose which come first."
         breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Projects" }]}
         primaryAction={
           canCreate && (
@@ -39,7 +40,7 @@ export default async function AdminProjectContentListPage() {
         }
       />
       <div className="p-4 sm:p-6">
-        <ProjectContentAdminTable projects={projects} canDelete={canDelete} />
+        <ProjectContentAdminTable projects={projects} canDelete={canDelete} canReorder={canReorder} />
       </div>
     </>
   );

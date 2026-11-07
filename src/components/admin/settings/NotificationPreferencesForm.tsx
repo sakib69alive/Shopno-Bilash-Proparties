@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Select } from "@/components/ui/Select";
@@ -47,7 +48,7 @@ export function NotificationPreferencesForm({ preference }: NotificationPreferen
   const [mode, setMode] = useState(preference?.mode ?? "all");
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {state.error && <p className="text-body-sm text-error">{state.error}</p>}
 
       <Select label="Mode" name="mode" options={MODE_OPTIONS} value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} />
@@ -80,6 +81,6 @@ export function NotificationPreferencesForm({ preference }: NotificationPreferen
       <div>
         <SubmitButton />
       </div>
-    </form>
+    </PersistForm>
   );
 }

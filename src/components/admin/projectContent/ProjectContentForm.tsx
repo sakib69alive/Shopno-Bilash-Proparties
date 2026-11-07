@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { ProjectGalleryField } from "./ProjectGalleryField";
 import { MediaLinksFields } from "@/components/admin/shared/MediaLinksFields";
 import { AdminImageField } from "@/components/admin/settings/AdminImageField";
+import { BlueprintRoomsField } from "@/components/admin/plan/BlueprintRoomsField";
 import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
 import type { ProjectContentFormState } from "@/features/projectContent/actions";
 
@@ -54,7 +56,7 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
   const [state, formAction] = useActionState(action, {});
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -215,21 +217,25 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         <p className="text-body-sm text-fg-muted -mt-1">
           Shown on the project page as a swipeable set: garage first, then floor, then roof. Add only the ones you have.
         </p>
-        <AdminImageField
+        <BlueprintRoomsField
+          preset="building"
           label="Garage blueprint"
           name="blueprintGarage"
           removeName="removeBlueprintGarage"
+          roomsName="blueprintRoomsGarage"
           currentSrc={project?.blueprints?.find((b) => b.kind === "garage")?.image.src}
+          initial={project?.blueprints?.find((b) => b.kind === "garage")?.planRooms}
           helperText="JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
-          allowSvg
         />
-        <AdminImageField
+        <BlueprintRoomsField
+          preset="building"
           label="Floor blueprint"
           name="blueprintFloor"
           removeName="removeBlueprintFloor"
+          roomsName="blueprintRoomsFloor"
           currentSrc={project?.blueprints?.find((b) => b.kind === "floor")?.image.src}
+          initial={project?.blueprints?.find((b) => b.kind === "floor")?.planRooms}
           helperText="A typical floor, or the plan most floors share. JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
-          allowSvg
         />
         <Input
           label="Floor label (optional)"
@@ -237,11 +243,14 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
           defaultValue={project?.blueprints?.find((b) => b.kind === "floor")?.label}
           placeholder="e.g. Typical floor (2–9)"
         />
-        <AdminImageField
+        <BlueprintRoomsField
+          preset="building"
           label="Roof blueprint"
           name="blueprintRoof"
           removeName="removeBlueprintRoof"
+          roomsName="blueprintRoomsRoof"
           currentSrc={project?.blueprints?.find((b) => b.kind === "roof")?.image.src}
+          initial={project?.blueprints?.find((b) => b.kind === "roof")?.planRooms}
         />
       </fieldset>
 
@@ -255,6 +264,6 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />
       </div>
-    </form>
+    </PersistForm>
   );
 }

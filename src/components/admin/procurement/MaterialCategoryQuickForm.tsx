@@ -1,5 +1,6 @@
 "use client";
 
+import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { Input } from "@/components/ui/Input";
@@ -29,12 +30,12 @@ export function MaterialCategoryQuickForm() {
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-2">
+    <PersistForm ref={formRef} state={state} action={formAction} className="flex flex-wrap items-end gap-2">
       <Input label="New Category" name="name" required placeholder="e.g. Electrical" className="h-9" />
       <Input label="Default Unit (optional)" name="defaultUnit" placeholder="e.g. Bag" className="h-9 w-36" />
       <Input label="Description (optional)" name="description" placeholder="e.g. OPC/PCC cement, all brands" className="h-9 flex-1" />
       <SubmitButton />
       {state.error && <p className="text-body-sm text-error">{state.error}</p>}
-    </form>
+    </PersistForm>
   );
 }

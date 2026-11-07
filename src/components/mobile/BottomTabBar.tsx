@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Building2, Heart, House, KeyRound, Menu, type LucideIcon } from "lucide-react";
@@ -35,7 +35,7 @@ const ITEM =
 
 /**
  * Phone bottom navigation — a solid floating capsule held just above the screen
- * edge (smoked frosted glass on every public page). Only the
+ * edge (smoked glass tint on every public page). Only the
  * current tab shows its label, inside a green capsule that grows into place
  * as you move between tabs. Steps aside while a detail page's `ActionBar`
  * is mounted.
@@ -51,31 +51,46 @@ export function BottomTabBar() {
   const pending = tapped && tapped.from === pathname ? tapped.key : null;
   const current = menuOpen ? "menu" : (pending ?? activeKey(pathname));
 
-  // The bar is smoked-glass on every public page (see `glassStyle`): a dark translucent tint + blur, so white icons
-  // stay readable whether it floats over a photo or over the ivory page background.
-
   // Swipe left/right to step to the next/previous tab (Home ↔ Projects ↔ Properties ↔ Saved). Shared rules
   // (what it ignores, how forgiving it is) live in `useHorizontalSwipe`.
   const router = useRouter();
   const hrefs = TABS.filter((t) => t.href).map((t) => t.href as string);
   const currentIndex = hrefs.findIndex((h) => TABS.find((t) => t.href === h)?.key === activeKey(pathname));
+  const navRef = useRef<HTMLElement>(null);
   useHorizontalSwipe((direction) => {
     const next = hrefs[currentIndex + direction];
     if (!next) return;
+    // Click the tab's own link rather than calling router.push: a swipe then goes through exactly what a tap does,
+    // including the site-wide "Entering …" page loader, which listens for link clicks (a bare push skipped it).
+    const link = navRef.current?.querySelector<HTMLAnchorElement>(`a[href="${next}"]`);
+    if (link) {
+      link.click();
+      return;
+    }
     setTapped({ key: TABS.find((t) => t.href === next)!.key, from: pathname });
     router.push(next);
   }, currentIndex >= 0 && !menuOpen);
-  const glassStyle: CSSProperties = {
-    backgroundColor: "rgb(28 27 25 / 0.42)",
-    backdropFilter: "blur(22px) saturate(180%)",
-    WebkitBackdropFilter: "blur(22px) saturate(180%)",
-    borderColor: "rgb(255 255 255 / 0.28)",
-    transition:
-      "background-color 500ms var(--ease-standard), backdrop-filter 500ms var(--ease-standard), -webkit-backdrop-filter 500ms var(--ease-standard), border-color 500ms var(--ease-standard), box-shadow 500ms var(--ease-standard)",
-  };
+
+  // Smoked glass. The blur lives on its OWN child layer (not on the bar itself): backdrop-filter on the same element as
+  // the border-radius/shadow/border is what Android Chrome mis-paints while scrolling. Weak devices (<=4 GB RAM or
+  // <=4 cores, or reduced-motion) skip the blur and keep the same tint, since live blur is the costliest effect here.
+  const [lite, setLite] = useState(false);
+  useEffect(() => {
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const weak = (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) || (nav.hardwareConcurrency !== undefined && nav.hardwareConcurrency <= 4);
+    if (weak || window.matchMedia("(prefers-reduced-motion: reduce)").matches) setLite(true);
+  }, []);
+  const glassLayer: CSSProperties = lite
+    ? { backgroundColor: "rgb(28 27 25 / 0.86)" }
+    : {
+        backgroundColor: "rgb(28 27 25 / 0.42)",
+        backdropFilter: "blur(22px) saturate(180%)",
+        WebkitBackdropFilter: "blur(22px) saturate(180%)",
+      };
 
   return (
     <nav
+      ref={navRef}
       aria-label="Main"
       aria-hidden={hasActionBar || undefined}
       inert={hasActionBar || undefined}
@@ -85,9 +100,10 @@ export function BottomTabBar() {
       )}
     >
       <div
-        style={glassStyle}
-        className="flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]"
+        style={{ borderColor: "rgb(255 255 255 / 0.28)" }}
+        className="relative isolate flex h-16 items-center gap-1 rounded-full border p-1.5 shadow-[0_14px_34px_rgb(var(--shadow-color)/0.16),0_2px_6px_rgb(var(--shadow-color)/0.08)]"
       >
+        <div aria-hidden style={glassLayer} className="pointer-events-none absolute inset-0 -z-10 rounded-full" />
         {TABS.map(({ key, label, icon: Icon, href }) => {
           const active = key === current;
           const content = (

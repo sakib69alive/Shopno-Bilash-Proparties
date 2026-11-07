@@ -5,6 +5,8 @@ import { findOwnerCredentialsByPhone } from "@/lib/auth/ownerCredentials";
 import { getOwnerUnits } from "@/features/ownerPortal/queries";
 import { projectRepository } from "@/features/projects/repository";
 import { ChangePinForm } from "@/components/portal/ChangePinForm";
+import { PortalLookPicker } from "@/components/portal/PortalLookPicker";
+import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import { Button } from "@/components/ui/Button";
 import type { UserStatus } from "@/types/user";
 
@@ -27,6 +29,9 @@ export async function OwnerProfilePage() {
   const units = context ? await getOwnerUnits(context.ownerType, context.ownerId) : [];
   const projects = units.length > 0 ? await projectRepository.list() : [];
   const projectsById = new Map(projects.map((p) => [p.id, p]));
+
+  const settings = await companySettingsRepository.findById(COMPANY_SETTINGS_ID);
+  const look = user.portalLook ?? settings?.portalHomeLook ?? "grid";
 
   const initials = user.name.split(" ").map((p) => p[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 
@@ -79,6 +84,12 @@ export async function OwnerProfilePage() {
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="border-border bg-surface-raised rounded-2xl border p-6 shadow-sm sm:p-7">
+        <p className="text-h4 text-fg">Appearance</p>
+        <p className="text-body-sm text-fg-muted mt-1 mb-4">How your floor plan looks on the Home screen.</p>
+        <PortalLookPicker initial={look} />
       </div>
 
       {hasPin && (

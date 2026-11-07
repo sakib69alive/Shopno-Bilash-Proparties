@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { PORTAL_NAV, SHAREHOLDER_NAV, LANDOWNER_NAV } from "@/config/navigation";
 import { resolveOwnerContext } from "@/lib/ownerContext";
+import { userRepository } from "@/features/users/repository";
 import { getOwnerNotifications } from "@/features/ownerPortal/queries";
 import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 
@@ -27,6 +28,14 @@ export default async function PortalLayout({ children }: { children: ReactNode }
   const notifications = ownerContext ? await getOwnerNotifications(ownerContext.ownerType, ownerContext.ownerId) : [];
   const unreadCount = notifications.filter((n) => (n.status ?? (n.readAt ? "read" : "unread")) === "unread").length;
   const settings = await companySettingsRepository.findById(COMPANY_SETTINGS_ID);
+
+  // "Last seen" for the Clients page — written at most every two minutes, and never allowed to break the page.
+  try {
+    const seen = user.lastSeenAt ? new Date(user.lastSeenAt).getTime() : 0;
+    if (Date.now() - seen > 120_000) await userRepository.update(user.id, { lastSeenAt: new Date().toISOString() });
+  } catch {
+    // bookkeeping only
+  }
 
   return (
     <PortalShell navItems={navItems} ownerName={user.name} unreadNotifications={unreadCount} settings={settings}>

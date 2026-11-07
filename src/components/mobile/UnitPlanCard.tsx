@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Download, Maximize2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, Maximize2, X } from "lucide-react";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { Media } from "@/components/ui/Media";
+import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
+import { ZoomPan } from "@/components/plan/ZoomPan";
+import { unitPlanView } from "@/lib/planRooms";
 import type { Unit } from "@/content/units";
 
 /**
@@ -14,6 +17,23 @@ import type { Unit } from "@/content/units";
  */
 export function UnitPlanCard({ unit }: { unit: Unit }) {
   const [open, setOpen] = useState(false);
+  const [roomIds, setRoomIds] = useState<string[]>([]);
+  // A whole-floor drawing is shown as just THIS flat (framed and cut to its outline); rooms are the ones inside it.
+  const view = unitPlanView(unit.floorPlanRooms, unit.floorPlanFlat);
+  const withRooms = Boolean(unit.floorPlan && view.plan);
+
+  // Full screen for a flat cut out of a whole-floor drawing: only THIS flat (with its room buttons), not the whole floor.
+  useEffect(() => {
+    if (!open || !withRooms) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, withRooms]);
 
   const facts = [
     unit.bedrooms !== undefined ? { label: "Beds", value: String(unit.bedrooms) } : null,
@@ -32,20 +52,21 @@ export function UnitPlanCard({ unit }: { unit: Unit }) {
         <h2 id="unit-plan-heading" className="font-display text-[1.5rem] leading-tight font-bold tracking-tight">
           Floor plan
         </h2>
-        {unit.floorPlan && (
+        {unit.floorPlan && !view.plan && (
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="View floor plan full screen"
-            className="text-accent bg-accent-soft flex size-11 items-center justify-center rounded-full"
+            className="text-accent bg-accent-soft flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold"
           >
-            <Maximize2 aria-hidden className="size-5" />
+            <Maximize2 aria-hidden className="size-4" />
+            Enlarge
           </button>
         )}
       </div>
 
-      <div className="mt-4 flex gap-4 pb-5 pl-5">
-        <dl className="flex w-[30%] shrink-0 flex-col gap-4">
+      <div className={withRooms ? "mt-4 px-5" : "mt-4 flex gap-4 pb-5 pl-5"}>
+        <dl className={withRooms ? "grid grid-cols-3 gap-x-4 gap-y-4" : "flex w-[30%] shrink-0 flex-col gap-4"}>
           {facts.map((fact) => (
             <div key={fact.label}>
               <dt className="text-body-sm text-fg-subtle">{fact.label}</dt>
@@ -54,7 +75,17 @@ export function UnitPlanCard({ unit }: { unit: Unit }) {
           ))}
         </dl>
 
-        {unit.floorPlan && (
+        {unit.floorPlan && view.plan && (
+          // Rooms marked and/or a flat outline: the plan fits the card; each room is a button that lifts it off the plan.
+          <div className="mt-5 pb-5">
+            <div className="border-border relative overflow-hidden rounded-2xl border bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] p-2 [background-size:20px_20px]">
+              <RoomStage src={unit.floorPlan.src} alt={unit.floorPlan.alt} plan={view.plan} frame={view.frame} selectedIds={roomIds} onSelect={setRoomIds} />
+            </div>
+            {view.plan.rooms.length > 0 && <RoomPicker plan={view.plan} selectedIds={roomIds} onSelect={setRoomIds} className="mt-4" onEnlarge={() => setOpen(true)} />}
+          </div>
+        )}
+
+        {unit.floorPlan && !view.plan && (
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -85,7 +116,24 @@ export function UnitPlanCard({ unit }: { unit: Unit }) {
         </a>
       )}
 
-      {unit.floorPlan && (
+      {unit.floorPlan && view.plan && open && (
+        <div role="dialog" aria-modal="true" aria-label="Floor plan" data-no-swipe className="bg-bg fixed inset-0 z-[70] flex flex-col p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="font-display text-xl font-bold">Floor plan</p>
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="border-border bg-surface-raised flex size-11 items-center justify-center rounded-full border">
+              <X aria-hidden className="size-5" />
+            </button>
+          </div>
+          <ZoomPan label={unit.floorPlan.alt} className="border-border min-h-0 flex-1 rounded-2xl border bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:20px_20px]">
+            <div className="flex size-full items-center justify-center p-3">
+              <RoomStage src={unit.floorPlan.src} alt={unit.floorPlan.alt} plan={view.plan} frame={view.frame} selectedIds={roomIds} onSelect={setRoomIds} />
+            </div>
+          </ZoomPan>
+          {view.plan.rooms.length > 0 && <RoomPicker plan={view.plan} selectedIds={roomIds} onSelect={setRoomIds} className="mt-3 shrink-0" />}
+        </div>
+      )}
+
+      {unit.floorPlan && !view.plan && (
         <Lightbox
           images={[unit.floorPlan]}
           index={open ? 0 : null}

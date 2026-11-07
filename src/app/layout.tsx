@@ -60,12 +60,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-theme="light"
-      className={`${inter.variable} ${manrope.variable} ${instrumentSerif.variable} ${notoSansBengali.variable} antialiased overflow-x-clip`}
+      className={`${inter.variable} ${manrope.variable} ${instrumentSerif.variable} ${notoSansBengali.variable} antialiased`}
     >
       {/*
-        (Now `overflow-x-clip`: same effect, but unlike `hidden` it keeps
-        `position: sticky` working for the whole app.)
-        `overflow-x-hidden` here is a deliberate safety net, not a fix for
+        Horizontal clipping lives on the wrapper div INSIDE <body>, deliberately not on <html>/<body>: overflow set on
+        the root elements is applied to the browser's own scroller, and on Android Chrome that makes position:fixed
+        bars (the bottom tab bar) lag and get half-covered by page content while the address bar slides in/out.
+        (`overflow-x-clip` rather than `hidden` keeps `position: sticky` working.)
+        The clip is a deliberate safety net, not a fix for
         one specific element: decorative "bleed" motifs (e.g. Values.tsx's
         two side graphics, positioned outside their narrow container into
         the page gutter) can overflow the viewport at some breakpoints
@@ -76,8 +78,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         never the page — this just enforces that at the root instead of
         chasing every current/future decorative element's exact math.
       */}
-      <body className="min-h-screen flex flex-col overflow-x-clip bg-bg text-fg">
-        {children}
+      <body className="bg-bg text-fg">
+        <div className="flex min-h-screen flex-col overflow-x-clip">{children}</div>
       </body>
     </html>
   );

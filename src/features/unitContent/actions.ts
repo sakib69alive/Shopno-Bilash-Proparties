@@ -5,10 +5,13 @@ import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
+import { computeMove, type MoveDirection } from "@/lib/sortOrder";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { unitContentRepository, slugifyUnitName } from "@/features/unitContent/repository";
 import { projectContentRepository } from "@/features/projectContent/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
+import { roomsFromForm, prepareBlueprintFile, flatOutlineFromForm } from "@/features/planRooms/fromForm";
+import type { FlatOutline, PlanRooms } from "@/lib/planRooms";
 import { checkTourField, checkVideoField } from "@/lib/mediaLinks";
 import { PLACEHOLDER_IMAGE, getUploadedFile, resolveCoverAndGallery } from "@/lib/photoUploads";
 import type { ImageAsset } from "@/content/shared";
@@ -49,13 +52,18 @@ async function resolveFloorPlan(
   formData: FormData,
   existing: ImageAsset | undefined,
   unitName: string,
-): Promise<{ floorPlan?: ImageAsset; error?: string }> {
-  const file = getUploadedFile(formData, "floorPlan");
+  existingRooms?: PlanRooms,
+  flat?: { unitNumber: string; floor?: number; previous?: FlatOutline },
+): Promise<{ floorPlan?: ImageAsset; floorPlanRooms?: PlanRooms; floorPlanFlat?: FlatOutline; error?: string }> {
+  const picked = getUploadedFile(formData, "floorPlan");
+  const file = picked ? (await prepareBlueprintFile(picked)).file : null;
   if (file) {
     try {
       const saved = await saveUploadedFile(file, "units");
       if (existing) await deleteUploadedFile(existing.src);
-      return { floorPlan: { src: saved.url, alt: `Floor plan of ${unitName}` } };
+      const floorPlanRooms = await roomsFromForm(formData, "floorPlanRooms", file);
+      const floorPlanFlat = await flatOutlineFromForm(formData, "floorPlanFlat", file, flat?.unitNumber ?? "", flat?.floor);
+      return { floorPlan: { src: saved.url, alt: `Floor plan of ${unitName}` }, floorPlanRooms, floorPlanFlat };
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Couldn't save that floor plan." };
     }
@@ -64,7 +72,11 @@ async function resolveFloorPlan(
     await deleteUploadedFile(existing.src);
     return {};
   }
-  return { floorPlan: existing };
+  return {
+    floorPlan: existing,
+    floorPlanRooms: existing ? await roomsFromForm(formData, "floorPlanRooms", null, existingRooms) : undefined,
+    floorPlanFlat: existing ? await flatOutlineFromForm(formData, "floorPlanFlat", null, flat?.unitNumber ?? "", flat?.floor, flat?.previous) : undefined,
+  };
 }
 
 async function parseUnitFields(formData: FormData) {
@@ -140,7 +152,7 @@ export async function createUnitContent(
 
   const photos = await resolveCoverAndGallery(formData, undefined, fields.name, "units");
   if (photos.error) return { error: photos.error };
-  const plan = await resolveFloorPlan(formData, undefined, fields.name);
+  const plan = await resolveFloorPlan(formData, undefined, fields.name, undefined, { unitNumber: fields.unitNumber ?? "", floor: fields.floor });
   if (plan.error) return { error: plan.error };
 
   const id = randomUUID();
@@ -168,6 +180,8 @@ export async function createUnitContent(
     coverImage: photos.coverImage ?? { src: PLACEHOLDER_IMAGE, alt: fields.name },
     gallery: photos.gallery?.length ? photos.gallery : [{ src: PLACEHOLDER_IMAGE, alt: fields.name }],
     floorPlan: plan.floorPlan,
+    floorPlanRooms: plan.floorPlanRooms,
+    floorPlanFlat: plan.floorPlanFlat,
   });
 
   await recordAuditEvent({
@@ -202,7 +216,7 @@ export async function updateUnitContent(
 
   const photos = await resolveCoverAndGallery(formData, existingUnit, fields.name, "units");
   if (photos.error) return { error: photos.error };
-  const plan = await resolveFloorPlan(formData, existingUnit.floorPlan, fields.name);
+  const plan = await resolveFloorPlan(formData, existingUnit.floorPlan, fields.name, existingUnit.floorPlanRooms, { unitNumber: fields.unitNumber ?? "", floor: fields.floor, previous: existingUnit.floorPlanFlat });
   if (plan.error) return { error: plan.error };
 
   const updated = await unitContentRepository.update(id, {
@@ -227,6 +241,8 @@ export async function updateUnitContent(
     coverImage: photos.coverImage,
     gallery: photos.gallery,
     floorPlan: plan.floorPlan,
+    floorPlanRooms: plan.floorPlanRooms,
+    floorPlanFlat: plan.floorPlanFlat,
   });
   if (!updated) return { error: "This unit no longer exists." };
 
@@ -398,4 +414,34 @@ export async function bulkCreateUnits(
 
   revalidateUnitSurfaces([projectSlug]);
   redirect(`/admin/content/properties?project=${encodeURIComponent(projectSlug)}&added=${created}`);
+}
+
+/**
+ * Admin → Website → Properties → the arrows: put a property earlier or later among ITS PROJECT's properties (or
+ * straight to the top of them). On the public Properties page the projects' own order comes first, then this.
+ */
+export async function moveUnitContent(id: string, direction: MoveDirection): Promise<void> {
+  const user = await requireContentPermission("content.update");
+  if (direction !== "up" && direction !== "down" && direction !== "top") return;
+
+  const all = await unitContentRepository.list(); // already in display order
+  const unit = all.find((u) => u.id === id);
+  if (!unit) return;
+  const siblings = all.filter((u) => u.projectSlug === unit.projectSlug);
+
+  const changes = computeMove(
+    siblings.map((u) => u.id),
+    new Map(siblings.map((u) => [u.id, u.sortOrder])),
+    id,
+    direction,
+  );
+  if (changes.size === 0) return;
+  for (const [unitId, sortOrder] of changes) await unitContentRepository.update(unitId, { sortOrder });
+
+  await recordAuditEvent({ actorUserId: user.id, action: "content.unit.reorder", entityType: "Unit", entityId: id });
+
+  revalidatePath("/properties");
+  revalidatePath(`/projects/${unit.projectSlug}`);
+  revalidatePath("/admin/content/properties");
+  revalidatePath("/", "layout");
 }

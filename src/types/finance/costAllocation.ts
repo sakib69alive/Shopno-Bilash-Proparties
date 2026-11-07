@@ -29,6 +29,8 @@ export interface CostAllocation extends AuditFields {
   title: string;
   category: string;
   totalAmount: Money;
+  /** Set when the Admin chose "keep everyone else's amount, add the extra on top": the budget as first planned. `totalAmount` then holds the new, higher (or lower) total. */
+  originalAmount?: Money;
   allocationDate: string;
   dueDate: string;
   fineType: FineType;
@@ -69,6 +71,8 @@ export interface OwnerContribution extends AuditFields {
   /** unitSizeSqft / CostAllocation.totalAllocatedSqft, snapshotted at generation time. */
   shareRatio: number;
   payableAmount: Money;
+  /** What this owner would have paid at the normal share, before a custom amount — only set when the budget was raised "on top". `payableAmount − baseAmount` is the extra. */
+  baseAmount?: Money;
   /** Denormalized running total, recomputed from this contribution's ContributionPayment rows on every payment write — never hand-edited. */
   paidAmount: Money;
   /** Copied from the CostAllocation at generation time. */

@@ -2,20 +2,23 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { Pencil, Star, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpToLine, Pencil, Star, Trash2 } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { IconButton } from "@/components/ui/IconButton";
 import { buttonVariants } from "@/components/ui/Button";
 import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
-import { deleteProjectContent } from "@/features/projectContent/actions";
+import { deleteProjectContent, moveProjectContent } from "@/features/projectContent/actions";
+import type { MoveDirection } from "@/lib/sortOrder";
 import { cn } from "@/lib/utils";
 
 export interface ProjectContentAdminTableProps {
   projects: Project[];
   canDelete: boolean;
+  /** Show the ordering arrows (needs `content.update`). */
+  canReorder?: boolean;
 }
 
-export function ProjectContentAdminTable({ projects, canDelete }: ProjectContentAdminTableProps) {
+export function ProjectContentAdminTable({ projects, canDelete, canReorder = false }: ProjectContentAdminTableProps) {
   const [isPending, startTransition] = useTransition();
 
   function handleDelete(project: Project) {
@@ -25,7 +28,31 @@ export function ProjectContentAdminTable({ projects, canDelete }: ProjectContent
     });
   }
 
+  function handleMove(project: Project, direction: MoveDirection) {
+    startTransition(async () => {
+      await moveProjectContent(project.id, direction);
+    });
+  }
+
   const columns: DataTableColumn<Project>[] = [
+    ...(canReorder
+      ? [
+          {
+            key: "order",
+            header: "Order",
+            render: (p: Project) => {
+              const index = projects.findIndex((x) => x.id === p.id);
+              return (
+                <span className="flex items-center gap-0.5">
+                  <IconButton icon={ArrowUpToLine} label={`Move ${p.name} to the top`} size="sm" disabled={isPending || index === 0} onClick={() => handleMove(p, "top")} />
+                  <IconButton icon={ArrowUp} label={`Move ${p.name} up`} size="sm" disabled={isPending || index === 0} onClick={() => handleMove(p, "up")} />
+                  <IconButton icon={ArrowDown} label={`Move ${p.name} down`} size="sm" disabled={isPending || index === projects.length - 1} onClick={() => handleMove(p, "down")} />
+                </span>
+              );
+            },
+          } satisfies DataTableColumn<Project>,
+        ]
+      : []),
     {
       key: "name",
       header: "Name",

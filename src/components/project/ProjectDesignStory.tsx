@@ -15,7 +15,12 @@ export function ProjectDesignStory({ project }: { project: Project }) {
   if (!image && features.length === 0) return null;
 
   return (
-    <Section spacing="lg">
+    // Phones get a tight rhythm (the 160px desktop padding left a big empty band under the blueprints); desktop keeps the large one.
+    <Section
+      spacing="lg"
+      className="[--design-pad:2rem] lg:[--design-pad:var(--space-section-lg)]"
+      style={{ paddingTop: "var(--design-pad)", paddingBottom: "var(--design-pad)" }}
+    >
       <Container>
         <Reveal as="p" className="text-label text-fg-subtle mb-10 uppercase">
           The Design

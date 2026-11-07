@@ -53,11 +53,11 @@ export function SaveButton({ id, name, variant = "icon", className }: SaveButton
       aria-pressed={saved}
       aria-label={label}
       className={cn(
-        "bg-bg/90 text-fg flex size-9 items-center justify-center rounded-full transition-colors hover:bg-bg",
+        "flex size-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition-colors hover:bg-black/50",
         className,
       )}
     >
-      <Heart aria-hidden className={cn("size-4.5", saved && "fill-accent text-accent")} />
+      <Heart aria-hidden className={cn("size-4.5", saved && "fill-white text-white")} />
     </button>
   );
 }

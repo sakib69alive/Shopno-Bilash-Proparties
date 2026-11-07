@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { PersistForm } from "@/components/ui/PersistForm";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -9,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { AdminImageField } from "@/components/admin/settings/AdminImageField";
+import { BlueprintRoomsField } from "@/components/admin/plan/BlueprintRoomsField";
 import { ProjectGalleryField } from "@/components/admin/projectContent/ProjectGalleryField";
 import { UNIT_STATUS_LABEL, type Unit } from "@/content/units";
 import type { UnitContentFormState } from "@/features/unitContent/actions";
@@ -30,14 +32,18 @@ function SubmitButton({ label }: { label: string }) {
   );
 }
 
+const WHOLE_BUILDING = "Whole building";
+
 const STATUS_OPTIONS = Object.entries(UNIT_STATUS_LABEL).map(([value, label]) => ({ value, label }));
 
 /** Shared by the create and edit admin pages — same shape as Projects CMS's `ProjectContentForm`. */
 export function UnitContentForm({ action, unit, projects, submitLabel }: UnitContentFormProps) {
   const [state, formAction] = useActionState(action, {});
+  // What is being sold: one flat, or the whole building. A whole building is listed with the type "Whole building", so it shows and filters as its own kind on the website.
+  const [kind, setKind] = useState<"flat" | "building">(unit?.unitType === WHOLE_BUILDING ? "building" : "flat");
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-5">
+    <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
@@ -45,7 +51,28 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
         </div>
       )}
 
-      <Input label="Name" name="name" required defaultValue={unit?.name} placeholder="e.g. Unit A-502" />
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-label text-fg-muted mb-1">What is for sale?</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              { value: "flat", title: "A flat", hint: "One flat or unit" },
+              { value: "building", title: "The whole building", hint: "Sold as one — not flat by flat" },
+            ] as const
+          ).map((o) => (
+            <label
+              key={o.value}
+              className={`flex cursor-pointer flex-col rounded-lg border px-3.5 py-3 transition-colors ${kind === o.value ? "border-accent bg-accent-soft" : "border-border-strong bg-surface-raised hover:border-accent"}`}
+            >
+              <input type="radio" name="listingKind" value={o.value} checked={kind === o.value} onChange={() => setKind(o.value)} className="sr-only" />
+              <span className="text-body-sm font-semibold">{o.title}</span>
+              <span className="text-caption text-fg-subtle">{o.hint}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <Input label="Name" name="name" required defaultValue={unit?.name} placeholder={kind === "building" ? "e.g. Meridian Residences — whole building" : "e.g. Unit A-502"} />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Select
@@ -60,7 +87,11 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Input label="Unit Type" name="unitType" required defaultValue={unit?.unitType} placeholder="e.g. Apartment" />
+        {kind === "building" ? (
+          <Input label="Unit Type" name="unitType" required readOnly value={WHOLE_BUILDING} helperText="Set automatically for a whole-building sale." />
+        ) : (
+          <Input label="Unit Type" name="unitType" required defaultValue={unit?.unitType === WHOLE_BUILDING ? "" : unit?.unitType} placeholder="e.g. Apartment" />
+        )}
         <Select
           label="Status"
           name="status"
@@ -102,7 +133,7 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Input label="Area" name="area" defaultValue={unit?.area} placeholder="e.g. 1,450 sqft or 5 Katha" />
+        <Input label={kind === "building" ? "Total area" : "Area"} name="area" defaultValue={unit?.area} placeholder={kind === "building" ? "e.g. 24,000 sqft built-up, 10 Katha land" : "e.g. 1,450 sqft or 5 Katha"} />
         <Input
           label="Price (optional — leave blank to show “Price on request”)"
           name="price"
@@ -127,13 +158,16 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
           helperText="The main image on the Properties list and the top of the unit page."
         />
         <ProjectGalleryField images={unit?.gallery ?? []} />
-        <AdminImageField
+        <BlueprintRoomsField
           label="Floor plan"
           name="floorPlan"
           removeName="removeFloorPlan"
+          roomsName="floorPlanRooms"
+          outlineName="floorPlanFlat"
           currentSrc={unit?.floorPlan?.src}
+          initial={unit?.floorPlanRooms}
+          initialOutline={unit?.floorPlanFlat}
           helperText="The blueprint shown beside Beds / Baths / Size / Price. JPG, PNG, WEBP or SVG — either one works. Upload only the layout drawing: no background, border or page colour."
-          allowSvg
         />
       </fieldset>
 
@@ -142,6 +176,6 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
       <div className="flex items-center gap-3">
         <SubmitButton label={submitLabel} />
       </div>
-    </form>
+    </PersistForm>
   );
 }

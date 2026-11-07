@@ -27,7 +27,11 @@ export default async function AdminUnitContentListPage({
 
   const [units, projects] = await Promise.all([unitContentRepository.list(), projectContentRepository.list()]);
   const projectsBySlug = new Map(projects.map((p) => [p.slug, p]));
-  const rows = units.map((u) => ({ ...u, projectName: projectsBySlug.get(u.projectSlug)?.name ?? u.projectSlug }));
+  // Grouped by project (in the projects' own order), each project's units in their chosen order.
+  const projectRank = new Map(projects.map((p, i) => [p.slug, i]));
+  const rows = units
+    .map((u) => ({ ...u, projectName: projectsBySlug.get(u.projectSlug)?.name ?? u.projectSlug }))
+    .sort((a, b) => (projectRank.get(a.projectSlug) ?? 9999) - (projectRank.get(b.projectSlug) ?? 9999));
 
   const canCreate = hasPermission(user.role, "content.create");
   const canDelete = hasPermission(user.role, "content.delete");
@@ -37,7 +41,7 @@ export default async function AdminUnitContentListPage({
     <>
       <AdminPageHeader
         title="Properties"
-        description="Individual units shown on the public Properties pages."
+        description="Individual units shown on the public Properties pages. Use the arrows to choose which come first within each project."
         breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Properties" }]}
         primaryAction={
           canCreate && (

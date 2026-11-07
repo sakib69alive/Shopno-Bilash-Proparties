@@ -37,6 +37,48 @@ export interface SplitPlan {
   error?: string;
 }
 
+export interface OnTopPlan {
+  amounts: Record<string, number>;
+  /** What each chosen flat would pay with no custom amounts at all (the budget as first planned). */
+  base: Record<string, number>;
+  /** The budget as first planned. */
+  originalTotal: number;
+  /** The new total: every flat's amount added up. */
+  newTotal: number;
+  /** newTotal − originalTotal (minus when someone was given less). */
+  extra: number;
+  error?: string;
+}
+
+/**
+ * "Keep everyone else's amount." The flats nobody touched pay exactly what they would have paid anyway; a flat with a custom figure pays
+ * that figure, and the difference goes ON TOP of the budget instead of being taken from the others — so a budget of 2,000 with one flat
+ * set 40 higher becomes 2,040. Custom modes mean the same as in `computeSplitPlan` ("more by %", "more by ৳", "exactly ৳", "exactly % of
+ * the budget").
+ */
+export function computeSplitOnTop(total: number, units: SplitUnit[], basis: SplitBasis, overrides: Record<string, SplitOverride | undefined>): OnTopPlan {
+  const baseline = computeSplitPlan(total, units, basis, {});
+  const base = baseline.amounts;
+  const amounts: Record<string, number> = {};
+  for (const unit of units) {
+    const b = base[unit.id] ?? 0;
+    const o = overrides[unit.id];
+    if (!o || !Number.isFinite(o.value)) {
+      amounts[unit.id] = b;
+    } else if (o.mode === "amount") {
+      amounts[unit.id] = Math.max(0, Math.round(o.value));
+    } else if (o.mode === "percent") {
+      amounts[unit.id] = Math.max(0, Math.round((total * o.value) / 100));
+    } else if (o.mode === "extraPercent") {
+      amounts[unit.id] = Math.max(0, Math.round(b * (1 + o.value / 100)));
+    } else {
+      amounts[unit.id] = Math.max(0, Math.round(b + o.value));
+    }
+  }
+  const newTotal = units.reduce((sum, u) => sum + (amounts[u.id] ?? 0), 0);
+  return { amounts, base, originalTotal: total, newTotal, extra: newTotal - total, error: baseline.error };
+}
+
 export function computeSplitPlan(total: number, units: SplitUnit[], basis: SplitBasis, overrides: Record<string, SplitOverride | undefined>): SplitPlan {
   const amounts: Record<string, number> = {};
   const empty: SplitPlan = { amounts, customTotal: 0, sharedTotal: 0, sharedCount: 0 };

@@ -196,6 +196,11 @@ export function Footer({ settings }: { settings: CompanySettings | null }) {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href="/login" className="text-caption text-fg-subtle hover:text-fg transition-colors">
+                  Staff & Owner Login
+                </Link>
+              </li>
             </ul>
           </div>
         </Container>

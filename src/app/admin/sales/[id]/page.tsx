@@ -19,7 +19,7 @@ import { userRepository } from "@/features/users/repository";
 import { canAccessProject } from "@/lib/projectScope";
 import { customerPaymentRepository } from "@/features/finance/repository";
 import { installmentRepository } from "@/features/sales/repository";
-import { INSTALLMENT_STATUS_LABEL, liveInstallmentStatus } from "@/lib/installmentStatus";
+import { INSTALLMENT_STATUS_LABEL, allocateInstallments } from "@/lib/installmentStatus";
 import { summarizeSale } from "@/lib/salePayments";
 import { OWNER_PAYMENT_METHOD_LABEL } from "@/lib/ownerFriendlyLabels";
 
@@ -277,7 +277,9 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-border divide-y">
-                    {saleInstallments.map((i) => (
+                    {saleInstallments.map((i) => {
+                      const share = allocateInstallments(saleInstallments.map((x) => ({ id: x.id, amount: x.amount.amount, status: x.status, paidDate: x.paidDate, dueDate: x.dueDate })), paymentSummary?.paid ?? 0).get(i.id);
+                      return (
                       <tr key={i.id} className="hover:bg-surface">
                         <td className="px-4 py-3">
                           <Link href={`/admin/sales/installments/${i.id}`} className="text-accent hover:text-accent-strong">
@@ -286,9 +288,13 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatDate(new Date(i.dueDate))}</td>
                         <td className="px-4 py-3 text-right font-medium whitespace-nowrap">{formatBDT(i.amount.amount)}</td>
-                        <td className="px-4 py-3">{INSTALLMENT_STATUS_LABEL[liveInstallmentStatus(i)]}</td>
+                        <td className="px-4 py-3">
+                          {INSTALLMENT_STATUS_LABEL[share?.status ?? "upcoming"]}
+                          {share && share.paidAmount > 0 && share.remaining > 0 && <span className="text-fg-subtle block text-xs">{formatBDT(share.paidAmount)} paid · {formatBDT(share.remaining)} left</span>}
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

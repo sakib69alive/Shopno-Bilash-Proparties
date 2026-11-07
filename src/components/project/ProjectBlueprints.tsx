@@ -6,6 +6,8 @@ import { Container } from "@/components/ui/Container";
 import { Lightbox } from "@/components/ui/Lightbox";
 import { Media } from "@/components/ui/Media";
 import { Reveal } from "@/components/ui/Reveal";
+import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
+import { buildingLevel } from "@/lib/planRooms";
 import { Section } from "@/components/ui/Section";
 import { BLUEPRINT_KIND_ORDER, type ProjectBlueprint } from "@/content/projects";
 import { cn } from "@/lib/utils";
@@ -16,16 +18,25 @@ import { cn } from "@/lib/utils";
  * follow the swipe; tapping a plan opens it full screen in the shared
  * Lightbox. Renders nothing when no blueprint has been uploaded.
  */
-export function ProjectBlueprints({ blueprints }: { blueprints?: ProjectBlueprint[] }) {
+export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = false }: { blueprints?: ProjectBlueprint[]; hidden?: boolean; hideZoom?: boolean }) {
+  // Admin → Settings → Blueprint AI → Control panel can hide the whole section, one plan, or just the Enlarge button.
+  const blueprints = hidden ? undefined : all?.filter((b) => !b.hidden);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
   const [index, setIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  // The room pressed on each plan (by slide), so swiping away and back keeps it.
+  const [pickedRoom, setPickedRoom] = useState<Record<number, string[]>>({});
 
   const ordered = (blueprints ?? [])
     .slice()
     .sort((a, b) => BLUEPRINT_KIND_ORDER.indexOf(a.kind) - BLUEPRINT_KIND_ORDER.indexOf(b.kind));
   if (ordered.length === 0) return null;
+  // The project page offers what a building floor has: flats, lift, stairs, lobby (rooms belong to each flat's own page).
+  const activeRooms = buildingLevel(ordered[index]?.planRooms);
+  // The two-column layout depends on whether ANY plan has rooms, not the visible one — otherwise the slider would change width
+  // mid-swipe (the side panel appearing) and land on the wrong slide.
+  const anyRooms = ordered.some((b) => buildingLevel(b.planRooms));
 
   function onScroll() {
     if (frame.current) return;
@@ -78,7 +89,10 @@ export function ProjectBlueprints({ blueprints }: { blueprints?: ProjectBlueprin
           </div>
         )}
 
-        <div className="border-border bg-surface-raised overflow-hidden rounded-[var(--m-radius-hero)] border shadow-sm lg:rounded-lg">
+        <div className={cn(anyRooms && "lg:grid lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-10")}>
+        <div className="min-w-0">
+        {/* `isolate` + `contain: paint` keep the sideways-scrolling slider's layer from ever painting outside this card (over the fixed tab bar). */}
+        <div className="border-border bg-surface-raised relative isolate overflow-hidden rounded-[var(--m-radius-hero)] border shadow-sm [contain:paint] lg:rounded-lg">
           <div
             ref={scrollerRef}
             onScroll={onScroll}
@@ -87,13 +101,28 @@ export function ProjectBlueprints({ blueprints }: { blueprints?: ProjectBlueprin
             aria-label="Building blueprints"
             className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
           >
-            {ordered.map((b, i) => (
+            {ordered.map((b, i) =>
+              buildingLevel(b.planRooms) ? (
+                // A plan with rooms: pressing a room lifts it; "Enlarge" below still opens the full-screen view.
+                <div key={b.kind} className="relative w-full shrink-0 snap-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] p-3 [background-size:20px_20px] sm:p-5 lg:p-8">
+                  <RoomStage
+                    src={b.image.src}
+                    alt={b.image.alt}
+                    plan={buildingLevel(b.planRooms)!}
+                    selectedIds={pickedRoom[i] ?? []}
+                    onSelect={(ids) => setPickedRoom((p) => ({ ...p, [i]: ids }))}
+                  />
+                </div>
+              ) : (
               <button
                 key={b.kind}
                 type="button"
-                onClick={() => setLightboxIndex(i)}
-                aria-label={`Open ${b.label} blueprint full screen`}
-                className="relative block aspect-[5/4] w-full shrink-0 snap-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:20px_20px] lg:aspect-[16/9]"
+                onClick={() => !hideZoom && setLightboxIndex(i)}
+                aria-label={hideZoom ? `${b.label} blueprint` : `Open ${b.label} blueprint full screen`}
+                className={cn(
+                  "relative block aspect-[5/4] w-full shrink-0 snap-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:20px_20px] lg:aspect-[16/9]",
+                  hideZoom && "cursor-default",
+                )}
               >
                 <Media
                   ratio="auto"
@@ -104,19 +133,36 @@ export function ProjectBlueprints({ blueprints }: { blueprints?: ProjectBlueprin
                   className="object-contain p-4"
                 />
               </button>
-            ))}
+              ),
+            )}
           </div>
           <div className="border-border flex h-12 items-center justify-between border-t px-4">
             <p className="text-body-sm truncate font-semibold">{ordered[index]?.label}</p>
-            <button
-              type="button"
-              onClick={() => setLightboxIndex(index)}
-              className="text-accent -mr-2 inline-flex h-11 items-center gap-1.5 px-2 text-sm font-semibold"
-            >
-              <Maximize2 aria-hidden className="size-4" />
-              Enlarge
-            </button>
+            {!hideZoom && (
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(index)}
+                className="text-accent -mr-2 inline-flex h-11 items-center gap-1.5 px-2 text-sm font-semibold"
+              >
+                <Maximize2 aria-hidden className="size-4" />
+                Enlarge
+              </button>
+            )}
           </div>
+        </div>
+        </div>
+        {anyRooms && (
+          <div>
+        {activeRooms && (
+          <RoomPicker
+            plan={activeRooms}
+            selectedIds={pickedRoom[index] ?? []}
+            onSelect={(ids) => setPickedRoom((p) => ({ ...p, [index]: ids }))}
+            className="mt-5 lg:sticky lg:top-28 lg:mt-0"
+          />
+        )}
+          </div>
+        )}
         </div>
       </Container>
 

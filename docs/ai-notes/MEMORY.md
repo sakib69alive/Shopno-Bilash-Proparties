@@ -1,0 +1,21 @@
+# Memory Index
+
+- [Pre-launch status](project_prelaunch_status.md) — what's done vs. what still blocks Shopno Bilash Properties going public
+- [Header contrast: mix-blend-mode doesn't work](feedback_header_contrast_blend_mode.md) — fixed-header stacking-context lesson, use data-attribute + geometry checks instead
+- [Can't log into admin panel](feedback_cannot_login_to_admin.md) — how admin features get verified instead (public-facing checks, tsx scripts against the real DB)
+- [User communication style](user_communication_style.md) — Banglish, terse, queue multi-part requests, don't ask unless genuinely blocked
+- [GitHub repo](reference_github_repo.md) — akib239/Shopno-Bilash-Proparties, no push/fetch access from this machine, user pushes via GitHub Desktop
+- [Sticky positioning bug](feedback_sticky_positioning_bug.md) — position:sticky is broken in this env, always use fixed + manual offset instead
+- [Two content layers](project_architecture_two_content_layers.md) — internal business model vs. public Website CMS content are separate, unlinked models
+- [Financial calc conventions](feedback_financial_calc_conventions.md) — status-filter + use effective/adjusted values at read time, never raw sums
+- [Live test deployment](deployment_live_test_setup.md) — GitHub/Netlify/Neon accounts now backing the live site, where real secrets live
+- [Netlify has no persistent disk](feedback_netlify_no_persistent_disk.md) — broke SQLite then file uploads the same way; route new disk-writing features through uploadStore.ts
+- [Owner vs Admin security tradeoffs](feedback_security_tradeoffs_owner_vs_admin.md) — user accepts weaker Owner Portal auth for usability, wants Admin security kept maximal — don't conflate
+- [Mobile-first priority](project_mobile_first_priority.md) — phone-first rebuild on branch mobile-first: pages done, conventions, how to preview
+- [Local admin/portal testing](reference_local_portal_admin_testing.md) — dev-login buttons + demo owner in dev.db, how to browse admin/portal locally
+- [Client magic link](project_client_magic_link.md) — per-client no-login WhatsApp link (/go/<token>), HMAC-based, revocable, no DB migration
+- [Blueprint AI rules](project_blueprint_ai_rules.md) — floor-plan SVG rules, admin Blueprint AI page, why heavy SVGs glitched on phones
+- [Building floor plans](project_building_floor_plans.md) — typical-floor SVG shared across floors, flats marked as polygons, owner's flat lit up in client app
+- [Room plan buttons](project_room_plan_buttons.md) — public blueprint room buttons (lift/darken/bolder), SVG data-room markers from AI or hand-marked in admin
+- [Clients overview, budget-on-top, ZoomPan](project_clients_overview_and_budget.md) — admin /admin/clients page, split-planner tick, partial installments, pinch-zoom viewer
+- [Simba admin helper](project_simba_admin_helper.md) — preloaded guide mascot, quick-open hubs, remove-demo-data page; keep its knowledge updated when adding admin pages

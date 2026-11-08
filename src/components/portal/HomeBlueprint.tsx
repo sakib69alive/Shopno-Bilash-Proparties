@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, Compass, Maximize2, X } from "lucide-react";
+import { Check, ChevronDown, Compass, Maximize2, RotateCw, X } from "lucide-react";
 import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { cn } from "@/lib/utils";
 import { useHomeFlat } from "@/components/portal/HomeFlatSelection";
 import { BLUEPRINT_GRID_STYLE, BLUEPRINT_LIGHT_LINE_STYLE, BLUEPRINT_LIGHT_STYLE } from "@/components/portal/BlueprintPaper";
 import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
+import { doorsOf } from "@/lib/planRooms";
 import { ZoomPan } from "@/components/plan/ZoomPan";
 import type { PlanHighlight } from "@/lib/unitPlan";
 
@@ -50,6 +51,7 @@ const DOTS_TEXTURE = {
 };
 
 const PAPER = "bg-[#f3efe5]";
+const TURN_KEY = "sb-plan-turn-v1";
 
 /**
  * Phone-only first screen of the owner portal home: the owner's own flat —
@@ -78,6 +80,39 @@ function homeTurn(h: PlanHighlight): number | undefined {
 export function HomeBlueprint({ units, firstName, className, blue = false, grid = false }: { units: HomeBlueprintUnit[]; firstName?: string; className?: string; blue?: boolean; grid?: boolean }) {
   const sheetStyle = blue ? (grid ? BLUEPRINT_GRID_STYLE : BLUEPRINT_LIGHT_STYLE) : undefined;
   const [open, setOpen] = useState(false);
+  // The full-screen viewer (every flat's plan, drawn at full size) is only built while it is open — keeping all of them alive behind the Home screen made the phone laggy.
+  const [viewerMounted, setViewerMounted] = useState(false);
+  useEffect(() => {
+    if (open) return;
+    const t = window.setTimeout(() => setViewerMounted(false), 400);
+    return () => window.clearTimeout(t);
+  }, [open]);
+  // How far the owner has turned each flat's plan (extra quarter turns), remembered on this phone.
+  const [userTurn, setUserTurn] = useState<Record<string, number>>({});
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(TURN_KEY);
+      if (saved) setUserTurn(JSON.parse(saved) as Record<string, number>);
+    } catch {
+      /* no saved turns — start straight */
+    }
+  }, []);
+  function rotate(unitId: string) {
+    setUserTurn((prev) => {
+      const next = { ...prev, [unitId]: (((prev[unitId] ?? 0) + 90) % 360) };
+      try {
+        window.localStorage.setItem(TURN_KEY, JSON.stringify(next));
+      } catch {
+        /* storage blocked — the turn just is not remembered */
+      }
+      return next;
+    });
+  }
+  const turnOf = (u: HomeBlueprintUnit): number | undefined => {
+    if (!u.highlight) return undefined;
+    const total = (homeTurn(u.highlight) ?? 0) + (userTurn[u.id] ?? 0);
+    return total === 0 ? undefined : total;
+  };
   // Rooms pressed in the full-screen view, per residence (the Home card itself has no room buttons).
   const [roomSel, setRoomSel] = useState<Record<string, string[]>>({});
   const { selectedId, select } = useHomeFlat();
@@ -175,6 +210,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                 swiped.current = false;
                 return;
               }
+              setViewerMounted(true);
               setOpen(true);
             }}
             onTouchStart={(e) => {
@@ -198,7 +234,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
               !blue && PAPER,
             )}
           >
-            <div key={first.id} style={{ "--swap-from": `${dir * 36}px` } as React.CSSProperties} className="flat-swap absolute inset-0">
+            <div key={first.id} style={{ "--swap-from": `${dir * 36}px` } as React.CSSProperties} className="flat-swap absolute inset-0 will-change-transform">
             {first.layoutImage && first.highlight ? (
               // The flat on its own — cut out of the whole-floor drawing — with the same room animation as everywhere else.
               /* 2 grid squares (12px each) of empty sheet all round the plan on the card — nothing sits in that margin. The plan runs a quarter off the right edge on purpose: a teaser that invites a tap. */
@@ -206,11 +242,11 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                 <RoomStage
                   src={first.layoutImage}
                   alt={`Floor plan of unit ${first.unitNumber}`}
-                  plan={{ aspect: first.highlight.aspect, rooms: [] }}
+                  plan={{ aspect: first.highlight.aspect, rooms: doorsOf(first.highlight.rooms).filter((d) => d.type === "maindoor") }}
                   frame={first.highlight.mine[0]?.points}
                   view={first.highlight.view}
                   cardView={first.highlight.homeView}
-                  turn={homeTurn(first.highlight)}
+                  turn={turnOf(first)}
                   peek={0.75}
                   selectedIds={[]}
                   onSelect={() => {}}
@@ -235,7 +271,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                 ))}
               </span>
             )}
-            <span className={cn("absolute bottom-4 left-4 flex items-center gap-2 rounded-full py-2 pr-3.5 pl-3 text-xs font-semibold text-white", blue ? "border border-white/25 bg-black/25 backdrop-blur-sm" : "bg-[#1f3d33]")}>
+            <span className={cn("absolute bottom-4 left-4 flex items-center gap-2 rounded-full py-2 pr-3.5 pl-3 text-xs font-semibold text-white", blue ? "border border-white/25 bg-black/40" : "bg-[#1f3d33]")}>
               <Maximize2 aria-hidden className="size-3.5" />
               View full plan
             </span>
@@ -305,11 +341,26 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
         </div>
 
         <div ref={pagerRef} onScroll={onScroll} className="no-scrollbar mt-4 flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto">
-          {units.map((unit) => (
+          {(viewerMounted || open) && units.map((unit) => (
             <div key={unit.id} className="flex w-full shrink-0 snap-center flex-col px-[var(--gutter)]">
               {/* Full screen: the whole plan, fitted to the screen. Pinch to zoom in on a room. */}
               {/* Full screen is always plain blue — the drafting grid is only for the small card on Home, where it would only add noise to a plan being studied up close. */}
-              <ZoomPan label={`Floor plan of unit ${unit.unitNumber}`} className="my-1 min-h-0 min-w-0 flex-1 rounded-3xl">
+              <ZoomPan
+                label={`Floor plan of unit ${unit.unitNumber}`}
+                className="my-1 min-h-0 min-w-0 flex-1 rounded-3xl"
+                extraControls={
+                  unit.layoutImage ? (
+                    <button
+                      type="button"
+                      aria-label="Rotate the plan"
+                      onClick={() => rotate(unit.id)}
+                      className="flex size-9 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-transform active:scale-90"
+                    >
+                      <RotateCw aria-hidden className="size-4" />
+                    </button>
+                  ) : null
+                }
+              >
               <div style={blue ? BLUEPRINT_LIGHT_STYLE : undefined} className={cn("relative isolate size-full overflow-hidden", !blue && PAPER)}>
                 {unit.layoutImage && unit.highlight ? (
                   /* Full screen keeps a wider margin: 3.5 grid squares all round. */
@@ -321,7 +372,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                       frame={unit.highlight.mine[0]?.points}
                       view={unit.highlight.view}
                       cardView={unit.highlight.homeView}
-                      turn={homeTurn(unit.highlight)}
+                      turn={turnOf(unit)}
                       fit
                       selectedIds={roomSel[unit.id] ?? []}
                       onSelect={(ids) => setRoomSel((prev) => ({ ...prev, [unit.id]: ids }))}
@@ -330,8 +381,20 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                     />
                   </div>
                 ) : unit.layoutImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- plain img, fitted to the sheet
-                  <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("absolute inset-0 size-full object-contain p-5 select-none", blue && "mix-blend-screen")} />
+                  // A plain drawing, fitted to the sheet; a quarter turn swaps its box so it still fits the screen.
+                  <div className="absolute inset-0 [container-type:size]">
+                    <div
+                      className="absolute top-1/2 left-1/2"
+                      style={{
+                        width: (userTurn[unit.id] ?? 0) % 180 === 90 ? "100cqh" : "100cqw",
+                        height: (userTurn[unit.id] ?? 0) % 180 === 90 ? "100cqw" : "100cqh",
+                        transform: `translate(-50%, -50%) rotate(${userTurn[unit.id] ?? 0}deg)`,
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- plain img, fitted to the sheet */}
+                      <img src={unit.layoutImage} alt={`Floor plan of unit ${unit.unitNumber}`} draggable={false} style={blue ? BLUEPRINT_LIGHT_LINE_STYLE : undefined} className={cn("size-full object-contain p-5 select-none", blue && "mix-blend-screen")} />
+                    </div>
+                  </div>
                 ) : (
                   <p className={cn("flex h-full items-center justify-center px-8 text-center text-sm", blue ? "text-[#cfe0f5]/80" : "text-[#6b6660]")}>
                     Your floor plan has not been uploaded yet. Please contact us if you need a copy.

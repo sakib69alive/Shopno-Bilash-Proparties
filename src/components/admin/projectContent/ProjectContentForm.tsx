@@ -188,6 +188,7 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         placeholder="A sentence about the neighborhood."
       />
 
+      <span id="map" className="-mt-5 block scroll-mt-24" aria-hidden />
       <Input
         label="Google Maps link (optional)"
         name="mapUrl"
@@ -199,7 +200,7 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         helperText="In Google Maps open the project's exact spot → Share → “Embed a map” → Copy HTML (best: shows a live map), or just copy the link or coordinates. Leave empty to keep the plain placeholder."
       />
 
-      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+      <fieldset id="photos" className="border-border flex scroll-mt-24 flex-col gap-5 rounded-md border p-4">
         <legend className="text-label px-1.5">Photos</legend>
         <AdminImageField
           label={project ? "Replace cover photo (optional)" : "Cover photo"}
@@ -210,9 +211,10 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         <ProjectGalleryField images={project?.gallery ?? []} />
       </fieldset>
 
+      <span id="media" className="-mt-5 block scroll-mt-24" aria-hidden />
       <MediaLinksFields subject="project" videoUrl={project?.videoUrl} tour360Url={project?.tour360Url} />
 
-      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+      <fieldset id="blueprints" className="border-border flex scroll-mt-24 flex-col gap-5 rounded-md border p-4">
         <legend className="text-label px-1.5">Building blueprints (optional)</legend>
         <p className="text-body-sm text-fg-muted -mt-1">
           Shown on the project page as a swipeable set: garage first, then floor, then roof. Add only the ones you have.

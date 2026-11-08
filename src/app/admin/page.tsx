@@ -77,7 +77,7 @@ export default async function AdminDashboardPage() {
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         {(canManageFinance || canSendNotice || canCreateCustomer || canViewCustomers) && (
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">What do you want to do?</h2>
+            <h2 className="text-h5 text-fg mb-4 font-semibold tracking-tight">What do you want to do?</h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {canManageFinance && (
                 <TaskTile title="A client paid money" help="Record the payment, then send them a receipt." icon={Wallet} href="/admin/sales/payments/new" />
@@ -216,7 +216,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </DashboardSection>
 
-        <DashboardSection title="Construction">
+        <DashboardSection title="Construction" collapsed>
           <Link href="/admin/construction" className="block">
             <KpiCard label="Active Projects" value={data.constructionActiveProjects.value} />
           </Link>
@@ -232,7 +232,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </DashboardSection>
 
-        <DashboardSection title="Sales">
+        <DashboardSection title="Sales" collapsed>
           <Link href="/admin/leads" className="block">
             <KpiCard label="Active Leads" value={data.leads.value} />
           </Link>
@@ -253,7 +253,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </DashboardSection>
 
-        <DashboardSection title="Inventory">
+        <DashboardSection title="Inventory" collapsed>
           <Link href="/admin/alerts" className="block">
             <KpiCard label="Low Stock" value={data.lowStockMaterials.value} status={(data.lowStockMaterials.value ?? 0) > 0 ? "warning" : "success"} />
           </Link>
@@ -268,7 +268,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </DashboardSection>
 
-        <DashboardSection title="Documents">
+        <DashboardSection title="Documents" collapsed>
           <Link href="/admin/documents" className="block">
             <KpiCard label="Total Documents" value={data.totalDocuments.value} />
           </Link>
@@ -280,7 +280,7 @@ export default async function AdminDashboardPage() {
           </Link>
         </DashboardSection>
 
-        <DashboardSection title="Alerts">
+        <DashboardSection title="Alerts" collapsed>
           <Link href="/admin/alerts" className="block">
             <KpiCard label="Critical" value={data.criticalAlerts.value} status={(data.criticalAlerts.value ?? 0) > 0 ? "error" : "success"} />
           </Link>

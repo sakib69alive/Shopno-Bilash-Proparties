@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { Layers, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { planViewTransform, polygonCentroid, roomSummary, ROOM_TYPE_LABEL, ROOM_TYPES, type PlanRoom, type PlanRooms, type PlanView, type RoomType } from "@/lib/planRooms";
+import { doorBelongsTo, doorsOf, planViewTransform, polygonCentroid, pressableRooms, roomSummary, ROOM_TYPE_LABEL, ROOM_TYPES, type PlanRoom, type PlanRooms, type PlanView, type RoomType } from "@/lib/planRooms";
 import type { FlatArea } from "@/types/project";
 
 /**
@@ -54,7 +54,6 @@ const TONES = {
     liftBg: "color-mix(in srgb, var(--color-accent) 9%, var(--color-surface-raised))",
     stroke: "var(--color-accent)",
     imgFilter: "",
-    boldFilter: "drop-shadow(0.5px 0 0 #1c1b19) drop-shadow(-0.5px 0 0 #1c1b19) drop-shadow(0 0.5px 0 #1c1b19) drop-shadow(0 -0.5px 0 #1c1b19)",
     shadow: "drop-shadow(0 10px 12px rgb(0 0 0 / 0.32))",
     tagBg: "var(--color-accent)",
     tagText: "var(--color-accent-foreground)",
@@ -65,7 +64,6 @@ const TONES = {
     liftBg: "rgb(65 116 180)",
     stroke: "#ffd678",
     imgFilter: "invert(1)",
-    boldFilter: "invert(1) drop-shadow(0.5px 0 0 #fff) drop-shadow(-0.5px 0 0 #fff) drop-shadow(0 0.5px 0 #fff) drop-shadow(0 -0.5px 0 #fff)",
     shadow: "drop-shadow(0 10px 12px rgb(0 0 0 / 0.38))",
     tagBg: "#ffd678",
     tagText: "#10325b",
@@ -76,12 +74,18 @@ const TONES = {
     liftBg: "rgb(34 74 118)",
     stroke: "#ffd678",
     imgFilter: "invert(1) sepia(0.18)",
-    boldFilter: "invert(1) sepia(0.18) drop-shadow(0.5px 0 0 #fff) drop-shadow(-0.5px 0 0 #fff) drop-shadow(0 0.5px 0 #fff) drop-shadow(0 -0.5px 0 #fff)",
     shadow: "drop-shadow(0 10px 12px rgb(0 0 0 / 0.5))",
     tagBg: "#ffd678",
     tagText: "#10325b",
   },
 } as const;
+
+// Door colours — chosen to stand apart from the plan's own white/ink lines AND from the yellow outline of a pressed room.
+const DOOR_COLORS: Record<RoomTone, { main: string; room: string }> = {
+  paper: { main: "#16a34a", room: "#e11d48" },
+  blue: { main: "#3df09a", room: "#ff5c8a" },
+  midnight: { main: "#3df09a", room: "#ff5c8a" },
+};
 
 const polygonClip = (points: [number, number][]) => `polygon(${points.map(([x, y]) => `${+(x * 100).toFixed(2)}% ${+(y * 100).toFixed(2)}%`).join(", ")})`;
 const polygonAttr = (points: [number, number][]) => points.map(([x, y]) => `${+(x * 100).toFixed(2)},${+(y * 100).toFixed(2)}`).join(" ");
@@ -150,7 +154,18 @@ export function RoomStage({
   className?: string;
 }) {
   const t = TONES[tone];
+  // Doors travel with the rooms but are only drawn, never pressed (see DOOR_TYPES in lib/planRooms).
+  const allDoors = doorsOf(plan.rooms);
+  plan = { ...plan, rooms: pressableRooms(plan.rooms) };
   const selected = plan.rooms.filter((r) => selectedIds.includes(r.id));
+  // The flat's main door is always shown (on a whole-floor card with one flat lit: only that flat's own door). A room's door is shown while that room is selected.
+  const ownFlats = emphasis?.mine.filter((a) => a.points.length >= 3) ?? [];
+  const doorsToDraw = allDoors.filter((d, i, all) => {
+    if (all.findIndex((x) => x.id === d.id) !== i) return false; // the same door can arrive twice (card + shared items)
+    if (d.type === "maindoor") return !emphasis || ownFlats.some((a) => doorBelongsTo(d, a.points));
+    return selected.some((r) => doorBelongsTo(d, r.points));
+  });
+  const doorColors = DOOR_COLORS[tone];
 
   // Only when the visitor has ticked "Zoom in on what I press": the plan glides to centre the pressed rooms and magnifies them.
   const [zoomOn] = useRoomZoom();
@@ -228,7 +243,7 @@ export function RoomStage({
       <div className={turnBox ? undefined : "absolute inset-0"} style={turnBox ?? { transform: viewTransform, transformOrigin: "50% 50%" }}>
       <div style={frameBox}>
         <div
-          className="absolute inset-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+          className="absolute inset-0 transition-transform duration-[1200ms] ease-[cubic-bezier(0.25,0.7,0.25,1)]"
           style={{
             transformOrigin: `${wcx * 100}% ${wcy * 100}%`,
             transform: selected.length > 0 && zoom > 1 ? `scale(${zoom.toFixed(3)}) translate(${((wcx - ux) * 100).toFixed(2)}%, ${((wcy - uy) * 100).toFixed(2)}%)` : "none",
@@ -262,14 +277,31 @@ export function RoomStage({
               <div key={room.id} aria-hidden className="pointer-events-none absolute inset-0" style={{ filter: t.shadow }}>
                 <div className="room-lift absolute inset-0" style={{ clipPath: polygonClip(room.points), transformOrigin: `${cx * 100}% ${cy * 100}%`, backgroundColor: t.liftBg }}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- same drawing again, clipped to the room */}
-                  <img src={src} alt="" draggable={false} style={{ filter: t.boldFilter }} className="absolute inset-0 size-full object-contain" />
+                  <img src={src} alt="" draggable={false} style={{ filter: t.imgFilter || undefined }} className="absolute inset-0 size-full object-contain" />
                   <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
-                    <polygon points={polygonAttr(room.points)} fill="none" stroke={t.stroke} strokeWidth={2.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                    <polygon points={polygonAttr(room.points)} fill="none" stroke={t.stroke} strokeWidth={3.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
                   </svg>
                 </div>
               </div>
             );
           })}
+
+          {/* Doors: the flat's main door in its own colour at all times, a room's door in another colour while that room is pressed. A thin soft halo
+              behind a solid line the length of the door itself — it grows and shrinks with the plan, so it always matches the door. */}
+          {doorsToDraw.length > 0 && (
+            <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full">
+              {doorsToDraw.map((d) => {
+                const color = d.type === "maindoor" ? doorColors.main : doorColors.room;
+                const [[x1, y1], [x2, y2]] = [d.points[0], d.points[1]];
+                return (
+                  <g key={d.id} className="door-glow" strokeLinecap="round">
+                    <line x1={x1 * 100} y1={y1 * 100} x2={x2 * 100} y2={y2 * 100} stroke={color} strokeOpacity={0.32} strokeWidth={d.type === "maindoor" ? 11 : 9} vectorEffect="non-scaling-stroke" />
+                    <line x1={x1 * 100} y1={y1 * 100} x2={x2 * 100} y2={y2 * 100} stroke={color} strokeWidth={d.type === "maindoor" ? 5 : 4} vectorEffect="non-scaling-stroke" />
+                  </g>
+                );
+              })}
+            </svg>
+          )}
 
           {/* The press targets — one transparent shape per room, above everything. */}
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={cn("absolute inset-0 size-full", !interactive && "pointer-events-none")}>
@@ -342,8 +374,10 @@ function groupLabel(type: RoomType, count: number): string {
  * The room buttons. Phone: a row of group buttons ("All rooms", "All bedrooms 4", "All balconies 2"…) above a sideways-scrolling row
  * of single rooms. Computer: a tidy column grouped by kind, each group with its own "Show all". Selecting is shared with the plan.
  */
-export function RoomPicker({ plan, selectedIds, onSelect, className, onEnlarge }: { plan: PlanRooms; selectedIds: string[]; onSelect: (ids: string[]) => void; className?: string; onEnlarge?: () => void }) {
+export function RoomPicker({ plan: fullPlan, selectedIds, onSelect, className, onEnlarge }: { plan: PlanRooms; selectedIds: string[]; onSelect: (ids: string[]) => void; className?: string; onEnlarge?: () => void }) {
   const rowRef = useRef<HTMLDivElement>(null);
+  // Doors are drawn on the plan but are not buttons.
+  const plan = { ...fullPlan, rooms: pressableRooms(fullPlan.rooms) };
   const summary = roomSummary(plan.rooms);
   const all = plan.rooms.map((r) => r.id);
   const idsOf = (type: RoomType) => plan.rooms.filter((r) => r.type === type).map((r) => r.id);
@@ -359,6 +393,8 @@ export function RoomPicker({ plan, selectedIds, onSelect, className, onEnlarge }
   const groups = summary.filter((s) => s.count >= 2 && s.type !== "other");
   // A building floor (flats, lift, stairs) has no "rooms"; a flat's plan does.
   const allLabel = plan.rooms.some((r) => ["bedroom", "living", "dining", "kitchen", "bathroom", "balcony", "servant", "store"].includes(r.type)) ? "All rooms" : "Show all";
+
+  if (plan.rooms.length === 0) return null; // only doors marked: nothing to press
 
   return (
     <div className={className}>

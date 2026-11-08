@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { rotateFloorPlanImageAction, saveFloorPlansAction, uploadFloorPlanImageAction } from "@/features/projects/floorPlanActions";
-import { FLAT_PRESETS, NEUTRAL_VIEW, guessRoomType, nextAreaLabel, rectFromCorners, rotateFraction, type PlanRoom, type PlanView, type RoomPreset, type RoomType } from "@/lib/planRooms";
+import { FLAT_PRESETS, NEUTRAL_VIEW, doorsOf, guessRoomType, nextAreaLabel, pressableRooms, rectFromCorners, rotateFraction, type PlanRoom, type PlanView, type RoomPreset, type RoomType } from "@/lib/planRooms";
 import { ClientPlanPreview } from "@/components/admin/projects/ClientPlanPreview";
 import type { BuildingFloorPlan, FlatArea } from "@/types/project";
 
@@ -29,6 +29,9 @@ interface EditorPlan {
 
 let counter = 0;
 const newKey = () => `plan-${Date.now()}-${counter++}`;
+
+/** How doors look while marking: the same two colours the owner sees (green main door, pink room door). */
+const DOOR_EDIT_COLOR = { maindoor: "#16a34a", door: "#e11d48" } as const;
 
 const COLORS = ["#2563eb", "#d97706", "#059669", "#db2777", "#7c3aed", "#0891b2", "#65a30d", "#dc2626"];
 const colorOf = (key: string) => COLORS[[...key.toUpperCase()].reduce((s, c) => s + c.charCodeAt(0), 0) % COLORS.length];
@@ -74,6 +77,7 @@ function PlanCanvas({
   marking,
   draft,
   boxMode,
+  doorMode,
   onAddPoint,
   onRemovePoint,
 }: {
@@ -82,6 +86,8 @@ function PlanCanvas({
   draft: [number, number][];
   /** Two-corner box drawing: a dashed box follows the pointer after the first corner. */
   boxMode: boolean;
+  /** Marking a door: two clicks (its two ends); a line follows the pointer after the first one. */
+  doorMode: boolean;
   onAddPoint: (p: [number, number]) => void;
   onRemovePoint: (index: number) => void;
 }) {
@@ -91,6 +97,9 @@ function PlanCanvas({
     return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))];
   };
   const preview = marking && boxMode && draft.length === 1 && hover ? rectFromCorners(draft[0], hover) : null;
+  const doorPreview = marking && doorMode && draft.length === 1 && hover ? [draft[0], hover] : null;
+  const rooms = pressableRooms(plan.rooms);
+  const doors = doorsOf(plan.rooms);
   function onClick(e: React.MouseEvent<HTMLDivElement>) {
     if (!marking) return;
     onAddPoint(frac(e));
@@ -98,7 +107,7 @@ function PlanCanvas({
   return (
     <div
       onClick={onClick}
-      onMouseMove={(e) => marking && boxMode && setHover(frac(e))}
+      onMouseMove={(e) => marking && (boxMode || doorMode) && setHover(frac(e))}
       onMouseLeave={() => setHover(null)}
       style={{ aspectRatio: String(plan.aspect) }}
       className={cn("border-border bg-white relative w-full overflow-hidden rounded-lg border select-none", marking && "cursor-crosshair ring-accent ring-2")}
@@ -109,9 +118,16 @@ function PlanCanvas({
         {plan.areas.map((a, i) => (
           <polygon key={`${a.kind ?? "flat"}-${a.key}-${i}`} points={pointsAttr(a.points)} fill={colorOf(a.key)} fillOpacity={0.28} stroke={colorOf(a.key)} strokeWidth={2} vectorEffect="non-scaling-stroke" />
         ))}
-        {plan.rooms.map((r) => (
+        {rooms.map((r) => (
           <polygon key={`room-${r.id}`} points={pointsAttr(r.points)} fill="#0d9488" fillOpacity={0.18} stroke="#0d9488" strokeWidth={1.5} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />
         ))}
+        {doors.map((d) => (
+          <g key={`door-${d.id}`} strokeLinecap="round">
+            <line x1={d.points[0][0] * 100} y1={d.points[0][1] * 100} x2={d.points[1][0] * 100} y2={d.points[1][1] * 100} stroke={DOOR_EDIT_COLOR[d.type === "maindoor" ? "maindoor" : "door"]} strokeOpacity={0.35} strokeWidth={11} vectorEffect="non-scaling-stroke" />
+            <line x1={d.points[0][0] * 100} y1={d.points[0][1] * 100} x2={d.points[1][0] * 100} y2={d.points[1][1] * 100} stroke={DOOR_EDIT_COLOR[d.type === "maindoor" ? "maindoor" : "door"]} strokeWidth={5} vectorEffect="non-scaling-stroke" />
+          </g>
+        ))}
+        {doorPreview && <line x1={doorPreview[0][0] * 100} y1={doorPreview[0][1] * 100} x2={doorPreview[1][0] * 100} y2={doorPreview[1][1] * 100} stroke="#2563eb" strokeWidth={4} strokeDasharray="6 4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
         {preview && <polygon points={pointsAttr(preview)} fill="rgb(37 99 235 / 0.15)" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />}
         {!boxMode && draft.length > 0 && <polyline points={pointsAttr(draft)} fill="rgb(37 99 235 / 0.15)" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />}
       </svg>
@@ -128,7 +144,16 @@ function PlanCanvas({
           </span>
         );
       })}
-      {plan.rooms.map((r) => {
+      {doors.map((d) => (
+        <span
+          key={`dl-${d.id}`}
+          className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[0.625rem] font-bold whitespace-nowrap text-white shadow"
+          style={{ left: `${((d.points[0][0] + d.points[1][0]) / 2) * 100}%`, top: `${((d.points[0][1] + d.points[1][1]) / 2) * 100}%`, backgroundColor: DOOR_EDIT_COLOR[d.type === "maindoor" ? "maindoor" : "door"], marginTop: "-14px" }}
+        >
+          {d.type === "maindoor" ? "Main door" : "Door"}
+        </span>
+      ))}
+      {rooms.map((r) => {
         const cx = r.points.reduce((a, p) => a + p[0], 0) / r.points.length;
         const cy = r.points.reduce((a, p) => a + p[1], 0) / r.points.length;
         return (
@@ -161,7 +186,8 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
   const [uploading, startUpload] = useTransition();
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [kind, setKind] = useState<"flat" | "parking" | "room">("flat");
+  const [kind, setKind] = useState<"flat" | "parking" | "room" | "maindoor" | "door">("flat");
+  const doorKind = kind === "maindoor" || kind === "door";
   const [roomType, setRoomType] = useState<RoomType | null>(null);
   const [drawMode, setDrawMode] = useState<"box" | "shape">("box");
   const [marking, setMarking] = useState(false);
@@ -239,7 +265,8 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
     } else {
       const key = code.trim().toUpperCase();
       if (!key) return;
-      update({ areas: [...plan.areas.filter((a) => !(a.key === key && (a.kind ?? "flat") === kind)), { kind, key, points }] });
+      const areaKind: "flat" | "parking" = kind === "parking" ? "parking" : "flat";
+      update({ areas: [...plan.areas.filter((a) => !(a.key === key && (a.kind ?? "flat") === areaKind)), { kind: areaKind, key, points }] });
     }
     setDraft([]);
     setMarking(false);
@@ -247,7 +274,21 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
     setRoomType(null);
   }
 
+  /** A door is just two points — its two ends. The second click adds it. */
+  function commitDoor(a: [number, number], b: [number, number]) {
+    const existing = doorsOf(plan.rooms).filter((d) => d.type === kind).length;
+    const label = kind === "maindoor" ? (existing === 0 ? "Main door" : `Main door ${existing + 1}`) : `Door ${existing + 1}`;
+    update({ rooms: [...plan.rooms, { id: `door-${Date.now().toString(36)}-${plan.rooms.length}`, label, type: kind === "maindoor" ? "maindoor" : "door", points: [a, b] }] });
+    setDraft([]);
+    setMarking(false);
+  }
+
   function addPoint(p: [number, number]) {
+    if (doorKind) {
+      if (draft.length === 0) setDraft([p]);
+      else commitDoor(draft[0], p);
+      return;
+    }
     if (drawMode === "box") {
       if (draft.length === 0) setDraft([p]);
       else commit(rectFromCorners(draft[0], p));
@@ -285,6 +326,13 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
     setCode(p ? nextAreaLabel(p, plan.rooms.map((r) => r.label)) : "");
     setRoomType(p?.type ?? null);
     setDrawMode("box");
+    setDraft([]);
+    setMarking(true);
+  }
+  function startDoor(k: "maindoor" | "door") {
+    setKind(k);
+    setCode("");
+    setRoomType(null);
     setDraft([]);
     setMarking(true);
   }
@@ -372,7 +420,41 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
                 Other room…
               </button>
             </div>
-            {marking && (
+            {/* Doors: two clicks, one at each end of the door. */}
+            <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-md border p-3">
+              <p className="text-body-sm text-fg font-semibold">Doors — just two clicks each</p>
+              <p className="text-caption text-fg-muted">
+                Press a button, then click <b>one end of the door</b> and <b>the other end</b> on the drawing. That is all. The <b>main door</b> shows in green on the flat at all times;
+                a <b>room door</b> shows in pink while that room is pressed (it belongs to the room whose wall it sits on).
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" disabled={marking} onClick={() => startDoor("maindoor")} className="inline-flex items-center gap-2 rounded-full border-2 border-[#16a34a] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#15803d] transition-colors hover:bg-[#16a34a]/10 disabled:opacity-50">
+                  <span aria-hidden className="size-2.5 rounded-full bg-[#16a34a]" />
+                  Main door of a flat
+                </button>
+                <button type="button" disabled={marking} onClick={() => startDoor("door")} className="inline-flex items-center gap-2 rounded-full border-2 border-[#e11d48] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#be123c] transition-colors hover:bg-[#e11d48]/10 disabled:opacity-50">
+                  <span aria-hidden className="size-2.5 rounded-full bg-[#e11d48]" />
+                  Door of a room
+                </button>
+              </div>
+            </div>
+            {marking && doorKind && (
+              <div className="border-accent/40 bg-accent-soft/40 flex flex-wrap items-center gap-3 rounded-md border p-3">
+                <p className="text-body-sm text-fg flex-1 basis-64 font-medium">
+                  <span aria-hidden className="mr-2 inline-block size-2.5 rounded-full align-middle" style={{ backgroundColor: DOOR_EDIT_COLOR[kind === "maindoor" ? "maindoor" : "door"] }} />
+                  {draft.length === 0 ? `Step 1 of 2 — click ONE END of the ${kind === "maindoor" ? "main door" : "room door"}.` : `Step 2 of 2 — click the OTHER END of the door. It is added at once.`}
+                </p>
+                <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft([])}>
+                  <Undo2 aria-hidden className="size-4" />
+                  Redo first point
+                </Button>
+                <Button type="button" variant="ghost" onClick={cancelMarking}>
+                  <X aria-hidden className="size-4" />
+                  Cancel
+                </Button>
+              </div>
+            )}
+            {marking && !doorKind && (
               <div className="border-accent/40 bg-accent-soft/40 flex flex-col gap-3 rounded-md border p-3">
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="w-52">
@@ -427,7 +509,7 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
             )}
           </div>
 
-          <PlanCanvas plan={plan} marking={marking} draft={draft} boxMode={marking && drawMode === "box"} onAddPoint={addPoint} onRemovePoint={(i) => setDraft((d) => d.filter((_, k) => k !== i))} />
+          <PlanCanvas plan={plan} marking={marking} draft={draft} boxMode={marking && !doorKind && drawMode === "box"} doorMode={marking && doorKind} onAddPoint={addPoint} onRemovePoint={(i) => setDraft((d) => d.filter((_, k) => k !== i))} />
 
           {plan.areas.length > 0 ? (
             <ul className="flex flex-wrap gap-2">
@@ -445,13 +527,30 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
             <p className="text-body-sm text-fg-subtle">Nothing marked yet — owners will see the whole drawing without a highlighted flat or parking bay.</p>
           )}
 
-          {plan.rooms.length > 0 && (
+          {doorsOf(plan.rooms).length > 0 && (
+            <div>
+              <p className="text-caption text-fg-muted mb-2">Doors marked (shown on the drawing in green and pink):</p>
+              <ul className="flex flex-wrap gap-2">
+                {doorsOf(plan.rooms).map((d) => (
+                  <li key={d.id} className="border-border bg-bg flex items-center gap-2 rounded-full border py-1 pr-1 pl-3 text-sm">
+                    <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: DOOR_EDIT_COLOR[d.type === "maindoor" ? "maindoor" : "door"] }} />
+                    {d.label}
+                    <button type="button" aria-label={`Remove ${d.label}`} onClick={() => update({ rooms: plan.rooms.filter((x) => x.id !== d.id) })} className="text-fg-muted hover:bg-surface flex size-6 items-center justify-center rounded-full">
+                      <X aria-hidden className="size-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {pressableRooms(plan.rooms).length > 0 && (
             <div>
               <p className="text-caption text-fg-muted mb-2">
-                {plan.rooms.length} room{plan.rooms.length === 1 ? "" : "s"} marked — the client app turns the rooms inside each owner&rsquo;s flat into room buttons.
+                {pressableRooms(plan.rooms).length} room{pressableRooms(plan.rooms).length === 1 ? "" : "s"} marked — the client app turns the rooms inside each owner&rsquo;s flat into room buttons.
               </p>
               <ul className="flex flex-wrap gap-2">
-                {plan.rooms.map((r) => (
+                {pressableRooms(plan.rooms).map((r) => (
                   <li key={r.id} className="border-border bg-bg flex items-center gap-2 rounded-full border py-1 pr-1 pl-3 text-sm">
                     <span aria-hidden className="size-2.5 rounded-full bg-teal-600" />
                     {r.label} <span className="text-fg-subtle text-xs">· {r.type}</span>
@@ -465,7 +564,7 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
           )}
         </div>
         <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
-          <ClientPlanPreview plan={plan} onViewChange={(view) => update({ view })} onAreasChange={(areas) => update({ areas })} />
+          <ClientPlanPreview plan={plan} onViewChange={(view) => update({ view })} onAreasChange={(areas) => update({ areas })} homeView={plan.homeView} onHomeViewChange={(homeView) => update({ homeView })} />
         </div>
         </div>
       )}

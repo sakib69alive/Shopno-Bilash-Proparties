@@ -22,8 +22,10 @@ import {
   Plus,
   Quote,
   Receipt,
+  Share2,
   Sparkles,
   Table2,
+  Upload,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -32,10 +34,13 @@ import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { LetterheadPages } from "@/components/admin/statements/LetterheadPages";
+import { BulkSendPanel } from "@/components/admin/statements/BulkSendPanel";
+import { SendToPagesPanel } from "@/components/admin/statements/SendToPagesPanel";
 import { generateStatement } from "@/features/statements/actions";
 import { formatDate } from "@/lib/format";
-import { copyFirstPageImage, downloadPdf, downloadPng, safeFileName } from "@/lib/studio/exportDocument";
+import { copyFirstPageImage, downloadPdf, downloadPng, makePdfFile, safeFileName } from "@/lib/studio/exportDocument";
 import { padBrief } from "@/lib/studio/aiBrief";
+import { downloadVectorPad } from "@/lib/studio/vectorPad";
 import { parseMarkdownToBlocks } from "@/lib/studio/markdown";
 import { NOTICE_TEMPLATES, TEMPLATE_GROUPS, defaultValues, fillTemplate, findTemplate } from "@/lib/studio/templates";
 import { PAGE_H, PAGE_W, type StudioDocument, type StudioLetterhead } from "@/lib/studio/types";
@@ -44,6 +49,21 @@ import type { StatementInput } from "@/features/statements/builders";
 export interface StudioOption {
   value: string;
   label: string;
+}
+export interface StudioCustomer extends StudioOption {
+  phone?: string;
+  projectIds?: string[];
+}
+
+/** The notice as a plain WhatsApp message: **bold** and ## headings become WhatsApp's *bold*. */
+function toWhatsAppText(title: string, body: string): string {
+  const text = body
+    .replace(/^#{1,6}\s+(.*)$/gm, "*$1*")
+    .replace(/\*\*(.+?)\*\*/g, "*$1*")
+    .replace(/^>\s?/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  return `*${title}*\n\n${text}`;
 }
 export interface StudioSaleOption extends StudioOption {
   customerId: string;
@@ -95,15 +115,18 @@ export function StatementStudio({
   sales,
   projects,
   allowFinance,
+  allowSendToPages = false,
   letterhead: baseLetterhead,
   addresses = [],
   payments,
   initial,
 }: {
-  customers: StudioOption[];
+  customers: StudioCustomer[];
   sales: StudioSaleOption[];
   projects: StudioOption[];
   allowFinance: boolean;
+  /** May file documents under clients (the documents.upload permission): shows "Send to clients' pages". */
+  allowSendToPages?: boolean;
   letterhead: StudioLetterhead;
   /** Addresses the admin can print at the top of the letterhead: the company office first, then each project's address. */
   addresses?: { value: string; label: string; address: string }[];
@@ -116,16 +139,21 @@ export function StatementStudio({
   const initialCustomer = allowFinance && !initialPayment ? customers.find((c) => c.value === initial?.customerId) : undefined;
   const [kind, setKind] = useState<Kind>(initialPayment && allowFinance ? "receipt" : initialCustomer ? "client" : "announcement");
   // Which address and phone number are printed at the top-right of the letterhead. Starts from Settings; the choice is remembered on this computer.
-  const [addressChoice, setAddressChoice] = useState<string>("company");
-  const [customAddress, setCustomAddress] = useState("");
+  // The address is plain text: type any place, or tap one of the quick choices (company office, a project site) to fill it in.
+  const [addressText, setAddressText] = useState(baseLetterhead.address ?? "");
   const [phone, setPhone] = useState(baseLetterhead.phone ?? "");
   /* eslint-disable react-hooks/set-state-in-effect -- reads the remembered choice once after mount; it can't be read during render without a server/browser mismatch */
   useEffect(() => {
     try {
-      const saved = JSON.parse(window.localStorage.getItem("sbp.letterhead") ?? "null") as { choice?: string; custom?: string; phone?: string } | null;
+      const saved = JSON.parse(window.localStorage.getItem("sbp.letterhead") ?? "null") as { address?: string; choice?: string; custom?: string; phone?: string } | null;
       if (!saved) return;
-      if (saved.choice && (saved.choice === "company" || saved.choice === "custom" || addresses.some((a) => a.value === saved.choice))) setAddressChoice(saved.choice);
-      if (typeof saved.custom === "string") setCustomAddress(saved.custom);
+      if (typeof saved.address === "string") setAddressText(saved.address);
+      // Older saved format: a choice (company / a project / custom) plus a custom text.
+      else if (saved.choice === "custom" && typeof saved.custom === "string") setAddressText(saved.custom);
+      else if (saved.choice && saved.choice !== "company") {
+        const found = addresses.find((a) => a.value === saved.choice);
+        if (found) setAddressText(found.address);
+      }
       if (typeof saved.phone === "string") setPhone(saved.phone);
     } catch {
       // No saved choice (private window / blocked storage) — the defaults above are fine.
@@ -135,16 +163,15 @@ export function StatementStudio({
   /* eslint-enable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
-      window.localStorage.setItem("sbp.letterhead", JSON.stringify({ choice: addressChoice, custom: customAddress, phone }));
+      window.localStorage.setItem("sbp.letterhead", JSON.stringify({ address: addressText, phone }));
     } catch {
       // Remembering is a convenience only.
     }
-  }, [addressChoice, customAddress, phone]);
-  const letterhead = useMemo<StudioLetterhead>(() => {
-    const chosen =
-      addressChoice === "custom" ? customAddress.trim() : addressChoice === "company" ? baseLetterhead.address : addresses.find((a) => a.value === addressChoice)?.address;
-    return { ...baseLetterhead, address: chosen || undefined, phone: phone.trim() || undefined };
-  }, [baseLetterhead, addresses, addressChoice, customAddress, phone]);
+  }, [addressText, phone]);
+  const letterhead = useMemo<StudioLetterhead>(
+    () => ({ ...baseLetterhead, address: addressText.trim() || undefined, phone: phone.trim() || undefined }),
+    [baseLetterhead, addressText, phone],
+  );
 
   const [error, setError] = useState<string | null>(null);
   const [serverDoc, setServerDoc] = useState<{ key: string; doc: StudioDocument; letterhead: StudioLetterhead } | null>(null);
@@ -170,6 +197,46 @@ export function StatementStudio({
   const padRef = useRef<HTMLDivElement>(null);
   const [padBusy, setPadBusy] = useState<null | "pdf" | "png" | "brief">(null);
   const [briefCopied, setBriefCopied] = useState(false);
+  // A finished PDF or picture an AI wrote on the pad, brought back in. It stays in this browser tab only (nothing is saved on the site).
+  const [upload, setUpload] = useState<{ file: File; url: string } | null>(null);
+  const [canShareFile, setCanShareFile] = useState(false);
+  const uploadUrl = upload?.url;
+  useEffect(() => () => { if (uploadUrl) URL.revokeObjectURL(uploadUrl); }, [uploadUrl]);
+  const [uploadBroken, setUploadBroken] = useState(false);
+  // A design copied from anywhere (a screenshot, an AI chat, an app) can also be pasted with Ctrl+V.
+  useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/") || f.type === "application/pdf");
+      if (!file) return;
+      e.preventDefault();
+      takeFile(file);
+    }
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- takeFile only sets state
+  }, []);
+  function takeFile(file: File | undefined) {
+    if (!file) return;
+    const okType = file.type === "application/pdf" || file.type.startsWith("image/") || /\.(pdf|png|jpe?g|webp|gif)$/i.test(file.name);
+    if (!okType) return setError("Please choose a PDF or a picture (PNG, JPG, WebP).");
+    setUploadBroken(false);
+    if (file.size > 20 * 1024 * 1024) return setError("That file is bigger than 20 MB. Please choose a smaller one.");
+    setError(null);
+    setUpload({ file, url: URL.createObjectURL(file) });
+    try {
+      setCanShareFile(typeof navigator.canShare === "function" && navigator.canShare({ files: [file] }));
+    } catch {
+      setCanShareFile(false);
+    }
+  }
+  async function shareUpload() {
+    if (!upload) return;
+    try {
+      await navigator.share({ files: [upload.file], title: upload.file.name });
+    } catch {
+      // Cancelled — nothing to do.
+    }
+  }
   const [templateId, setTemplateId] = useState(""); // "" = custom
   const [values, setValues] = useState<Record<string, string>>({});
   const template = findTemplate(templateId);
@@ -276,6 +343,18 @@ export function StatementStudio({
   }, [kind, title, body, template, values]);
   const blocked = missing.length > 0;
 
+  // For sending to many people the customer's name is filled in per person, so it is not "missing" here.
+  const nameLabel = template?.fields.find((f) => f.key === "name")?.label;
+  const missingForBulk = missing.filter((m) => m !== nameLabel);
+  const bulkBlockedReason = !title.trim() && !body.trim() ? "Write or choose the notice first." : missingForBulk.length > 0 ? `Fill in first: ${missingForBulk.join(", ")}.` : undefined;
+  function bulkMessage(name: string): string {
+    const v = { ...values, name };
+    const t = fillTemplate(title, template, v).trim() || "Notice";
+    let text = toWhatsAppText(t, fillTemplate(body, template, v));
+    if (withSignature && (signer.trim() || signerRole.trim())) text += `\n\n— ${[signer.trim(), signerRole.trim()].filter(Boolean).join(", ")}`;
+    return text;
+  }
+
   const customerSales = sales.filter((s) => s.customerId === customerId);
   const visibleKinds = KINDS.filter((k) => allowFinance || k.kind === "announcement");
 
@@ -351,10 +430,11 @@ export function StatementStudio({
         window.setTimeout(() => setBriefCopied(false), 2200);
         return;
       }
+      // The PDF is built as a real vector document (sharp at any zoom, real text, full-resolution logo), not a picture of the page.
+      if (action === "pdf") return await downloadVectorPad(letterhead, "Letterhead-pad");
       const page = padRef.current?.querySelector<HTMLElement>("[data-studio-page]");
       if (!page) return;
-      if (action === "pdf") await downloadPdf([page], "Letterhead-pad");
-      else await downloadPng([page], "Letterhead-pad");
+      await downloadPng([page], "Letterhead-pad", 4);
     } catch {
       setError("Couldn't prepare the letterhead. Please try again.");
     } finally {
@@ -416,19 +496,37 @@ export function StatementStudio({
 
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
           <p className="text-label text-fg-subtle uppercase">Address &amp; phone on the letterhead</p>
-          <Select
-            label="Which address?"
-            value={addressChoice}
-            onChange={(e) => setAddressChoice(e.target.value)}
-            options={[
-              { value: "company", label: baseLetterhead.address ? `Company office — ${baseLetterhead.address}` : "Company office (not set in Settings yet)" },
-              ...addresses.map((a) => ({ value: a.value, label: a.label })),
-              { value: "custom", label: "Another address — type it" },
-            ]}
-          />
-          {addressChoice === "custom" && (
-            <Input label="Address" value={customAddress} onChange={(e) => setCustomAddress(e.target.value)} placeholder="e.g. House 14, Road 3, Dhanmondi, Dhaka" />
-          )}
+          <Input label="Address" value={addressText} onChange={(e) => setAddressText(e.target.value)} placeholder="Type any place, e.g. House 14, Road 3, Dhanmondi, Dhaka" helperText="Whatever you type here is printed on the letterhead. Or tap a quick choice:" />
+          <div className="-mt-1 flex flex-wrap gap-1.5">
+            {baseLetterhead.address && (
+              <button
+                type="button"
+                onClick={() => setAddressText(baseLetterhead.address ?? "")}
+                aria-pressed={addressText.trim() === baseLetterhead.address}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  addressText.trim() === baseLetterhead.address ? "border-accent bg-accent text-accent-foreground" : "border-border bg-surface-raised text-fg-muted hover:bg-surface hover:text-fg",
+                )}
+              >
+                Company office
+              </button>
+            )}
+            {addresses.map((a) => (
+              <button
+                key={a.value}
+                type="button"
+                title={a.address}
+                onClick={() => setAddressText(a.address)}
+                aria-pressed={addressText.trim() === a.address}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  addressText.trim() === a.address ? "border-accent bg-accent text-accent-foreground" : "border-border bg-surface-raised text-fg-muted hover:bg-surface hover:text-fg",
+                )}
+              >
+                {a.label.split(" site — ")[0]}
+              </button>
+            ))}
+          </div>
           <Input label="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +880 1712-345678" helperText="Printed under the address. Your choice is remembered on this computer. To change the default for everyone, edit Settings → Company." />
         </div>
 
@@ -502,6 +600,23 @@ export function StatementStudio({
                           options={projects.map((pr) => ({ value: pr.label, label: pr.label }))}
                           placeholder="Choose"
                         />
+                      ) : f.key === "name" && customers.length > 0 ? (
+                        // Type any name, or pick one of your customers from the suggestions.
+                        <div key={f.key}>
+                          <Input
+                            label={f.label}
+                            list="studio-customer-names"
+                            autoComplete="off"
+                            value={values[f.key] ?? ""}
+                            onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                            placeholder="Type, or choose from your customers"
+                          />
+                          <datalist id="studio-customer-names">
+                            {customers.map((c) => (
+                              <option key={c.value} value={c.label} />
+                            ))}
+                          </datalist>
+                        </div>
                       ) : (
                         <Input
                           key={f.key}
@@ -646,12 +761,35 @@ export function StatementStudio({
           )}
         </div>
 
+        {kind === "announcement" && customers.length > 0 && (
+          <BulkSendPanel
+            recipients={customers.map((c) => ({ id: c.value, name: c.label, phone: c.phone, projectIds: c.projectIds }))}
+            projects={projects}
+            buildMessage={bulkMessage}
+            blockedReason={bulkBlockedReason}
+          />
+        )}
+
+        {allowSendToPages && customers.length > 0 && (upload || active) && (
+          <SendToPagesPanel
+            recipients={customers.map((c) => ({ id: c.value, name: c.label, phone: c.phone, projectIds: c.projectIds }))}
+            projects={projects}
+            defaultName={upload ? upload.file.name.replace(/\.[^.]+$/, "") : active?.doc.title || "Document"}
+            getFile={async () => {
+              if (upload) return upload.file;
+              const pages = Array.from(sheetsRef.current?.querySelectorAll<HTMLElement>("[data-studio-page]") ?? []);
+              return makePdfFile(pages, safeFileName(`${active?.doc.kind ?? ""}-${active?.doc.title ?? "document"}`));
+            }}
+            blockedReason={!upload && blocked ? `Fill in first: ${missing.join(", ")}.` : undefined}
+          />
+        )}
+
         {/* The blank letterhead for an AI: download it, give it to Claude (or any AI) with the details, let it write on the pad. */}
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
           <div>
             <p className="text-body-sm text-fg font-semibold">Blank letterhead for an AI</p>
             <p className="text-caption text-fg-subtle mt-0.5 leading-snug">
-              Download the empty pad, give it to Claude or any AI together with the instructions and your details — it writes on the pad. Paste the result back here.
+              Download the empty pad, give it to Claude or any AI together with the instructions and your details — it writes on the pad. Then bring the finished file back with the button below.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -668,6 +806,32 @@ export function StatementStudio({
               {briefCopied ? "Copied" : "Copy AI instructions"}
             </Button>
           </div>
+          <div className="border-border flex flex-col gap-2 border-t pt-3">
+            <p className="text-body-sm text-fg font-semibold">Already have your finished design?</p>
+            <label
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                takeFile(e.dataTransfer.files?.[0]);
+              }}
+              className="border-border-strong text-body-sm text-fg hover:bg-surface flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-4 text-center transition-colors"
+            >
+              <Upload aria-hidden className="text-accent size-4 shrink-0" />
+              {upload ? "Choose a different file" : "Add the finished PDF or picture"}
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  takeFile(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <p className="text-caption text-fg-subtle leading-snug">
+              Any PDF or picture works — made with an AI, edited by you, or from any app. It does not need the letterhead pad or the instructions above. It is shown exactly as it is (never changed or re-laid-out), so nothing can break. You can also press Ctrl+V to paste a copied picture. Up to 20 MB; not saved on the site.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -678,7 +842,48 @@ export function StatementStudio({
 
       {/* Preview */}
       <div className="min-w-0">
-        {active ? (
+        {upload ? (
+          <>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <a
+                href={upload.url}
+                download={upload.file.name}
+                className="bg-accent text-accent-foreground text-body-sm inline-flex h-11 items-center gap-2 rounded-md px-4 font-medium"
+              >
+                <Download aria-hidden className="size-4" />
+                Download
+              </a>
+              {canShareFile && (
+                <Button type="button" variant="secondary" onClick={shareUpload}>
+                  <Share2 aria-hidden className="size-4" />
+                  Share (WhatsApp…)
+                </Button>
+              )}
+              <Button type="button" variant="outline" onClick={() => setUpload(null)}>
+                <X aria-hidden className="size-4" />
+                Remove
+              </Button>
+              <a href={upload.url} target="_blank" rel="noopener" className="text-body-sm text-accent hover:text-accent-strong inline-flex h-11 items-center px-2 font-medium">
+                Open in a new tab
+              </a>
+              <span className="text-caption text-fg-subtle ml-1 truncate">
+                {upload.file.name} · {(upload.file.size / 1024 / 1024).toFixed(upload.file.size > 1024 * 1024 ? 1 : 2)} MB
+              </span>
+            </div>
+            <div className="bg-surface border-border overflow-hidden rounded-xl border">
+              {uploadBroken ? (
+                <p className="text-body-sm text-fg-muted p-6">
+                  This browser cannot show that file here, but the file itself is fine. Use <b>Download</b> or <b>Open in a new tab</b> above.
+                </p>
+              ) : upload.file.type === "application/pdf" || /\.pdf$/i.test(upload.file.name) ? (
+                <iframe title={`Preview of ${upload.file.name}`} src={`${upload.url}#view=FitH`} className="h-[80vh] w-full" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- a local blob URL, not a site image
+                <img src={upload.url} alt={upload.file.name} onError={() => setUploadBroken(true)} className="mx-auto max-h-[80vh] w-auto max-w-full" />
+              )}
+            </div>
+          </>
+        ) : active ? (
           <>
             {blocked && (
               <div role="status" className="bg-warning-soft text-warning mb-3 flex items-start gap-2.5 rounded-lg px-3.5 py-3">

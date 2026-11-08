@@ -46,31 +46,37 @@ export const capabilities = [
     title: "Property Development",
     description:
       "We plan and develop residential projects on our own land, engineered for long-term value.",
+    links: [{ label: "Explore our projects", href: "/projects" }, { label: "See construction progress", href: "/construction" }, { label: "Our story", href: "/about" }],
   },
   {
     title: "Construction & Delivery",
     description:
       "In-house project management sees every development through, from ground-breaking to handover.",
+    links: [{ label: "See construction in progress", href: "/construction" }, { label: "Explore our projects", href: "/projects" }, { label: "Talk to our team", href: "/contact?type=construction" }],
   },
   {
     title: "Property Sales",
     description:
       "We offer individual units and full developments directly, with transparent pricing and documentation.",
+    links: [{ label: "Browse available properties", href: "/properties" }, { label: "Explore our projects", href: "/projects" }, { label: "Enquire about a property", href: "/contact?type=property" }],
   },
   {
     title: "Landowner Partnerships",
     description:
       "We develop on landowners' land through structured joint-venture agreements, sharing value fairly.",
+    links: [{ label: "Landowners & joint ventures", href: "/landowners" }, { label: "Talk about your land", href: "/contact?type=land-jv" }],
   },
   {
     title: "Investment Opportunities",
     description:
       "We create structured opportunities for investors to participate in our developments.",
+    links: [{ label: "Investment opportunities", href: "/landowners#investment" }, { label: "Talk to us about investing", href: "/contact?type=investment" }],
   },
   {
     title: "Project Management",
     description:
       "Every project is planned, tracked and delivered under a single accountable team.",
+    links: [{ label: "Talk to our team", href: "/contact?type=general" }, { label: "Explore our projects", href: "/projects" }, { label: "About us", href: "/about" }],
   },
 ];
 

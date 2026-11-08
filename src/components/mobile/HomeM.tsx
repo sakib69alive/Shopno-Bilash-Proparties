@@ -148,6 +148,7 @@ export function HomeM({
               icon={CAPABILITY_ICONS[c.title] ?? Building2}
               title={c.title}
               description={c.description}
+              links={c.links}
             />
           ))}
         </div>

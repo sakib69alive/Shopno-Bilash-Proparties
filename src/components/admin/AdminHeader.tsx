@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, LogOut } from "lucide-react";
+import { SimbaLauncher } from "@/components/admin/SimbaLauncher";
 import { IconButton } from "@/components/ui/IconButton";
 import { GlobalSearch } from "@/components/admin/search/GlobalSearch";
 import { ROLE_LABELS } from "@/config/roles";
@@ -40,6 +41,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
       <GlobalSearch user={user} />
 
       <div className="ml-auto flex items-center gap-2">
+        <SimbaLauncher />
         <IconButton icon={Bell} label="Notifications" />
         <div className="border-border ml-1 flex items-center gap-2.5 border-l pl-3">
           <span className="bg-accent text-accent-foreground text-label flex size-8 items-center justify-center rounded-full">

@@ -8,6 +8,7 @@ import type { CompanySettings } from "@/types/settings";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
 import { AdminPhoneChrome } from "./AdminPhoneChrome";
+import { SimbaAgent } from "./simba/SimbaAgent";
 
 export interface AdminShellProps {
   user: User;
@@ -46,6 +47,7 @@ export function AdminShell({ user, children, incompleteHrefs, settings }: AdminS
           {children}
         </main>
       </div>
+      <SimbaAgent role={user.role} />
     </div>
   );
 }

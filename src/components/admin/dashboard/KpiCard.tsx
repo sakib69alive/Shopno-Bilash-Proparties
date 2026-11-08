@@ -53,7 +53,7 @@ export function KpiCard({
   const TrendIcon = trend ? TREND_ICON[trend.direction] : null;
 
   return (
-    <div className={cn("border-border bg-surface-raised hover:border-border-strong rounded-lg border p-3.5 transition-colors sm:p-4", className)}>
+    <div className={cn("border-border bg-surface-raised hover:border-border-strong rounded-2xl border p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition-all hover:shadow-[0_8px_20px_rgb(0_0_0/0.06)] sm:p-5", className)}>
       <div className="flex items-center gap-2">
         <p className="text-label text-fg-subtle truncate uppercase">{label}</p>
         {status && <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", STATUS_TONE_CLASSES[status])} />}

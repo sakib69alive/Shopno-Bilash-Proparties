@@ -49,6 +49,7 @@ export default async function StatementsPage({ searchParams }: PageProps) {
       />
       <StatementStudio
         allowFinance={canFinance}
+        allowSendToPages={hasPermission(user.role, "documents.upload")}
         letterhead={await loadLetterhead()}
         addresses={allProjects.map((p) => ({
           value: p.id,
@@ -59,7 +60,20 @@ export default async function StatementsPage({ searchParams }: PageProps) {
         payments={[...payments]
           .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
           .map((p) => ({ value: p.id, customerId: p.customerId, label: `${formatDate(new Date(p.date))} · ${formatBDT(p.amount.amount)} · ${p.category}` }))}
-        customers={customers.map((c) => ({ value: c.id, label: c.name })).sort((a, b) => a.label.localeCompare(b.label))}
+        customers={customers
+          .map((c) => ({
+            value: c.id,
+            label: c.name,
+            phone: c.phone,
+            // The projects this customer has a flat in (from their sales and from the flats assigned to them), so a notice can go to everyone in one project.
+            projectIds: Array.from(
+              new Set([
+                ...sales.filter((s) => s.customerId === c.id && s.status !== "cancelled").map((s) => s.projectId),
+                ...units.filter((u) => u.customerId === c.id).map((u) => u.projectId),
+              ]),
+            ),
+          }))
+          .sort((a, b) => a.label.localeCompare(b.label))}
         projects={projects.map((p) => ({ value: p.id, label: p.name }))}
         sales={sales
           .filter((s) => s.status !== "cancelled")

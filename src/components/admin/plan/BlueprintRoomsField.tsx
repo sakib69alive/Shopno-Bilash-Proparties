@@ -13,10 +13,13 @@ import {
   ROOM_TYPE_LABEL,
   extractAreasFromSvg,
   extractRoomsFromSvg,
+  doorsOf,
   guessRoomType,
+  isDoorType,
   isRoomType,
   nextAreaLabel,
   polygonCentroid,
+  pressableRooms,
   rectFromCorners,
   rotateFraction,
   roomSummary,
@@ -30,7 +33,8 @@ import {
 import { normalizeBlueprintSvg, rotateBlueprintSvg } from "@/lib/svgNormalize";
 import { pickFlatMarker } from "@/lib/unitPlan";
 
-const TYPE_OPTIONS = ROOM_TYPES.map((t) => ({ value: t, label: ROOM_TYPE_LABEL[t].one.replace(/^./, (c) => c.toUpperCase()) }));
+// Doors are made with their own two-click buttons, not picked as a "kind" of room.
+const TYPE_OPTIONS = ROOM_TYPES.filter((t) => !isDoorType(t)).map((t) => ({ value: t, label: ROOM_TYPE_LABEL[t].one.replace(/^./, (c) => c.toUpperCase()) }));
 const TYPE_COLOR: Record<RoomType, string> = {
   flat: "#0f766e",
   bedroom: "#2563eb",
@@ -46,20 +50,23 @@ const TYPE_COLOR: Record<RoomType, string> = {
   lobby: "#0ea5e9",
   gate: "#b45309",
   other: "#6b7280",
+  maindoor: "#16a34a",
+  door: "#e11d48",
 };
 const pointsAttr = (points: [number, number][]) => points.map(([x, y]) => `${x * 100},${y * 100}`).join(" ");
 
-type Mark = "room" | "outline";
+type Mark = "room" | "outline" | "maindoor" | "door";
 type DrawMode = "box" | "shape";
 
 function RoomCanvas({
   src,
   aspect,
-  rooms,
+  rooms: allRooms,
   outline,
   draft,
   marking,
   boxMode,
+  doorMode,
   onAddPoint,
   onRemovePoint,
 }: {
@@ -71,6 +78,8 @@ function RoomCanvas({
   marking: boolean;
   /** Two-corner box drawing: a dashed box follows the pointer after the first corner. */
   boxMode: boolean;
+  /** Marking a door: two clicks (its two ends); a line follows the pointer after the first one. */
+  doorMode: boolean;
   onAddPoint: (p: [number, number]) => void;
   onRemovePoint: (index: number) => void;
 }) {
@@ -80,10 +89,13 @@ function RoomCanvas({
     return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))];
   }
   const preview = marking && boxMode && draft.length === 1 && hover ? rectFromCorners(draft[0], hover) : null;
+  const doorPreview = marking && doorMode && draft.length === 1 && hover ? [draft[0], hover] : null;
+  const rooms = pressableRooms(allRooms);
+  const doors = doorsOf(allRooms);
   return (
     <div
       onClick={(e) => marking && onAddPoint(frac(e))}
-      onMouseMove={(e) => marking && boxMode && setHover(frac(e))}
+      onMouseMove={(e) => marking && (boxMode || doorMode) && setHover(frac(e))}
       onMouseLeave={() => setHover(null)}
       style={{ aspectRatio: String(aspect) }}
       className={cn("border-border relative w-full overflow-hidden rounded-lg border bg-white select-none", marking && "ring-accent cursor-crosshair ring-2")}
@@ -95,8 +107,15 @@ function RoomCanvas({
         {rooms.map((r) => (
           <polygon key={r.id} points={pointsAttr(r.points)} fill={TYPE_COLOR[r.type]} fillOpacity={0.3} stroke={TYPE_COLOR[r.type]} strokeWidth={2} vectorEffect="non-scaling-stroke" />
         ))}
+        {doors.map((d) => (
+          <g key={`door-${d.id}`} strokeLinecap="round">
+            <line x1={d.points[0][0] * 100} y1={d.points[0][1] * 100} x2={d.points[1][0] * 100} y2={d.points[1][1] * 100} stroke={TYPE_COLOR[d.type]} strokeOpacity={0.35} strokeWidth={11} vectorEffect="non-scaling-stroke" />
+            <line x1={d.points[0][0] * 100} y1={d.points[0][1] * 100} x2={d.points[1][0] * 100} y2={d.points[1][1] * 100} stroke={TYPE_COLOR[d.type]} strokeWidth={5} vectorEffect="non-scaling-stroke" />
+          </g>
+        ))}
+        {doorPreview && <line x1={doorPreview[0][0] * 100} y1={doorPreview[0][1] * 100} x2={doorPreview[1][0] * 100} y2={doorPreview[1][1] * 100} stroke="#2563eb" strokeWidth={4} strokeDasharray="6 4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />}
         {preview && <polygon points={pointsAttr(preview)} fill="rgb(37 99 235 / 0.15)" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />}
-        {!boxMode && draft.length > 0 && <polyline points={pointsAttr(draft)} fill="rgb(37 99 235 / 0.15)" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />}
+        {!boxMode && !doorMode && draft.length > 0 && <polyline points={pointsAttr(draft)} fill="rgb(37 99 235 / 0.15)" stroke="#2563eb" strokeWidth={2} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />}
       </svg>
       {rooms.map((r) => {
         const [cx, cy] = polygonCentroid(r.points);
@@ -183,7 +202,8 @@ export function BlueprintRoomsField({
 
   const shown = previewSrc ?? currentSrc ?? null;
   const marking = mark !== null;
-  const boxMode = drawMode === "box" && marking;
+  const doorMode = mark === "maindoor" || mark === "door";
+  const boxMode = drawMode === "box" && marking && !doorMode;
 
   // Ctrl+Z (Cmd+Z) takes back the last corner while marking; Esc cancels.
   useEffect(() => {
@@ -344,7 +364,22 @@ export function BlueprintRoomsField({
     setMark(null);
   }
 
+  /** A door is just two points — its two ends. The second click adds it. */
+  function commitDoor(a: [number, number], b: [number, number]) {
+    if (mark !== "maindoor" && mark !== "door") return;
+    const existing = doorsOf(rooms).filter((d) => d.type === mark).length;
+    const label = mark === "maindoor" ? (existing === 0 ? "Main door" : `Main door ${existing + 1}`) : `Door ${existing + 1}`;
+    setRooms((all) => [...all, { id: `door-${Date.now().toString(36)}-${all.length}`, label, type: mark, points: [a, b] }]);
+    setDraft([]);
+    setMark(null);
+  }
+
   function addPoint(p: [number, number]) {
+    if (doorMode) {
+      if (draft.length === 0) setDraft([p]);
+      else commitDoor(draft[0], p);
+      return;
+    }
     if (drawMode === "box") {
       if (draft.length === 0) setDraft([p]);
       else commit(rectFromCorners(draft[0], p));
@@ -423,7 +458,43 @@ export function BlueprintRoomsField({
             </button>
           </div>
 
-          {marking && (
+          {/* Doors: two clicks, one at each end of the door. */}
+          <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-md border p-3">
+            <p className="text-body-sm text-fg font-semibold">Doors — just two clicks each</p>
+            <p className="text-caption text-fg-muted">
+              Press a button, then click <b>one end of the door</b> and <b>the other end</b>. The <b>main door</b> is shown in green at all times; a <b>room door</b> is shown in pink while that
+              room is pressed. An SVG can carry them too: <code>data-door=&quot;main&quot;</code> or <code>data-door=&quot;room&quot;</code> on a line.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" disabled={marking} onClick={() => { setDraft([]); setMark("maindoor"); }} className="inline-flex items-center gap-2 rounded-full border-2 border-[#16a34a] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#15803d] transition-colors hover:bg-[#16a34a]/10 disabled:opacity-50">
+                <span aria-hidden className="size-2.5 rounded-full bg-[#16a34a]" />
+                Main door of the flat
+              </button>
+              <button type="button" disabled={marking} onClick={() => { setDraft([]); setMark("door"); }} className="inline-flex items-center gap-2 rounded-full border-2 border-[#e11d48] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#be123c] transition-colors hover:bg-[#e11d48]/10 disabled:opacity-50">
+                <span aria-hidden className="size-2.5 rounded-full bg-[#e11d48]" />
+                Door of a room
+              </button>
+            </div>
+          </div>
+
+          {marking && doorMode && (
+            <div className="border-accent/40 bg-accent-soft/40 flex flex-wrap items-center gap-3 rounded-md border p-3">
+              <p className="text-body-sm text-fg flex-1 basis-64 font-medium">
+                <span aria-hidden className="mr-2 inline-block size-2.5 rounded-full align-middle" style={{ backgroundColor: mark === "maindoor" ? "#16a34a" : "#e11d48" }} />
+                {draft.length === 0 ? `Step 1 of 2 — click ONE END of the ${mark === "maindoor" ? "main door" : "room door"}.` : "Step 2 of 2 — click the OTHER END of the door. It is added at once."}
+              </p>
+              <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft([])}>
+                <Undo2 aria-hidden className="size-4" />
+                Redo first point
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => { setDraft([]); setMark(null); }}>
+                <X aria-hidden className="size-4" />
+                Cancel
+              </Button>
+            </div>
+          )}
+
+          {marking && !doorMode && (
             <div className="border-accent/40 bg-accent-soft/40 flex flex-col gap-3 rounded-md border p-3">
               <div className="flex flex-wrap items-end gap-3">
                 {mark === "room" && (
@@ -513,7 +584,7 @@ export function BlueprintRoomsField({
             </div>
           )}
 
-          <RoomCanvas src={shown} aspect={aspect} rooms={rooms} outline={outline} draft={draft} marking={marking} boxMode={boxMode} onAddPoint={addPoint} onRemovePoint={(i) => setDraft((d) => d.filter((_, k) => k !== i))} />
+          <RoomCanvas src={shown} aspect={aspect} rooms={rooms} outline={outline} draft={draft} marking={marking} boxMode={boxMode} doorMode={doorMode} onAddPoint={addPoint} onRemovePoint={(i) => setDraft((d) => d.filter((_, k) => k !== i))} />
 
           {rooms.length > 0 ? (
             <>
@@ -522,25 +593,33 @@ export function BlueprintRoomsField({
                 {rooms.map((r) => (
                   <li key={r.id} className="flex flex-wrap items-center gap-2">
                     <span aria-hidden className="size-3 shrink-0 rounded-full" style={{ backgroundColor: TYPE_COLOR[r.type] }} />
-                    <input
-                      aria-label="Name"
-                      value={r.label}
-                      onChange={(e) => setRooms((all) => all.map((x) => (x.id === r.id ? { ...x, label: e.target.value } : x)))}
-                      onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-                      className="border-border-strong bg-surface-raised text-body-sm h-9 min-w-0 flex-1 rounded-md border px-2.5"
-                    />
-                    <select
-                      aria-label="Kind"
-                      value={r.type}
-                      onChange={(e) => isRoomType(e.target.value) && setRooms((all) => all.map((x) => (x.id === r.id ? { ...x, type: e.target.value as RoomType } : x)))}
-                      className="border-border-strong bg-surface-raised text-body-sm h-9 rounded-md border px-2"
-                    >
-                      {TYPE_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
+                    {isDoorType(r.type) ? (
+                      <span className="text-body-sm min-w-0 flex-1 font-medium">
+                        {r.label} <span className="text-fg-subtle text-xs">· {r.type === "maindoor" ? "shown in green all the time" : "shown in pink when its room is pressed"}</span>
+                      </span>
+                    ) : (
+                      <>
+                        <input
+                          aria-label="Name"
+                          value={r.label}
+                          onChange={(e) => setRooms((all) => all.map((x) => (x.id === r.id ? { ...x, label: e.target.value } : x)))}
+                          onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                          className="border-border-strong bg-surface-raised text-body-sm h-9 min-w-0 flex-1 rounded-md border px-2.5"
+                        />
+                        <select
+                          aria-label="Kind"
+                          value={r.type}
+                          onChange={(e) => isRoomType(e.target.value) && setRooms((all) => all.map((x) => (x.id === r.id ? { ...x, type: e.target.value as RoomType } : x)))}
+                          className="border-border-strong bg-surface-raised text-body-sm h-9 rounded-md border px-2"
+                        >
+                          {TYPE_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      </>
+                    )}
                     <button type="button" aria-label={`Delete ${r.label}`} onClick={() => setRooms((all) => all.filter((x) => x.id !== r.id))} className="text-fg-muted hover:bg-surface-raised flex size-9 items-center justify-center rounded-md">
                       <Trash2 aria-hidden className="size-4" />
                     </button>

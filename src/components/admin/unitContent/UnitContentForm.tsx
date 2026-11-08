@@ -149,7 +149,7 @@ export function UnitContentForm({ action, unit, projects, submitLabel }: UnitCon
         placeholder="e.g. Open Kitchen Layout, Private Balcony"
       />
 
-      <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
+      <fieldset id="photos-plan" className="border-border flex scroll-mt-24 flex-col gap-5 rounded-md border p-4">
         <legend className="text-label px-1.5">Photos &amp; floor plan</legend>
         <AdminImageField
           label={unit ? "Replace cover photo (optional)" : "Cover photo"}

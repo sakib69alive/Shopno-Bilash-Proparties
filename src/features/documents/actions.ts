@@ -144,7 +144,7 @@ export async function updateDocument(
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Couldn't save that file." };
     }
-    await deleteUploadedFile(existing.fileUrl);
+    if (!(await documentRepository.list()).some((d) => d.id !== id && d.fileUrl === existing.fileUrl)) await deleteUploadedFile(existing.fileUrl);
     fileUrl = saved.url;
     fileSize = saved.size;
     type = saved.extension;
@@ -180,7 +180,9 @@ export async function deleteDocument(id: string): Promise<void> {
   if (!existing) return;
 
   await documentRepository.remove(id);
-  await deleteUploadedFile(existing.fileUrl);
+  // One file can be filed under several clients (a notice sent to many): keep it while another record still points at it.
+  const stillUsed = (await documentRepository.list()).some((d) => d.fileUrl === existing.fileUrl);
+  if (!stillUsed) await deleteUploadedFile(existing.fileUrl);
 
   await recordAuditEvent({ actorUserId: user.id, action: "document.delete", entityType: "Document", entityId: id });
 

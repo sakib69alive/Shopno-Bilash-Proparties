@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { buildBackupZip } from "@/lib/backup";
+import { recordAuditEvent } from "@/features/audit/repository";
 
 /**
  * Admin API boundary — authenticated *and* permission-checked server-side,
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
   const mode = modeParam === "data" ? "data" : "full";
 
   const zip = await buildBackupZip(mode);
+  // Logged so Simba can tell when the last backup was taken.
+  await recordAuditEvent({ actorUserId: user.id, action: "system.backup.download", entityType: "Backup", entityId: mode, newValue: { mode } });
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `shopno-bilash-backup-${mode}-${timestamp}.zip`;
 

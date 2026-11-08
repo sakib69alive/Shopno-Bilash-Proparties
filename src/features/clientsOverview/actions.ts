@@ -134,6 +134,74 @@ export async function sendClientDocument(customerId: string, formData: FormData)
   return { ok: true };
 }
 
+/**
+ * Sends one file (a statement, a notice, a PDF or picture received from a phone…) to several clients at once: the file is stored once and
+ * filed under each client, so each sees it in their own app's Documents and, if they have an account, gets an in-app message.
+ */
+export async function sendDocumentToClients(customerIds: string[], formData: FormData): Promise<ClientsActionResult & { sent?: number }> {
+  const user = await requireStaff("documents.upload");
+  const ids = Array.from(new Set(customerIds)).slice(0, 500);
+  if (ids.length === 0) return { error: "Choose at least one client." };
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "Choose a file to send." };
+  const name = String(formData.get("name") ?? "").trim().slice(0, 120) || file.name.replace(/\.[^.]+$/, "") || "Document";
+
+  const customers = (await Promise.all(ids.map((id) => customerRepository.findById(id)))).filter((c): c is NonNullable<typeof c> => !!c);
+  if (customers.length === 0) return { error: "Those clients no longer exist." };
+
+  let saved;
+  try {
+    saved = await saveUploadedFile(file, "documents");
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Couldn't save that file." };
+  }
+
+  const now = new Date().toISOString();
+  for (const customer of customers) {
+    const id = randomUUID();
+    await documentRepository.create({
+      id,
+      name,
+      type: saved.extension,
+      category: "Sent to client",
+      ownerType: "customer",
+      ownerId: customer.id,
+      version: 1,
+      status: "active",
+      uploadedBy: user.id,
+      uploadDate: now,
+      fileUrl: saved.url, // one stored file, shared by every client's record (deleting one record keeps the file while others use it)
+      fileSize: saved.size,
+      visibility: "private", // owner-visible
+      createdAt: now,
+      updatedAt: now,
+      createdBy: user.id,
+    });
+    if (customer.userId) {
+      await notificationRepository.create({
+        id: randomUUID(),
+        recipientUserId: customer.userId,
+        event: "document.uploaded",
+        channel: "in-app",
+        title: "A new document for you",
+        body: `${name} has been added to your documents.`,
+        relatedEntityId: id,
+        category: "document",
+        priority: "medium",
+        actionHref: "/portal/documents",
+        actorUserId: user.id,
+        status: "unread",
+        createdAt: now,
+      });
+    }
+    await recordAuditEvent({ actorUserId: user.id, action: "document.sendToClient", entityType: "Document", entityId: id });
+  }
+  revalidatePath("/admin/clients");
+  revalidatePath("/admin/documents");
+  return { ok: true, sent: customers.length };
+}
+
 /** A short in-app message to one client (they see it in Notifications, and the Clients page then shows whether it has been read). */
 export async function sendClientMessage(customerId: string, text: string): Promise<ClientsActionResult> {
   const user = await requireStaff("customer.update");

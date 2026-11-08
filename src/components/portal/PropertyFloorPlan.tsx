@@ -7,6 +7,7 @@ import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
 import { ZoomPan } from "@/components/plan/ZoomPan";
 import { Reveal } from "@/components/ui/Reveal";
 import type { PlanHighlight } from "@/lib/unitPlan";
+import { doorsOf } from "@/lib/planRooms";
 
 /**
  * Same "click to inspect at full size" pattern as the public site's
@@ -45,7 +46,7 @@ export function PropertyFloorPlan({ src, unitLabel, highlight }: { src?: string;
   const alt = `Floor plan for ${unitLabel}`;
   const rooms = highlight?.rooms ?? [];
   const roomPlan = highlight ? { aspect: highlight.aspect, rooms } : null;
-  const hasRooms = rooms.length > 0;
+  const hasRooms = rooms.some((r) => r.type !== "maindoor" && r.type !== "door");
   const floorItems = highlight?.buildingItems ?? [];
   const floorPlanItems = floorItems.length > 0 && highlight ? { aspect: highlight.aspect, rooms: floorItems } : null;
 
@@ -57,7 +58,7 @@ export function PropertyFloorPlan({ src, unitLabel, highlight }: { src?: string;
         <RoomStage
           src={src}
           alt={alt}
-          plan={floorPlanItems ?? { aspect: highlight.aspect, rooms: [] }}
+          plan={{ aspect: highlight.aspect, rooms: [...(floorPlanItems?.rooms ?? []), ...doorsOf(rooms).filter((d) => d.type === "maindoor")] }}
           tone="midnight"
           emphasis={{ mine: highlight.mine, others: highlight.others }}
           view={highlight.view}

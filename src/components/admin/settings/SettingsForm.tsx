@@ -43,7 +43,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       )}
 
-      <h2 className="text-label text-fg-subtle uppercase">Logo</h2>
+      <h2 id="logo" className="text-label text-fg-subtle scroll-mt-24 uppercase">Logo</h2>
       <p className="text-caption text-fg-subtle -mt-3">
         Shown everywhere the site has a logo — header, footer, login page, Admin sidebar, Owner Portal.
       </p>
@@ -75,13 +75,13 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Company</h2>
+      <h2 id="company" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Company</h2>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Legal Name" name="legalName" required defaultValue={settings.legalName} />
         <Input label="Display Name" name="displayName" required defaultValue={settings.displayName} />
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Contact</h2>
+      <h2 id="contact" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Contact</h2>
       <p className="text-caption text-fg-subtle -mt-3">Shown in the public site&rsquo;s footer, under &ldquo;Contact&rdquo; — each field is hidden there individually while empty, nothing is ever shown as a placeholder.</p>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Address (optional)" name="address" defaultValue={settings.address} />
@@ -105,7 +105,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Social Media</h2>
+      <h2 id="social" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Social Media</h2>
       <p className="text-caption text-fg-subtle -mt-3">
         Full profile URLs (e.g. https://instagram.com/yourpage). Shown as an icon in the public footer&rsquo;s &ldquo;Follow&rdquo;
         column — only for the platforms you fill in here, never an invented or dead link.
@@ -141,7 +141,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         />
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Public &ldquo;Our Impact&rdquo; Stats</h2>
+      <h2 id="impact" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Public &ldquo;Our Impact&rdquo; Stats</h2>
       <p className="text-caption text-fg-subtle -mt-3">Shown on the public About page. Leave any of these empty and the site shows a placeholder instead of a made-up number.</p>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Ongoing Developments" name="impactOngoingDevelopments" type="number" defaultValue={settings.impactOngoingDevelopments} />
@@ -150,7 +150,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         <Input label="Landowner Partnerships" name="impactLandownerPartnerships" type="number" defaultValue={settings.impactLandownerPartnerships} />
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Client app look</h2>
+      <h2 id="client-look" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Client app look</h2>
       <fieldset className="flex flex-col gap-3">
         <legend className="text-body-sm text-fg font-medium">Floor-plan look on the client&rsquo;s Home screen</legend>
         <p className="text-caption text-fg-subtle">

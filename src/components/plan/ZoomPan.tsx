@@ -21,6 +21,7 @@ export function ZoomPan({
   children,
   className,
   controls = true,
+  extraControls,
   max = MAX_SCALE,
   label = "Floor plan",
 }: {
@@ -28,6 +29,8 @@ export function ZoomPan({
   className?: string;
   /** The small + / − buttons. Off for a card that sits inside a button (pinch still works). */
   controls?: boolean;
+  /** Extra round buttons shown just left of the zoom buttons (e.g. a rotate button). */
+  extraControls?: ReactNode;
   max?: number;
   label?: string;
 }) {
@@ -198,6 +201,7 @@ export function ZoomPan({
       </div>
       {controls && (
         <div className="absolute right-3 bottom-3 flex items-center gap-1.5">
+          {extraControls}
           {scale > 1.01 && (
             <button
               type="button"

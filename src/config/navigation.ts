@@ -39,6 +39,10 @@ import {
   Sparkles,
   Megaphone,
   UserPlus,
+  Globe,
+  Smartphone,
+  Eraser,
+  Banknote,
 } from "lucide-react";
 import type { Permission } from "./permissions";
 
@@ -155,7 +159,12 @@ export const LANDOWNER_NAV: OwnerNavItem[] = buildOwnerNav("/portal/landowner");
 export const ADMIN_NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    items: [
+      { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+      { label: "Public page", href: "/admin/public-page", icon: Globe },
+      { label: "Client page", href: "/admin/client-page", icon: Smartphone },
+      { label: "Money page", href: "/admin/money-page", icon: Banknote, permission: "finance.view" },
+    ],
   },
   {
     label: "Do it now",
@@ -250,6 +259,7 @@ export const ADMIN_NAV_GROUPS: NavGroup[] = [
       { label: "Roles / Permissions", href: "/admin/roles", permission: "roles.manage", icon: ShieldCheck },
       { label: "Audit Log", href: "/admin/audit", permission: "audit.view", icon: History },
       { label: "Backup & Restore", href: "/admin/settings/backup", permission: "settings.manage", icon: DatabaseBackup },
+      { label: "Remove demo data", href: "/admin/settings/demo-data", permission: "roles.manage", icon: Eraser },
       { label: "Blueprint AI", href: "/admin/settings/blueprint-ai", permission: "settings.manage", icon: Sparkles },
     ],
   },

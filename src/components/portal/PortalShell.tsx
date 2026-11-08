@@ -261,7 +261,7 @@ export function PortalShell({ navItems, ownerName, unreadNotifications, settings
               style={
                 lite
                   ? { backgroundColor: "rgb(28 27 25 / 0.86)" }
-                  : { backgroundColor: "rgb(28 27 25 / 0.42)", backdropFilter: "blur(22px) saturate(180%)", WebkitBackdropFilter: "blur(22px) saturate(180%)" }
+                  : { backgroundColor: "rgb(28 27 25 / 0.42)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }
               }
               className="pointer-events-none absolute inset-0 -z-10 rounded-full"
             />

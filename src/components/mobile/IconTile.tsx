@@ -6,6 +6,8 @@ export interface IconTileProps {
   icon: LucideIcon;
   title: string;
   description?: string;
+  /** Pages this tile leads to; offered as buttons in the sheet that opens on tap. */
+  links?: { label: string; href: string }[];
   className?: string;
 }
 
@@ -14,7 +16,7 @@ export interface IconTileProps {
  * short preview; tapping it opens a sheet with the full text, since the grid
  * leaves room for only a few lines. Without a description it is a plain card.
  */
-export function IconTile({ icon: Icon, title, description, className }: IconTileProps) {
+export function IconTile({ icon: Icon, title, description, links, className }: IconTileProps) {
   if (!description) {
     return (
       <div className={cn("bg-surface-raised border-border flex flex-col gap-3 rounded-[var(--m-radius-card)] border p-4", className)}>
@@ -32,6 +34,7 @@ export function IconTile({ icon: Icon, title, description, className }: IconTile
       iconLarge={<Icon aria-hidden className="size-6" />}
       title={title}
       description={description}
+      links={links}
       className={className}
     />
   );

@@ -16,8 +16,19 @@
  * Kinds of marked area. A flat's plan has rooms (bedroom, kitchen, bathroom, balcony, servant room…); a drawing of a whole building floor
  * has flats, lifts, stairs and lobbies. Both use the same shapes and the same animation.
  */
-export const ROOM_TYPES = ["flat", "bedroom", "living", "dining", "kitchen", "bathroom", "balcony", "servant", "store", "lift", "stair", "lobby", "gate", "other"] as const;
+export const ROOM_TYPES = ["flat", "bedroom", "living", "dining", "kitchen", "bathroom", "balcony", "servant", "store", "lift", "stair", "lobby", "gate", "other", "maindoor", "door"] as const;
 export type RoomType = (typeof ROOM_TYPES)[number];
+
+/**
+ * Doors are stored beside the rooms but are not rooms: each is just a LINE of two points (the two ends of the door) and has no button.
+ *  • `maindoor` — the flat's entrance. Always drawn in its own colour, whatever is pressed, so it is easy to find.
+ *  • `door` — a door of a room. Drawn in another colour only while the room it belongs to (the room whose wall it sits on) is selected.
+ */
+export const DOOR_TYPES: readonly RoomType[] = ["maindoor", "door"];
+export const isDoorType = (type: RoomType): boolean => type === "maindoor" || type === "door";
+/** The rooms people press (everything except doors). */
+export const pressableRooms = (rooms: PlanRoom[]): PlanRoom[] => rooms.filter((r) => !isDoorType(r.type));
+export const doorsOf = (rooms: PlanRoom[] | undefined): PlanRoom[] => (rooms ?? []).filter((r) => isDoorType(r.type));
 
 export const ROOM_TYPE_LABEL: Record<RoomType, { one: string; many: string }> = {
   bedroom: { one: "bedroom", many: "bedrooms" },
@@ -34,6 +45,8 @@ export const ROOM_TYPE_LABEL: Record<RoomType, { one: string; many: string }> = 
   lobby: { one: "lobby", many: "lobbies" },
   gate: { one: "gate", many: "gates" },
   other: { one: "other space", many: "other spaces" },
+  maindoor: { one: "main door", many: "main doors" },
+  door: { one: "door", many: "doors" },
 };
 
 export interface PlanRoom {
@@ -82,6 +95,7 @@ export function isRoomType(value: unknown): value is RoomType {
 export function roomSummary(rooms: PlanRoom[]): { type: RoomType; count: number; text: string }[] {
   const out: { type: RoomType; count: number; text: string }[] = [];
   for (const type of ROOM_TYPES) {
+    if (isDoorType(type)) continue; // doors are not rooms
     const count = rooms.filter((r) => r.type === type).length;
     if (count > 0) out.push({ type, count, text: `${count} ${count === 1 ? ROOM_TYPE_LABEL[type].one : ROOM_TYPE_LABEL[type].many}` });
   }
@@ -105,11 +119,23 @@ export function sanitizePlanRooms(input: unknown): PlanRooms | undefined {
       .map((p) => (Array.isArray(p) ? ([Number(p[0]), Number(p[1])] as [number, number]) : null))
       .filter((p): p is [number, number] => p !== null && Number.isFinite(p[0]) && Number.isFinite(p[1]))
       .map((p) => [round4(clamp01(p[0])), round4(clamp01(p[1]))] as [number, number]);
+    const type = isRoomType(item?.type) ? item.type : guessRoomType(label);
+    if (isDoorType(type)) {
+      // A door is a line: exactly its two ends.
+      if (points.length < 2) continue;
+      rooms.push({
+        id: String(item?.id ?? "").trim().slice(0, 40) || `door-${rooms.length + 1}`,
+        label: label || (type === "maindoor" ? "Main door" : "Door"),
+        type,
+        points: [points[0], points[1]],
+      });
+      continue;
+    }
     if (!label || points.length < 3) continue;
     rooms.push({
       id: String(item?.id ?? "").trim().slice(0, 40) || `room-${rooms.length + 1}`,
       label,
-      type: isRoomType(item?.type) ? item.type : guessRoomType(label),
+      type,
       points,
     });
   }
@@ -233,7 +259,69 @@ export function extractRoomsFromSvg(svg: string): PlanRooms | null {
       }),
     });
   }
+  // Doors: `<line|polyline|path|rect data-door="main">` (the flat's entrance) or `data-door="room"` (a room's door). Only the two ends are kept.
+  for (const m of svg.matchAll(/<(line|polygon|polyline|rect|path)\b[^>]*>/gi)) {
+    const tag = m[0];
+    const kind = (attr(tag, "data-door") ?? "").trim().toLowerCase();
+    if (!kind) continue;
+    const name = m[1].toLowerCase();
+    const pts = name === "line" ? [[parseFloat(attr(tag, "x1") ?? "0"), parseFloat(attr(tag, "y1") ?? "0")], [parseFloat(attr(tag, "x2") ?? "0"), parseFloat(attr(tag, "y2") ?? "0")]] as [number, number][] : shapePoints(tag, name);
+    const ends = farthestPair(pts);
+    if (!ends) continue;
+    const isMain = /^(main|entrance|entry|front)/.test(kind);
+    rooms.push({
+      id: (attr(tag, "data-door-id") ?? "").trim() || `door-${rooms.length + 1}`,
+      label: isMain ? "Main door" : "Door",
+      type: isMain ? "maindoor" : "door",
+      points: ends.map(([px, py]) => {
+        const [qx, qy] = place(px, py);
+        return [(qx - minX) / w, (qy - minY) / h] as [number, number];
+      }),
+    });
+  }
   return sanitizePlanRooms({ aspect: w / h, rooms }) ?? null;
+}
+
+/** The two points of a shape that are furthest apart — the two ends of a door drawn as a line or a thin box. */
+function farthestPair(pts: [number, number][]): [[number, number], [number, number]] | null {
+  if (pts.length < 2 || pts.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return null;
+  let best: [[number, number], [number, number]] | null = null;
+  let max = 0;
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const d = (pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2;
+      if (d > max) {
+        max = d;
+        best = [pts[i], pts[j]];
+      }
+    }
+  }
+  return best;
+}
+
+/** Shortest distance from a point to the edge of a polygon (0–1 fractions). */
+function distanceToPolygonEdge(p: [number, number], poly: [number, number][]): number {
+  let best = Infinity;
+  for (let i = 0; i < poly.length; i++) {
+    const [ax, ay] = poly[i];
+    const [bx, by] = poly[(i + 1) % poly.length];
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 === 0 ? 0 : Math.min(1, Math.max(0, ((p[0] - ax) * dx + (p[1] - ay) * dy) / len2));
+    best = Math.min(best, Math.hypot(p[0] - (ax + t * dx), p[1] - (ay + t * dy)));
+  }
+  return best;
+}
+
+/** How close a door has to be to a wall (as a fraction of the drawing) to count as "on" it. */
+const DOOR_TOLERANCE = 0.025;
+
+/** A door sits on a wall, so it is "in" a room or flat when its middle is inside the outline or right on its edge. */
+export function doorBelongsTo(door: PlanRoom, outline: [number, number][]): boolean {
+  if (door.points.length < 2 || outline.length < 3) return false;
+  const mid: [number, number] = [(door.points[0][0] + door.points[1][0]) / 2, (door.points[0][1] + door.points[1][1]) / 2];
+  return pointInPolygon(mid, outline) || distanceToPolygonEdge(mid, outline) <= DOOR_TOLERANCE;
 }
 
 /** width ÷ height from an SVG's viewBox, or null. */
@@ -338,7 +426,7 @@ export function pointInPolygon([x, y]: [number, number], poly: [number, number][
 
 /** The rooms that belong to one flat: those whose centre lies inside the flat's outline. */
 export function roomsInside(rooms: PlanRoom[], outline: [number, number][]): PlanRoom[] {
-  return rooms.filter((r) => pointInPolygon(polygonCentroid(r.points), outline));
+  return rooms.filter((r) => (isDoorType(r.type) ? doorBelongsTo(r, outline) : pointInPolygon(polygonCentroid(r.points), outline)));
 }
 
 // ---- One flat out of a whole-floor drawing (public unit pages) ----
@@ -499,14 +587,15 @@ export function rectFromCorners(a: [number, number], b: [number, number]): [numb
 // ---- Which kinds belong on which screen ----
 
 /** What a drawing of a whole building floor shows as buttons: its flats, lift, stairs, lobby (and other shared spaces). */
-const BUILDING_LEVEL: RoomType[] = ["flat", "lift", "stair", "lobby", "gate", "other"];
-/** What a single flat's plan shows as buttons: its rooms (and other spaces). A flat's own marker is never one of its rooms. */
-const FLAT_LEVEL: RoomType[] = ["bedroom", "living", "dining", "kitchen", "bathroom", "balcony", "servant", "store", "other"];
+const BUILDING_LEVEL: RoomType[] = ["flat", "lift", "stair", "lobby", "gate", "other", "maindoor"];
+/** What a single flat's plan shows as buttons: its rooms (and other spaces). A flat's own marker is never one of its rooms. Doors ride along (drawn, never a button). */
+const FLAT_LEVEL: RoomType[] = ["bedroom", "living", "dining", "kitchen", "bathroom", "balcony", "servant", "store", "other", "maindoor", "door"];
 
 /** The areas of a building-floor drawing that the public project page offers (flats, lift, stairs…). Undefined when there are none. */
 export function buildingLevel(plan?: PlanRooms): PlanRooms | undefined {
   const rooms = plan?.rooms.filter((r) => BUILDING_LEVEL.includes(r.type)) ?? [];
-  return plan && rooms.length > 0 ? { aspect: plan.aspect, rooms } : undefined;
+  // Main doors alone make nothing to press, so they never turn a plain plan into an interactive one.
+  return plan && pressableRooms(rooms).length > 0 ? { aspect: plan.aspect, rooms } : undefined;
 }
 
 /** The rooms of one flat (bedroom, kitchen…) — flats, lifts and stairs are not rooms. */

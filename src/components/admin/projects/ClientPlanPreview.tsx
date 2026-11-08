@@ -5,7 +5,7 @@ import { RotateCcw, RotateCw } from "lucide-react";
 import { BlueprintPaper, BLUEPRINT_GRID_STYLE } from "@/components/portal/BlueprintPaper";
 import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
 import { Button } from "@/components/ui/Button";
-import { NEUTRAL_VIEW, roomsInside, type PlanView, type PlanRoom } from "@/lib/planRooms";
+import { NEUTRAL_VIEW, doorsOf, pressableRooms, roomsInside, type PlanView, type PlanRoom } from "@/lib/planRooms";
 import { cn } from "@/lib/utils";
 import type { FlatArea } from "@/types/project";
 
@@ -35,8 +35,7 @@ function Slider({ label, value, min, max, step, unit, onChange }: { label: strin
 /**
  * What the CLIENT will see, live beside the editor: the My Property page (the whole floor with the owner's flat lit and its room
  * buttons) and the Home card (just that flat). It is built from the very same components the client app uses, fed with the plan exactly
- * as it is being edited now — saved or not — so what you see is what they get. The sliders place the plan however you like: tilt it
- * a little off-square, zoom, or shift it; nothing is changed in the file, so it can always be reset.
+ * as it is being edited now — saved or not — so what you see is what they get. The sliders place the plan however you like: zoom or shift it; nothing is changed in the file, so it can always be reset.
  *
  * `wide` lays it out in two columns (My Property page on the left; Home card and the sliders on the right) for a roomy area such as
  * the Blueprint AI Distribution tab, instead of one tall column.
@@ -65,8 +64,10 @@ export function ClientPlanPreview({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   // Which of the two client views the sliders change (only offered when the caller can store a separate Home-card placement).
   const [target, setTarget] = useState<"floor" | "home">("floor");
-  const split = wide && !!onHomeViewChange;
-  const activeTarget = split ? target : "floor";
+  const split = !!onHomeViewChange;
+  // The Floor Plans editor only cares how the flat looks on the client's Home card, so it shows just that (the wide Distribution tab keeps both).
+  const homeOnly = split && !wide;
+  const activeTarget = homeOnly ? "home" : split ? target : "floor";
   const cardView = homeView ?? { ...NEUTRAL_VIEW };
   const setCard = (patch: Partial<PlanView>) => onHomeViewChange?.({ ...cardView, ...patch });
   const ring = "ring-2 ring-amber-500 ring-offset-2 ring-offset-bg";
@@ -118,27 +119,27 @@ export function ClientPlanPreview({
   const myProperty = (
     <div>
       <p className="text-caption text-fg-subtle mb-1.5 uppercase">My Property page</p>
-      <div className={cn("border-border overflow-hidden rounded-xl border", split && activeTarget === "floor" && ring)}>
+      <div className={cn("border-border overflow-hidden rounded-xl border", activeTarget === "floor" && !homeOnly && ring)}>
         <BlueprintPaper src={plan.image} alt="Preview" className="aspect-[4/3]">
-          <RoomStage src={plan.image} alt="Preview" plan={roomPlan} tone="midnight" emphasis={{ mine, others }} view={view} selectedIds={selectedIds} onSelect={setSelectedIds} interactive={rooms.length > 0} />
+          <RoomStage src={plan.image} alt="Preview" plan={roomPlan} tone="midnight" emphasis={{ mine, others }} view={view} selectedIds={selectedIds} onSelect={setSelectedIds} interactive={pressableRooms(rooms).length > 0} />
         </BlueprintPaper>
       </div>
-      {rooms.length > 0 && <RoomPicker plan={roomPlan} selectedIds={selectedIds} onSelect={setSelectedIds} className="mt-3" />}
+      {pressableRooms(rooms).length > 0 && <RoomPicker plan={roomPlan} selectedIds={selectedIds} onSelect={setSelectedIds} className="mt-3" />}
     </div>
   );
 
   const homeCard = (
     <div>
       <p className="text-caption text-fg-subtle mb-1.5 uppercase">Home card</p>
-      <div style={BLUEPRINT_GRID_STYLE} className={cn("relative mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-[1.75rem]", split && activeTarget === "home" && ring)}>
+      <div style={BLUEPRINT_GRID_STYLE} className={cn("relative mx-auto aspect-[4/5] w-full max-w-[16rem] overflow-hidden rounded-[1.75rem]", split && activeTarget === "home" && !homeOnly && ring)}>
         <div className="absolute inset-0 flex items-center px-3">
-          {mine[0] && <RoomStage src={plan.image} alt="Preview" plan={{ aspect: plan.aspect, rooms: [] }} frame={mine[0].points} view={view} cardView={split ? cardView : undefined} turn={flatTurn} tone="blue" selectedIds={[]} onSelect={() => {}} interactive={false} />}
+          {mine[0] && <RoomStage src={plan.image} alt="Preview" plan={{ aspect: plan.aspect, rooms: doorsOf(rooms).filter((d) => d.type === "maindoor") }} frame={mine[0].points} view={view} cardView={split ? cardView : undefined} turn={flatTurn} tone="blue" selectedIds={[]} onSelect={() => {}} interactive={false} />}
         </div>
       </div>
     </div>
   );
 
-  const targetSwitch = split && (
+  const targetSwitch = split && !homeOnly && (
     <div className="flex flex-col gap-1.5">
       <p className="text-body-sm text-fg font-semibold">Change settings for</p>
       <div role="tablist" className="bg-surface border-border grid grid-cols-2 gap-1 rounded-full border p-1">
@@ -223,8 +224,7 @@ export function ClientPlanPreview({
       )}
       {!(split && activeTarget === "home") && (
         <>
-          <p className="text-body-sm text-fg font-semibold">Place the whole floor your way</p>
-          <Slider label="Tilt" value={view.tilt} min={-45} max={45} step={0.5} unit="°" onChange={(v) => set({ tilt: v })} />
+          <p className="text-body-sm text-fg font-semibold">Place the My Property page picture</p>
           <Slider label="Zoom" value={view.zoom} min={0.5} max={1.8} step={0.05} unit="×" onChange={(v) => set({ zoom: v })} />
           <Slider label="Shift left / right" value={view.x} min={-40} max={40} step={1} unit="%" onChange={(v) => set({ x: v })} />
           <Slider label="Shift up / down" value={view.y} min={-40} max={40} step={1} unit="%" onChange={(v) => set({ y: v })} />
@@ -235,7 +235,7 @@ export function ClientPlanPreview({
             </Button>
           </div>
           <p className="text-caption text-fg-subtle">
-            {split ? "These move the whole-floor picture (My Property page). The Home card has its own settings — switch above." : "Tilt, zoom and shift apply to the whole-floor views; the Home card follows the tilt. Quarter turns are above (“Turn left / right”)."}
+            {split ? "These move the whole-floor picture (My Property page). The Home card has its own settings — switch above." : "Zoom and shift move only the outlined My Property page picture above. The Home card is turned with “Turn left / right”; its own zoom and shift are in the Blueprint AI Distribution tab."}
           </p>
         </>
       )}
@@ -266,7 +266,7 @@ export function ClientPlanPreview({
       ) : (
         <>
           {selector}
-          {myProperty}
+          {!homeOnly && myProperty}
           {homeCard}
         </>
       )}

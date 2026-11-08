@@ -13,6 +13,16 @@ export function whatsappHref(whatsapp: string, message?: string): string {
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
+/** Bangladesh mobile numbers are typed as 01XXXXXXXXX; wa.me needs the country code in front. `null` when it is not a usable number. */
+export function bdWhatsAppNumber(phone: string | undefined): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length < 8) return null;
+  if (digits.startsWith("880")) return digits;
+  if (digits.startsWith("0")) return `88${digits}`;
+  return digits;
+}
+
 /** Google Maps search for a place name — used instead of an embedded (and therefore faked) map. */
 export function mapsSearchHref(query: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;

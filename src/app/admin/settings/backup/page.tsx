@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -23,9 +24,9 @@ export default async function AdminBackupPage() {
   return (
     <>
       <AdminPageHeader
-        title="Backup & Restore"
-        description="Download a full copy of everything in this system, or restore from a previous backup."
-        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Backup & Restore" }]}
+        title={<AdminText>{"Backup & Restore"}</AdminText>}
+        description={<AdminText>{"Download a full copy of everything in this system, or restore from a previous backup."}</AdminText>}
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Backup & Restore", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <BackupPanel />

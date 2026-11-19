@@ -1,9 +1,11 @@
 "use client";
 
+import { useAdminLanguage } from "./AdminLanguage";
 import { useEffect, useState } from "react";
 
 /** The quiet "Guide" button in the admin top bar. It opens/closes the Simba panel (SimbaAgent) via window events. */
-export function SimbaLauncher() {
+export function SimbaLauncher({ compact = false }: { compact?: boolean }) {
+  const { t } = useAdminLanguage();
   const [state, setState] = useState({ open: false, attention: false });
   useEffect(() => {
     const onState = (e: Event) => setState((e as CustomEvent<{ open: boolean; attention: boolean }>).detail);
@@ -14,12 +16,13 @@ export function SimbaLauncher() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event("simba:toggle"))}
-      aria-label={state.open ? "Close Simba" : "Open Simba, your admin helper"}
-      className="border-border bg-surface-raised text-fg hover:border-border-strong flex h-10 items-center gap-2 rounded-full border py-0.5 pr-3.5 pl-0.5 transition-colors"
+      aria-label={t(state.open ? "Close Simba" : "Open Simba, your admin helper")}
+      title={t("Simba Guide (`)")}
+      className={`border-border bg-surface-raised text-fg hover:border-border-strong flex h-10 shrink-0 items-center gap-2 rounded-full border py-0.5 pl-0.5 transition-colors ${compact ? "w-10" : "pr-3.5"}`}
     >
       <img src="/simba.webp" alt="" className="size-9 rounded-full object-cover" />
-      <span className="text-body-sm font-medium">{state.open ? "Close" : "Guide"}</span>
-      {state.attention && !state.open && <span aria-hidden className="bg-accent size-2 rounded-full" />}
+      {!compact && <span className="text-body-sm font-medium">{t(state.open ? "Close" : "Guide")}</span>}
+      {!compact && state.attention && !state.open && <span aria-hidden className="bg-accent size-2 rounded-full" />}
     </button>
   );
 }

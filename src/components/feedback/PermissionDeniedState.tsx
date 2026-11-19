@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +20,8 @@ export function PermissionDeniedState({
       )}
     >
       <Lock className="size-8 text-fg-subtle" aria-hidden />
-      <p className="text-h4">Access restricted</p>
-      <p className="text-body-sm text-fg-muted max-w-sm">{description}</p>
+      <p className="text-h4"><UiText>{"Access restricted"}</UiText></p>
+      <p className="text-body-sm text-fg-muted max-w-sm"><UiText>{description}</UiText></p>
     </div>
   );
 }

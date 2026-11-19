@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLanguage } from "./UiLanguage";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
@@ -31,6 +32,7 @@ const SIZE_CLASSES: Record<NonNullable<ModalProps["size"]>, string> = {
  * for a genuinely large form.
  */
 export function Modal({ open, onClose, children, title, description, size = "md", id }: ModalProps) {
+  const { t } = useUiLanguage();
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<Element | null>(null);
 
@@ -89,7 +91,7 @@ export function Modal({ open, onClose, children, title, description, size = "md"
         id={id}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={title ? t(title) : undefined}
         className={cn(
           // Phone: slides up as a bottom sheet with rounded top corners; from `sm` up it is the centered dialog it always was.
           "bg-bg relative flex w-full max-h-[90svh] flex-col rounded-t-[var(--m-radius-hero)] shadow-float transition-[transform,opacity] duration-200 ease-[var(--ease-standard)] sm:max-h-[85vh] sm:rounded-lg",
@@ -100,8 +102,8 @@ export function Modal({ open, onClose, children, title, description, size = "md"
         {(title || description) && (
           <div className="border-border flex items-start justify-between gap-4 border-b px-5 py-4 sm:px-6 sm:py-5">
             <div>
-              {title && <p className="text-h4">{title}</p>}
-              {description && <p className="text-body-sm text-fg-muted mt-1">{description}</p>}
+              {title && <p className="text-h4">{t(title)}</p>}
+              {description && <p className="text-body-sm text-fg-muted mt-1">{t(description)}</p>}
             </div>
             <IconButton icon={X} label="Close" onClick={onClose} className="shrink-0" />
           </div>

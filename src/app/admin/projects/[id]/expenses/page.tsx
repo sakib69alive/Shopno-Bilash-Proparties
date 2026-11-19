@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Receipt, ArrowRight } from "lucide-react";
@@ -57,7 +58,7 @@ export default async function ProjectExpensesPage({ params }: PageProps) {
     <div className="flex flex-col gap-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
         <p className="text-body-sm text-fg-muted">
-          {expenses.length} expense(s) recorded for this project — {formatBDT(total)} total.
+          {expenses.length} expense(s) recorded for this project — {formatBDT(total)}<AdminText>{" total."}</AdminText>
         </p>
         <Link
           href={`/admin/finance/expenses?projectId=${project.id}`}
@@ -74,7 +75,7 @@ export default async function ProjectExpensesPage({ params }: PageProps) {
           description="Costs recorded against this project will appear here."
           action={
             <Link href="/admin/finance/expenses/new" className="text-body-sm text-accent font-medium hover:underline">
-              Record Expense
+              <AdminText>{"Record Expense"}</AdminText>
             </Link>
           }
         />
@@ -83,10 +84,10 @@ export default async function ProjectExpensesPage({ params }: PageProps) {
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                <th className="px-4 py-3 font-normal">Description</th>
-                <th className="px-4 py-3 font-normal">Category</th>
-                <th className="px-4 py-3 text-right font-normal">Amount</th>
-                <th className="px-4 py-3 font-normal">Date</th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Description"}</AdminText></th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Category"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Amount"}</AdminText></th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Date"}</AdminText></th>
               </tr>
             </thead>
             <tbody>

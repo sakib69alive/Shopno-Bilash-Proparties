@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Plus, Trash2 } from "lucide-react";
@@ -91,13 +92,13 @@ export function GoalInstallmentPlanForm({ costAllocationId }: GoalInstallmentPla
       ))}
 
       {percentageMode && (
-        <p className={`text-body-sm ${totalPercent === 100 ? "text-success" : "text-warning"}`}>Total: {totalPercent}% (must equal 100%)</p>
+        <p className={`text-body-sm ${totalPercent === 100 ? "text-success" : "text-warning"}`}><AdminText>{"Total: "}</AdminText>{totalPercent}% (must equal 100%)</p>
       )}
 
       <div className="flex items-center gap-2.5">
         <Button type="button" variant="outline" size="sm" onClick={addRow}>
           <Plus aria-hidden className="size-3.5" />
-          Add Installment
+          <AdminText>{"Add Installment"}</AdminText>
         </Button>
         <Button type="button" size="sm" onClick={handleSubmit} loading={isPending}>
           Create Installment Plan

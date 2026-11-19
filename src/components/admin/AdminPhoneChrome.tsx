@@ -1,11 +1,14 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bell, Building2, ChevronRight, LayoutDashboard, LayoutGrid, LogOut, Search, Users, Wallet, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/navigation/Logo";
+import { SimbaLauncher } from "./SimbaLauncher";
+import { financePage } from "@/lib/financeAssistant";
 import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { QUICK_ACTIONS } from "@/components/admin/search/GlobalSearch";
 import { ADMIN_NAV_GROUPS } from "@/config/navigation";
@@ -141,6 +144,7 @@ export function AdminPhoneChrome({ user, incompleteHrefs, settings }: AdminPhone
         >
           <Search aria-hidden className="size-[18px]" />
         </button>
+        {financePage(pathname) && hasPermission(user.role, "finance.view") && <SimbaLauncher compact />}
         {hasAlerts && (
           <Link
             href="/admin/alerts"
@@ -183,7 +187,7 @@ export function AdminPhoneChrome({ user, incompleteHrefs, settings }: AdminPhone
             className="text-fg-muted active:bg-surface relative flex h-12 min-w-0 grow touch-manipulation items-center justify-center rounded-full [-webkit-tap-highlight-color:transparent]"
           >
             <LayoutGrid aria-hidden className="size-[22px]" strokeWidth={1.75} />
-            <span className="sr-only">Menu</span>
+            <span className="sr-only"><AdminText>{"Menu"}</AdminText></span>
           </button>
         </div>
       </nav>
@@ -299,7 +303,7 @@ function MenuSheet({
             className="border-border-strong text-fg active:bg-surface flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold"
           >
             <LogOut aria-hidden className="size-4" />
-            Sign out
+            <AdminText>{"Sign out"}</AdminText>
           </button>
         </form>
       </div>
@@ -382,7 +386,7 @@ function SearchSheet({
       {searching ? (
         <ul className="bg-surface-raised border-border divide-border divide-y overflow-hidden rounded-[var(--m-radius-card)] border">
           {isPending && results.length === 0 ? (
-            <li className="text-body-sm text-fg-subtle px-4 py-4">Searching…</li>
+            <li className="text-body-sm text-fg-subtle px-4 py-4"><AdminText>{"Searching…"}</AdminText></li>
           ) : results.length === 0 ? (
             <li className="text-body-sm text-fg-subtle px-4 py-4">No matches for “{query}”.</li>
           ) : (
@@ -402,7 +406,7 @@ function SearchSheet({
       ) : (
         quickActions.length > 0 && (
           <section>
-            <h3 className="text-label text-fg-subtle mb-2 px-1 uppercase">Quick actions</h3>
+            <h3 className="text-label text-fg-subtle mb-2 px-1 uppercase"><AdminText>{"Quick actions"}</AdminText></h3>
             <div className="grid grid-cols-2 gap-2.5">
               {quickActions.map((a) => {
                 const Icon = a.icon;

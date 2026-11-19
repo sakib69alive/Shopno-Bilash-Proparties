@@ -1,3 +1,4 @@
+import { AdminText } from "../AdminLanguage";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -21,8 +22,8 @@ export function TaskTile({ title, help, icon: Icon, href }: TaskTileProps) {
         <Icon aria-hidden className="size-5" />
       </span>
       <span className="min-w-0 pr-5">
-        <span className="text-body text-fg block font-semibold tracking-tight">{title}</span>
-        <span className="text-body-sm text-fg-muted mt-1 block leading-snug">{help}</span>
+        <span className="text-body text-fg block font-semibold tracking-tight"><AdminText>{title}</AdminText></span>
+        <span className="text-body-sm text-fg-muted mt-1 block leading-snug"><AdminText>{help}</AdminText></span>
       </span>
       <ArrowUpRight aria-hidden className="text-fg-subtle group-hover:text-accent absolute top-4 right-4 size-4 transition-colors" />
     </Link>

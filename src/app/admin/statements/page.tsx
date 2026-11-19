@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -44,8 +45,8 @@ export default async function StatementsPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Statements & Notices"
-        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Statements & Notices" }]}
+        title={<AdminText>{"Statements & Notices"}</AdminText>}
+        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Statements & Notices", localize: true }]}
       />
       <StatementStudio
         allowFinance={canFinance}

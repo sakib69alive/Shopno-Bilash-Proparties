@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useActionState, useTransition, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
@@ -112,7 +114,7 @@ function PlacementEditor({ projectId, plans, initialPlanId, flatKey }: { project
     <div className="flex flex-col gap-3">
       {plans.length > 1 && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-body-sm font-semibold">Which plan are you adjusting?</p>
+          <p className="text-body-sm font-semibold"><AdminText>{"Which plan are you adjusting?"}</AdminText></p>
           <div role="tablist" className="flex flex-wrap gap-2">
             {plans.map((p) => (
               <button
@@ -153,16 +155,16 @@ function PlacementEditor({ projectId, plans, initialPlanId, flatKey }: { project
             })
           }
         >
-          Save how the plan sits
+          <AdminText>{"Save how the plan sits"}</AdminText>
         </Button>
         {result?.saved && (
           <span role="status" className="text-success text-body-sm flex items-center gap-1.5">
-            <Check aria-hidden className="size-4" /> Saved.
+            <Check aria-hidden className="size-4" /><AdminText>{" Saved."}</AdminText>
           </span>
         )}
         {result?.error && (
           <span role="alert" className="text-error text-body-sm">
-            {result.error}
+            <AdminText>{result.error ?? ""}</AdminText>
           </span>
         )}
       </div>
@@ -180,7 +182,7 @@ function SimplePreview({ src, source }: { src: string; source: string }) {
         {/* eslint-disable-next-line @next/next/no-img-element -- the plan being previewed */}
         <img src={src} alt="Client plan preview" draggable={false} style={BLUEPRINT_LIGHT_LINE_STYLE} className="absolute inset-0 size-full object-contain p-3 mix-blend-screen select-none" />
       </div>
-      <p className="text-caption text-fg-subtle">{source === "custom" ? "This flat has its own plan." : "The shared plan for this kind of flat."} It has no whole floor to tilt or zoom.</p>
+      <p className="text-caption text-fg-subtle">{source === "custom" ? "This flat has its own plan." : "The shared plan for this kind of flat."} <AdminText>{"It has no whole floor to tilt or zoom."}</AdminText></p>
     </div>
   );
 }
@@ -229,12 +231,12 @@ function CustomPlanForm({ client }: { client: DistClient }) {
       )}
       {state.error && (
         <p role="alert" className="text-error text-body-sm">
-          {state.error}
+          <AdminText>{state.error ?? ""}</AdminText>
         </p>
       )}
       {state.saved && (
         <p role="status" className="text-success text-body-sm flex items-center gap-1.5">
-          <Check aria-hidden className="size-4" /> Saved
+          <Check aria-hidden className="size-4" /><AdminText>{" Saved"}</AdminText>
         </p>
       )}
     </form>
@@ -250,13 +252,13 @@ function ClientPanel({ project, client, draft, onChange }: { project: DistProjec
     <div className="border-border flex flex-col gap-6 rounded-xl border p-5">
       <div>
         <h3 className="text-h3">{client.customerName}</h3>
-        <p className="text-body-sm text-fg-muted">Flat {client.unitNumber}</p>
+        <p className="text-body-sm text-fg-muted"><AdminText>{"Flat "}</AdminText>{client.unitNumber}</p>
       </div>
 
       <div className="flex flex-col gap-6">
         <form action={formAction} className="bg-surface border-border flex flex-col gap-5 rounded-xl border p-4">
           <fieldset className="flex flex-wrap gap-2">
-            <legend className="text-body-sm mb-2 font-semibold">Which plan should they get?</legend>
+            <legend className="text-body-sm mb-2 font-semibold"><AdminText>{"Which plan should they get?"}</AdminText></legend>
             {[{ id: "", name: "Automatic", note: "Picked by the flat's floor" }, ...plans.map((p) => ({ id: p.id, name: p.name, note: `Used on ${floorsText(p)}` }))].map((opt) => (
               <label key={opt.id || "auto"} className={cn("flex min-w-52 cursor-pointer items-start gap-3 rounded-lg border px-3.5 py-2.5 transition-colors", draft.planId === opt.id ? "border-accent bg-accent-soft" : "border-border bg-surface-raised hover:bg-surface")}>
                 <input type="radio" name="planId" value={opt.id} checked={draft.planId === opt.id} onChange={() => onChange({ ...draft, planId: opt.id })} className="accent-accent mt-1" />
@@ -268,21 +270,21 @@ function ClientPanel({ project, client, draft, onChange }: { project: DistProjec
             ))}
             {plans.length === 0 && (
               <p className="text-caption text-fg-subtle">
-                This project has no floor plans yet. <Link href={`/admin/projects/${project.id}/floor-plans`} className="text-accent underline">Add one here</Link>, then it shows up in this list.
+                <AdminText>{"This project has no floor plans yet."}</AdminText> <Link href={`/admin/projects/${project.id}/floor-plans`} className="text-accent underline"><AdminText>{"Add one here"}</AdminText></Link>, then it shows up in this list.
               </p>
             )}
           </fieldset>
 
           <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
             <div className="w-72">
-              <p className="text-body-sm mb-1 font-semibold">Should they see it?</p>
+              <p className="text-body-sm mb-1 font-semibold"><AdminText>{"Should they see it?"}</AdminText></p>
               <Switch name="show" label={draft.show ? "Yes — it shows in their app" : "No — hidden from them"} checked={draft.show} onChange={(e) => onChange({ ...draft, show: e.target.checked })} />
             </div>
             <div className="flex items-center gap-3">
               <SaveButton label="Save for this client" />
               {state.saved && (
                 <span role="status" className="text-success text-body-sm flex items-center gap-1.5">
-                  <Check aria-hidden className="size-4" /> Saved
+                  <Check aria-hidden className="size-4" /><AdminText>{" Saved"}</AdminText>
                 </span>
               )}
             </div>
@@ -290,16 +292,16 @@ function ClientPanel({ project, client, draft, onChange }: { project: DistProjec
           {state.error && (
             <p role="alert" className="bg-error-soft text-error text-body-sm flex items-start gap-2 rounded-md px-3 py-2.5">
               <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-              {state.error}
+              <AdminText>{state.error ?? ""}</AdminText>
             </p>
           )}
-          <p className="text-caption text-fg-subtle">Changes show in the preview below straight away, and reach the client once you press Save.</p>
+          <p className="text-caption text-fg-subtle"><AdminText>{"Changes show in the preview below straight away, and reach the client once you press Save."}</AdminText></p>
         </form>
 
         <CustomPlanForm client={client} />
 
         <div className="flex min-w-0 flex-col gap-2">
-          <p className="text-body-sm font-semibold">How it looks in their app</p>
+          <p className="text-body-sm font-semibold"><AdminText>{"How it looks in their app"}</AdminText></p>
           <ClientPreview key={`${client.unitId}-${draft.planId}-${draft.show}`} project={project} client={client} draft={draft} />
         </div>
       </div>
@@ -313,7 +315,7 @@ function ParkingRow({ bay, clients, value, onChange }: { bay: DistProject["parki
     <form action={formAction} className="border-border bg-surface-raised flex items-center gap-3 border-b px-4 py-2.5 last:border-b-0">
       <span className="text-body-sm w-20 font-semibold">{bay.number}</span>
       <select name="customerId" value={value} onChange={(e) => onChange(e.target.value)} className="border-border-strong bg-surface-raised text-body-sm h-10 min-w-0 flex-1 rounded-md border px-2">
-        <option value="">Nobody (free)</option>
+        <option value=""><AdminText>{"Nobody (free)"}</AdminText></option>
         {clients.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -326,7 +328,7 @@ function ParkingRow({ bay, clients, value, onChange }: { bay: DistProject["parki
       </div>
       {state.error && (
         <p role="alert" className="text-error text-caption">
-          {state.error}
+          <AdminText>{state.error ?? ""}</AdminText>
         </p>
       )}
     </form>
@@ -348,10 +350,10 @@ function ParkingPanel({ project }: { project: DistProject }) {
     <div className="flex flex-col gap-8">
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start gap-8">
         <div className="flex flex-col gap-3">
-          <p className="text-body-sm font-semibold">Who holds each bay?</p>
+          <p className="text-body-sm font-semibold"><AdminText>{"Who holds each bay?"}</AdminText></p>
           {project.parking.length === 0 ? (
             <p className="bg-warning-soft text-body-sm rounded-md px-3.5 py-3">
-              This project has no parking bays yet. <Link href={`/admin/projects/${project.id}/parking`} className="text-accent underline">Create them here</Link> (one by one or in bulk), then they appear in this list.
+              <AdminText>{"This project has no parking bays yet."}</AdminText> <Link href={`/admin/projects/${project.id}/parking`} className="text-accent underline"><AdminText>{"Create them here"}</AdminText></Link> (one by one or in bulk), then they appear in this list.
             </p>
           ) : (
             <div className="border-border overflow-hidden rounded-xl border">
@@ -359,7 +361,7 @@ function ParkingPanel({ project }: { project: DistProject }) {
                 b.otherOwner ? (
                   <div key={b.id} className="border-border bg-surface flex items-center gap-3 border-b px-4 py-2.5 last:border-b-0">
                     <span className="text-body-sm w-20 font-semibold">{b.number}</span>
-                    <span className="text-body-sm text-fg-muted">Held by a shareholder or landowner (change it in Admin → Parking).</span>
+                    <span className="text-body-sm text-fg-muted"><AdminText>{"Held by a shareholder or landowner (change it in Admin → Parking)."}</AdminText></span>
                   </div>
                 ) : (
                   <ParkingRow key={b.id} bay={b} clients={clientList} value={ownerOf(b)} onChange={(id) => setOwners((prev) => ({ ...prev, [b.id]: id }))} />
@@ -367,7 +369,7 @@ function ParkingPanel({ project }: { project: DistProject }) {
               )}
             </div>
           )}
-          <p className="text-caption text-fg-subtle">Pick a client and press Save on that row. The preview on the right updates as you choose.</p>
+          <p className="text-caption text-fg-subtle"><AdminText>{"Pick a client and press Save on that row. The preview on the right updates as you choose."}</AdminText></p>
         </div>
 
         <div className="flex flex-col gap-3">
@@ -396,7 +398,7 @@ function ParkingPanel({ project }: { project: DistProject }) {
       </div>
 
       <details className="border-border rounded-xl border">
-        <summary className="text-body-sm cursor-pointer px-4 py-3 font-semibold">Edit the plans and mark each parking bay (upload an SVG, mark flats, bays and rooms)</summary>
+        <summary className="text-body-sm cursor-pointer px-4 py-3 font-semibold"><AdminText>{"Edit the plans and mark each parking bay (upload an SVG, mark flats, bays and rooms)"}</AdminText></summary>
         <div className="border-border border-t p-4">
           <FloorPlansEditor projectId={project.id} initial={project.floorPlans} />
         </div>
@@ -412,13 +414,14 @@ function ParkingPanel({ project }: { project: DistProject }) {
  *   3 · website: edit the public blueprints; clients: pick a client, choose their plan, switch it on/off, and see + adjust their view.
  */
 export function BlueprintDistribution({ projects }: { projects: DistProject[] }) {
+  const { t: adminCopy } = useUiLanguage();
   const [projectId, setProjectId] = useState(projects[0]?.id);
   const [audience, setAudience] = useState<Audience>("clients");
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const project = projects.find((p) => p.id === projectId) ?? projects[0];
 
-  if (!project) return <p className="text-body-sm text-fg-muted">No projects yet.</p>;
+  if (!project) return <p className="text-body-sm text-fg-muted"><AdminText>{"No projects yet."}</AdminText></p>;
 
   const draftOf = (c: DistClient): Draft => drafts[c.unitId] ?? { planId: c.planFloorPlanId ?? "", show: !c.hidePlan };
   const selected = project.clients.find((c) => c.unitId === selectedUnit) ?? project.clients[0];
@@ -428,7 +431,7 @@ export function BlueprintDistribution({ projects }: { projects: DistProject[] })
   return (
     <div className="flex flex-col gap-8">
       <Step n={1} title="Choose a project">
-        <nav aria-label="Projects" className="flex flex-wrap gap-2">
+        <nav aria-label={adminCopy("Projects")} className="flex flex-wrap gap-2">
           {projects.map((p) => (
             <button
               key={p.id}
@@ -490,7 +493,7 @@ export function BlueprintDistribution({ projects }: { projects: DistProject[] })
                 {publicShown ? (
                   <ProjectBlueprints blueprints={pub.blueprints} hidden={pub.blueprintsHidden} hideZoom={pub.blueprintZoomHidden} />
                 ) : (
-                  <p className="text-body-sm text-fg-muted px-4 py-8">Visitors see no blueprints on this project right now.</p>
+                  <p className="text-body-sm text-fg-muted px-4 py-8"><AdminText>{"Visitors see no blueprints on this project right now."}</AdminText></p>
                 )}
               </div>
               <div className="border-border rounded-xl border p-5">
@@ -498,7 +501,7 @@ export function BlueprintDistribution({ projects }: { projects: DistProject[] })
               </div>
             </div>
           ) : (
-            <p className="bg-warning-soft text-body-sm rounded-md px-3.5 py-3">This project has no matching website page (same address/slug), so there is nothing to show visitors.</p>
+            <p className="bg-warning-soft text-body-sm rounded-md px-3.5 py-3"><AdminText>{"This project has no matching website page (same address/slug), so there is nothing to show visitors."}</AdminText></p>
           )}
         </Step>
       ) : (
@@ -520,7 +523,7 @@ export function BlueprintDistribution({ projects }: { projects: DistProject[] })
                         className={cn("w-full rounded-lg border px-3.5 py-2.5 text-left transition-colors", isSel ? "border-accent bg-accent-soft" : "border-border hover:bg-surface")}
                       >
                         <span className="text-body-sm block font-semibold">{c.customerName}</span>
-                        <span className="text-caption text-fg-subtle block">Flat {c.unitNumber}</span>
+                        <span className="text-caption text-fg-subtle block"><AdminText>{"Flat "}</AdminText>{c.unitNumber}</span>
                         <span className={cn("text-caption mt-1 flex items-center gap-1 font-medium", s.tone === "off" ? "text-error" : "text-success")}>
                           {s.tone === "off" ? <EyeOff aria-hidden className="size-3.5" /> : <Check aria-hidden className="size-3.5" />}
                           {s.text}

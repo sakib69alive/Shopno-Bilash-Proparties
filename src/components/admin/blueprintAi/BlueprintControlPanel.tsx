@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { useState } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -36,7 +38,7 @@ function Status({ error, saved }: { error?: string; saved?: boolean }) {
     return (
       <p role="status" className="text-success text-body-sm flex items-center gap-1.5">
         <Check aria-hidden className="size-4" />
-        Saved — the website already shows it.
+        <AdminText>{"Saved — the website already shows it."}</AdminText>
       </p>
     );
   }
@@ -125,18 +127,18 @@ export function ProjectWorkspace({ project, clientPlans }: { project: Project; c
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-h3">{project.name}</h2>
         <a href={`/projects/${project.slug}`} target="_blank" rel="noopener noreferrer" className="text-accent text-button inline-flex items-center gap-1.5">
-          See it on the website <ExternalLink aria-hidden className="size-4" />
+          <AdminText>{"See it on the website"}</AdminText> <ExternalLink aria-hidden className="size-4" />
         </a>
       </div>
 
       <section className="flex flex-col gap-2">
-        <h3 className="text-label text-fg-subtle uppercase">1 · Whole project</h3>
+        <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"1 · Whole project"}</AdminText></h3>
         <VisibilityForm key={project.id} project={project} />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-label text-fg-subtle uppercase">2 · Plans</h3>
-        <p className="text-body-sm text-fg-muted">Press a plan to edit it:</p>
+        <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"2 · Plans"}</AdminText></h3>
+        <p className="text-body-sm text-fg-muted"><AdminText>{"Press a plan to edit it:"}</AdminText></p>
         <div role="tablist" className="grid max-w-3xl grid-cols-3 gap-3">
           {BLUEPRINT_KIND_ORDER.map((k) => {
             const bp = project.blueprints?.find((b) => b.kind === k);
@@ -177,7 +179,7 @@ export function ProjectWorkspace({ project, clientPlans }: { project: Project; c
 
       {!clientPlans && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-label text-fg-subtle uppercase">3 · Client app plans &amp; parking bays</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"3 · Client app plans & parking bays"}</AdminText></h3>
           <p className="bg-surface border-border text-body-sm text-fg-muted rounded-xl border px-4 py-3">
             No project in the business side (Admin → Projects) has the same name or address as &ldquo;{project.name}&rdquo;, so there are no client-app plans to edit here. Create that project, or give it the same name, and this section appears.
           </p>
@@ -186,9 +188,9 @@ export function ProjectWorkspace({ project, clientPlans }: { project: Project; c
 
       {clientPlans && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-label text-fg-subtle uppercase">3 · Client app plans &amp; parking bays</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"3 · Client app plans & parking bays"}</AdminText></h3>
           <p className="text-body-sm text-fg-muted">
-            The plans owners see in their app: the ground floor, the typical floor, and so on. Upload an SVG, mark each flat, each room and each parking bay on it, and choose which floors use it.
+            <AdminText>{"The plans owners see in their app: the ground floor, the typical floor, and so on. Upload an SVG, mark each flat, each room and each parking bay on it, and choose which floors use it."}</AdminText>
           </p>
           <FloorPlansEditor projectId={clientPlans.projectId} initial={clientPlans.plans} />
         </section>
@@ -203,13 +205,14 @@ export function ProjectWorkspace({ project, clientPlans }: { project: Project; c
  * room buttons and its own show/hide switch. Every switch reads "Show …": ON means visitors see it.
  */
 export function BlueprintControlPanel({ projects, clientPlans = {} }: { projects: Project[]; clientPlans?: Record<string, ClientPlansData> }) {
+  const { t: adminCopy } = useUiLanguage();
   const [selectedId, setSelectedId] = useState(projects[0]?.id);
-  if (projects.length === 0) return <p className="text-body-sm text-fg-muted">No website projects yet. Add one under Admin → Website → Projects first.</p>;
+  if (projects.length === 0) return <p className="text-body-sm text-fg-muted"><AdminText>{"No website projects yet. Add one under Admin → Website → Projects first."}</AdminText></p>;
   const selected = projects.find((p) => p.id === selectedId) ?? projects[0];
 
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Projects" className="flex flex-wrap gap-2">
+      <nav aria-label={adminCopy("Projects")} className="flex flex-wrap gap-2">
         {projects.map((p) => {
           const total = p.blueprints?.length ?? 0;
           const shown = p.blueprintsHidden ? 0 : (p.blueprints?.filter((b) => !b.hidden).length ?? 0);

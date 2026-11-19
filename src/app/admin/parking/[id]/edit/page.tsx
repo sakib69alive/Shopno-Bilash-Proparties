@@ -50,7 +50,7 @@ export default async function EditParkingPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Parking", href: "/admin/parking" },
           { label: parking.parkingNumber, href: `/admin/parking/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

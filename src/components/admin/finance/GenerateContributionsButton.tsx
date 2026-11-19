@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -27,7 +28,7 @@ export function GenerateContributionsButton({ costAllocationId }: { costAllocati
   return (
     <div className="flex flex-col gap-2">
       <Button type="button" onClick={handleGenerate} loading={isPending}>
-        Confirm &amp; Generate
+        <AdminText>{"Confirm & Generate"}</AdminText>
       </Button>
       {error && <p className="text-body-sm text-error">{error}</p>}
     </div>

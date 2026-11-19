@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -46,7 +47,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" loading={pending}>
-      Record Payment
+      <AdminText>{"Record Payment"}</AdminText>
     </Button>
   );
 }
@@ -64,33 +65,33 @@ export function PhaseCostPanel({ phaseId, projectId, summary, purchases, expense
           <p className="text-body-sm text-fg mt-0.5">{formatBDT(summary.estimatedCost)}</p>
         </div>
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Actual</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Actual"}</AdminText></p>
           <p className="text-body-sm text-fg mt-0.5 font-medium">{formatBDT(summary.actualCost)}</p>
         </div>
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Variance</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Variance"}</AdminText></p>
           <p className={`text-body-sm mt-0.5 ${summary.variance > 0 ? "text-error" : summary.variance < 0 ? "text-success" : "text-fg"}`}>
             {summary.variance >= 0 ? "+" : ""}
             {formatBDT(summary.variance)}
           </p>
         </div>
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Status</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Status"}</AdminText></p>
           <p className={`text-body-sm mt-0.5 font-medium ${BUDGET_TONE[summary.budgetStatus]}`}>{BUDGET_LABEL[summary.budgetStatus]}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Material Purchases</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Material Purchases"}</AdminText></p>
           <p className="text-body-sm text-fg mt-0.5">{formatBDT(summary.materialCost)}</p>
         </div>
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Other Expenses</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Other Expenses"}</AdminText></p>
           <p className="text-body-sm text-fg mt-0.5">{formatBDT(summary.expenseCost)}</p>
         </div>
         <div>
-          <p className="text-caption text-fg-subtle uppercase">Contractor Payments</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Contractor Payments"}</AdminText></p>
           <p className="text-body-sm text-fg mt-0.5">{formatBDT(summary.contractorCost)}</p>
         </div>
       </div>
@@ -123,7 +124,7 @@ export function PhaseCostPanel({ phaseId, projectId, summary, purchases, expense
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2">
               <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-              <p className="text-caption">{state.error}</p>
+              <p className="text-caption"><AdminText>{state.error ?? ""}</AdminText></p>
             </div>
           )}
           <input type="hidden" name="projectId" value={projectId} />

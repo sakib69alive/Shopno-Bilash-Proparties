@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
@@ -34,7 +35,7 @@ export function TeamMemberAdminGrid({ members, canDelete }: TeamMemberAdminGridP
         description="Add the first entry to show it alongside the Founder on the public Founder page."
         action={
           <Link href="/admin/content/team/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
-            New Team Member
+            <AdminText>{"New Team Member"}</AdminText>
           </Link>
         }
       />

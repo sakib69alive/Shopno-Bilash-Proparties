@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -32,8 +33,8 @@ export default async function ExpenseCategoryReportPage() {
   return (
     <>
       <AdminPageHeader
-        title="Expense Category Report"
-        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Categories" }]}
+        title={<AdminText>{"Expense Category Report"}</AdminText>}
+        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Categories", localize: true }]}
       />
       <div className="flex flex-col gap-6 p-4 sm:p-6">
         {rows.length === 0 ? (

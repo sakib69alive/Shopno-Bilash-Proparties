@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,8 +15,8 @@ export function QuickAction({ label, icon: Icon, href, comingSoon }: QuickAction
   const content = (
     <>
       <Icon aria-hidden className="size-4.5 shrink-0" />
-      <span className="text-body-sm flex-1 text-left">{label}</span>
-      {comingSoon && <span className="text-caption bg-surface shrink-0 rounded px-1.5 py-0.5">Soon</span>}
+      <span className="text-body-sm flex-1 text-left"><AdminText>{label}</AdminText></span>
+      {comingSoon && <span className="text-caption bg-surface shrink-0 rounded px-1.5 py-0.5"><AdminText>{"Soon"}</AdminText></span>}
     </>
   );
 

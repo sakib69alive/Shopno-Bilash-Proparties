@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -48,13 +49,13 @@ export default async function AdminLandownersPage() {
   return (
     <>
       <AdminPageHeader
-        title="Landowners"
-        description="People bringing land into a joint-venture development instead of buying a unit."
+        title={<AdminText>{"Landowners"}</AdminText>}
+        description={<AdminText>{"People bringing land into a joint-venture development instead of buying a unit."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/landowners/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Landowner
+              <AdminText>{"New Landowner"}</AdminText>
             </Link>
           )
         }

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -21,7 +22,7 @@ export default async function NewNotificationPage() {
 
   return (
     <>
-      <AdminPageHeader title="New Notification" breadcrumbs={[{ label: "Notifications", href: "/admin/notifications" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"New Notification"}</AdminText>} breadcrumbs={[{ label: "Notifications", href: "/admin/notifications" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <NotificationForm action={createNotification} users={users} projects={projects} submitLabel="Create Notification" />
       </div>

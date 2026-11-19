@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { XCircle } from "lucide-react";
@@ -25,7 +26,7 @@ export function CancelPurchaseButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" onClick={handleCancel} loading={isPending} className="hover:text-error">
       <XCircle aria-hidden className="size-3.5" />
-      Cancel
+      <AdminText>{"Cancel"}</AdminText>
     </Button>
   );
 }

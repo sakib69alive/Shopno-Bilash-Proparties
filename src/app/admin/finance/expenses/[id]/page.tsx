@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -91,7 +92,7 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
             <div className="flex items-center gap-2">
               <Link href={`/admin/finance/expenses/${expense.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeleteExpenseButton id={expense.id} description={expense.description} />
             </div>
@@ -101,7 +102,7 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Project</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Project"}</AdminText></h2>
           {project ? (
             <>
               <Fact label="Project" value={project.name} />
@@ -109,16 +110,16 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
                 href={`/admin/projects/${project.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View project →
+                <AdminText>{"View project →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">This project no longer exists.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"This project no longer exists."}</AdminText></p>
           )}
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Expense</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Expense"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Amount" value={formatBDT(expense.amount.amount)} />
             {adjustmentTotal !== 0 && <Fact label="Net (after adjustments)" value={formatBDT(netAmount)} />}
@@ -127,7 +128,7 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
             <Fact label="Payment Method" value={paymentMethodLabel ?? "—"} />
             <Fact label="Status" value={statusLabel ?? "—"} />
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Vendor</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Vendor"}</AdminText></p>
               {vendor ? (
                 <Link href={`/admin/procurement/${vendor.id}`} className="text-body-sm text-accent hover:text-accent-strong mt-0.5 block transition-colors">
                   {vendor.name}
@@ -137,7 +138,7 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
               )}
             </div>
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Contractor</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Contractor"}</AdminText></p>
               {contractor ? (
                 <Link
                   href={`/admin/construction/contractors/${contractor.id}`}
@@ -154,21 +155,21 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Reference</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Reference"}</AdminText></h2>
           <Fact label="Reference" value={expense.reference ?? "—"} />
         </section>
 
         <section className="lg:col-span-2">
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Adjustments / Refunds</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Adjustments / Refunds"}</AdminText></h2>
           {adjustments!.length > 0 ? (
             <div className="border-border bg-surface-raised mb-3 overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-2 font-normal">Type</th>
-                    <th className="px-4 py-2 text-right font-normal">Amount</th>
-                    <th className="px-4 py-2 font-normal">Reason</th>
-                    <th className="px-4 py-2 font-normal">Date</th>
+                    <th className="px-4 py-2 font-normal"><AdminText>{"Type"}</AdminText></th>
+                    <th className="px-4 py-2 text-right font-normal"><AdminText>{"Amount"}</AdminText></th>
+                    <th className="px-4 py-2 font-normal"><AdminText>{"Reason"}</AdminText></th>
+                    <th className="px-4 py-2 font-normal"><AdminText>{"Date"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -187,13 +188,13 @@ export default async function AdminExpenseDetailPage({ params }: PageProps) {
               </table>
             </div>
           ) : (
-            <p className="text-body-sm text-fg-subtle mb-3">No adjustments recorded.</p>
+            <p className="text-body-sm text-fg-subtle mb-3"><AdminText>{"No adjustments recorded."}</AdminText></p>
           )}
           {canManage && <FinancialAdjustmentForm targetType="expense" targetId={expense.id} />}
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(expense.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(expense.updatedAt))} />

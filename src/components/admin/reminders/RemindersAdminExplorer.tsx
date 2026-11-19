@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Check, X, Pencil, Trash2, Plus } from "lucide-react";
@@ -23,6 +25,7 @@ export interface RemindersAdminExplorerProps {
 }
 
 export function RemindersAdminExplorer({ reminders, projects, users, canManage }: RemindersAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<"pending" | "all">("pending");
   const [isPending, startTransition] = useTransition();
@@ -83,7 +86,7 @@ export function RemindersAdminExplorer({ reminders, projects, users, canManage }
             {r.status === "pending" && (
               <>
                 <IconButton icon={Check} label="Mark complete" size="sm" disabled={isPending} onClick={() => handleComplete(r)} />
-                <IconButton icon={X} label="Dismiss" size="sm" disabled={isPending} onClick={() => handleDismiss(r)} />
+                <IconButton icon={X} label={adminCopy("Dismiss")} size="sm" disabled={isPending} onClick={() => handleDismiss(r)} />
               </>
             )}
             <Link href={`/admin/reminders/${r.id}/edit`}>
@@ -111,7 +114,7 @@ export function RemindersAdminExplorer({ reminders, projects, users, canManage }
           canManage && (
             <Link href="/admin/reminders/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Reminder
+              <AdminText>{"New Reminder"}</AdminText>
             </Link>
           )
         }
@@ -136,7 +139,7 @@ export function RemindersAdminExplorer({ reminders, projects, users, canManage }
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as "pending" | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           <option value="pending">Pending only</option>

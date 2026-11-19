@@ -35,7 +35,7 @@ export default async function EditTeamMemberPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Team & Partners", href: "/admin/content/team" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

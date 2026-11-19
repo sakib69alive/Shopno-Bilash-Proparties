@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -28,6 +29,7 @@ const TYPE_LABELS: Record<ApprovalQueueItem["type"], string> = {
 };
 
 export function ApprovalQueueExplorer({ items, projects, canManage }: ApprovalQueueExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -79,8 +81,8 @@ export function ApprovalQueueExplorer({ items, projects, canManage }: ApprovalQu
       render: (item) =>
         canManage && (
           <span className="flex items-center justify-end gap-1">
-            <IconButton icon={Check} label="Approve" size="sm" disabled={isPending} onClick={() => handleApprove(item)} className="hover:text-success" />
-            <IconButton icon={X} label="Reject" size="sm" disabled={isPending} onClick={() => handleReject(item)} className="hover:text-error" />
+            <IconButton icon={Check} label={adminCopy("Approve")} size="sm" disabled={isPending} onClick={() => handleApprove(item)} className="hover:text-success" />
+            <IconButton icon={X} label={adminCopy("Reject")} size="sm" disabled={isPending} onClick={() => handleReject(item)} className="hover:text-error" />
           </span>
         ),
     },

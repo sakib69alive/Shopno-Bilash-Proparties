@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -21,7 +22,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" loading={pending}>
-      Save Changes
+      <AdminText>{"Save Changes"}</AdminText>
     </Button>
   );
 }
@@ -34,7 +35,7 @@ export function FounderProfileForm({ action, profile }: FounderProfileFormProps)
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -60,7 +61,7 @@ export function FounderProfileForm({ action, profile }: FounderProfileFormProps)
       <h2 className="text-label text-fg-subtle mt-2 uppercase">Story</h2>
       <Textarea label="Biography / Journey" name="bio" rows={7} required defaultValue={profile.bio} placeholder="The founder's story — background, journey, approach to real estate." />
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Founder Statement</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Founder Statement"}</AdminText></h2>
       <Textarea
         label="Statement / Message (optional)"
         name="statement"
@@ -69,7 +70,7 @@ export function FounderProfileForm({ action, profile }: FounderProfileFormProps)
         placeholder="A personal message or quote, shown as its own highlighted section."
       />
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Vision & Philosophy</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Vision & Philosophy"}</AdminText></h2>
       <div className="grid gap-5 sm:grid-cols-2">
         <Textarea label="Vision (optional)" name="vision" rows={3} defaultValue={profile.vision} />
         <Textarea label="Mission (optional)" name="mission" rows={3} defaultValue={profile.mission} />
@@ -84,7 +85,7 @@ export function FounderProfileForm({ action, profile }: FounderProfileFormProps)
         helperText="One principle per line."
       />
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Highlights</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Highlights"}</AdminText></h2>
       <Textarea
         label="Milestones / Highlights (optional)"
         name="highlights"
@@ -94,7 +95,7 @@ export function FounderProfileForm({ action, profile }: FounderProfileFormProps)
         helperText="One highlight per line — shown as a bulleted list."
       />
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Gallery</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Gallery"}</AdminText></h2>
       <p className="text-body-sm text-fg-subtle -mt-2">Up to {FOUNDER_GALLERY_SLOTS} additional photos — at a project, on site, with the team.</p>
       {Array.from({ length: FOUNDER_GALLERY_SLOTS }, (_, i) => {
         const existing = profile.gallery[i];

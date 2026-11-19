@@ -291,6 +291,7 @@ const SYNONYMS: { re: RegExp; add: string[] }[] = [
   { re: /পেমেন্ট|payment|টাকা|taka|joma|জমা|পরিশোধ|দিয়েছ/, add: ["payment", "payments"] },
   { re: /ক্লায়েন্ট|ক্লায়ে|client|কাস্টমার|customer|গ্রাহক|ক্রেতা|kroyeta|মালিক|malik|owner/, add: ["customer", "customers", "owner", "client"] },
   { re: /প্রজেক্ট|প্রকল্প|project/, add: ["project", "projects"] },
+  { re: /ম্যাপ|মানচিত্র|লোকেশন|ঠিকানা|\bmap|location|gmap|google/, add: ["map", "location", "google", "maps"] },
   { re: /ফ্ল্যাট|ফ্লাট|flat|ইউনিট|unit|এপার্টমেন্ট|apartment/, add: ["unit", "units", "flat"] },
   { re: /খরচ|khoroch|expense|মালামাল|material|কেনা/, add: ["expense", "expenses", "material"] },
   { re: /বাজেট|budget|ভাগ|split|বন্টন/, add: ["budget", "allocation", "split"] },

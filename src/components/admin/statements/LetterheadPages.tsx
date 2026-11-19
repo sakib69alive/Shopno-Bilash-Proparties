@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import {
   forwardRef,
   useLayoutEffect,
@@ -637,7 +638,7 @@ export const LetterheadPages = forwardRef<
                       }}
                     >
                       <div>
-                        <span style={{ color: C.subtle }}>Date </span>
+                        <span style={{ color: C.subtle }}><AdminText>{"Date "}</AdminText></span>
                         <span style={{ color: C.ink, fontWeight: 600 }}>
                           {doc.date}
                         </span>
@@ -720,7 +721,7 @@ export const LetterheadPages = forwardRef<
               </span>
               {!pad && (
                 <span>
-                  Page {index + 1} of {total}
+                  <AdminText>{"Page "}</AdminText>{index + 1} of {total}
                 </span>
               )}
             </div>

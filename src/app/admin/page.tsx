@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Building2, FileText, HardHat, Images, Link2, ListPlus, Megaphone, Newspaper, PlusCircle, ReceiptText, SplitSquareVertical, UserCog, UserPlus, UsersRound, Wallet, ArrowRight } from "lucide-react";
 import { TaskTile } from "@/components/admin/dashboard/TaskTile";
@@ -70,14 +71,14 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <AdminPageHeader
-        title="Dashboard"
-        description={`Welcome back, ${user.name.split(" ")[0]}. Here's where things stand today, ${formatDate(new Date())}.`}
+        title={<AdminText>{"Dashboard"}</AdminText>}
+        description={<AdminText values={{ name: user.name.split(" ")[0], date: formatDate(new Date()) }}>{"Welcome back, {name}. Here's where things stand today, {date}."}</AdminText>}
       />
 
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         {(canManageFinance || canSendNotice || canCreateCustomer || canViewCustomers) && (
           <section>
-            <h2 className="text-h5 text-fg mb-4 font-semibold tracking-tight">What do you want to do?</h2>
+            <h2 className="text-h5 text-fg mb-4 font-semibold tracking-tight"><AdminText>{"What do you want to do?"}</AdminText></h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {canManageFinance && (
                 <TaskTile title="A client paid money" help="Record the payment, then send them a receipt." icon={Wallet} href="/admin/sales/payments/new" />
@@ -105,10 +106,10 @@ export default async function AdminDashboardPage() {
           <section>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-label text-fg-subtle uppercase">
-                Urgent — {summarizeAlerts(alerts).critical + summarizeAlerts(alerts).high} needing attention
+                <AdminText values={{ count: summarizeAlerts(alerts).critical + summarizeAlerts(alerts).high }}>{"Urgent — {count} needing attention"}</AdminText>
               </h2>
               <Link href="/admin/alerts" className="text-caption text-accent hover:text-accent-strong flex items-center gap-1 transition-colors">
-                View all alerts <ArrowRight aria-hidden className="size-3.5" />
+                <AdminText>{"View all alerts "}</AdminText><ArrowRight aria-hidden className="size-3.5" />
               </Link>
             </div>
             <div className="flex flex-col gap-2">
@@ -135,9 +136,9 @@ export default async function AdminDashboardPage() {
         {todaysReminders.length > 0 && (
           <section>
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-label text-fg-subtle uppercase">Today — {todaysReminders.length} reminder{todaysReminders.length === 1 ? "" : "s"}</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText values={{ count: todaysReminders.length }}>{todaysReminders.length === 1 ? "Today — {count} reminder" : "Today — {count} reminders"}</AdminText></h2>
               <Link href="/admin/reminders" className="text-caption text-accent hover:text-accent-strong flex items-center gap-1 transition-colors">
-                View all reminders <ArrowRight aria-hidden className="size-3.5" />
+                <AdminText>{"View all reminders "}</AdminText><ArrowRight aria-hidden className="size-3.5" />
               </Link>
             </div>
             <div className="flex flex-col gap-2">
@@ -160,17 +161,17 @@ export default async function AdminDashboardPage() {
               label="Total Projects"
               value={data.totalProjects.value}
               emptyLabel="No projects yet"
-              description={data.totalProjects.value === 0 ? "Create your first project to see it here." : `${data.activeProjects.value} active · ${data.completedProjects.value} completed`}
+              description={data.totalProjects.value === 0 ? "Create your first project to see it here." : <AdminText values={{ active: data.activeProjects.value ?? 0, completed: data.completedProjects.value ?? 0 }}>{"{active} active · {completed} completed"}</AdminText>}
             />
           </Link>
           <Link href="/admin/properties" className="block">
-            <KpiCard label="Total Units" value={data.totalUnits.value} description={`${data.assignedUnits.value ?? 0} assigned · ${data.availableUnits.value ?? 0} available`} />
+            <KpiCard label="Total Units" value={data.totalUnits.value} description={<AdminText values={{ assigned: data.assignedUnits.value ?? 0, available: data.availableUnits.value ?? 0 }}>{"{assigned} assigned · {available} available"}</AdminText>} />
           </Link>
           <Link href="/admin/customers" className="block">
             <KpiCard label="Total Owners" value={data.totalOwners.value} />
           </Link>
           <Link href="/admin/parking" className="block">
-            <KpiCard label="Parking" value={data.totalParking.value} description={`${data.assignedParking.value ?? 0} assigned`} />
+            <KpiCard label="Parking" value={data.totalParking.value} description={<AdminText values={{ assigned: data.assignedParking.value ?? 0 }}>{"{assigned} assigned"}</AdminText>} />
           </Link>
         </DashboardSection>
 
@@ -297,14 +298,14 @@ export default async function AdminDashboardPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Activity</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Recent Activity"}</AdminText></h2>
             <div className="border-border bg-surface-raised rounded-lg border p-2 sm:p-4">
               <RecentActivity activity={activity} />
             </div>
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Website Content</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Website Content"}</AdminText></h2>
             <div className="border-border bg-surface-raised flex flex-col gap-1 rounded-lg border p-2">
               <QuickAction label="New Article" icon={Newspaper} href={canCreateContent ? "/admin/content/news/new" : undefined} comingSoon={!canCreateContent} />
               <QuickAction label="Add Photos to Gallery" icon={Images} href={canCreateContent ? "/admin/content/gallery/bulk" : undefined} comingSoon={!canCreateContent} />
@@ -316,7 +317,7 @@ export default async function AdminDashboardPage() {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">More shortcuts</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"More shortcuts"}</AdminText></h2>
             <div className="border-border bg-surface-raised flex flex-col gap-1 rounded-lg border p-2">
               <QuickAction
                 label="Add Project"

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -50,13 +51,13 @@ export default async function AdminDocumentsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Documents"
-        description="Contracts, IDs, deeds, and every other file tied to a business record."
+        title={<AdminText>{"Documents"}</AdminText>}
+        description={<AdminText>{"Contracts, IDs, deeds, and every other file tied to a business record."}</AdminText>}
         primaryAction={
           canCreate && (
             <Link href="/admin/documents/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Document
+              <AdminText>{"New Document"}</AdminText>
             </Link>
           )
         }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { useRouter } from "next/navigation";
 import { Drawer } from "@/components/ui/Drawer";
 import { BuildingForm } from "./BuildingForm";
@@ -12,10 +13,11 @@ export interface AddBuildingDrawerProps {
 }
 
 export function AddBuildingDrawer({ open, onClose, projectId }: AddBuildingDrawerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const router = useRouter();
 
   return (
-    <Drawer open={open} onClose={onClose} side="right" title="Add Building">
+    <Drawer open={open} onClose={onClose} side="right" title={adminCopy("Add Building")}>
       <BuildingForm
         action={createBuilding}
         projectId={projectId}

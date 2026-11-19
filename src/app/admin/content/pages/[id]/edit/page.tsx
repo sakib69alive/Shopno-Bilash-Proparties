@@ -44,7 +44,7 @@ export default async function EditPageContentPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Pages", href: "/admin/content/pages" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

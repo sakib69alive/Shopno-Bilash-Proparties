@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -41,8 +42,8 @@ export default async function AdminReportsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Reports"
-        description="Every module's numbers, in one place — live, never a snapshot."
+        title={<AdminText>{"Reports"}</AdminText>}
+        description={<AdminText>{"Every module's numbers, in one place — live, never a snapshot."}</AdminText>}
       />
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         <DashboardSection title="Development">

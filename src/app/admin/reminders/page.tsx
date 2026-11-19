@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -45,13 +46,13 @@ export default async function AdminRemindersPage() {
   return (
     <>
       <AdminPageHeader
-        title="Reminders"
-        description="Installment due dates, follow-ups, deadlines, and custom admin reminders."
+        title={<AdminText>{"Reminders"}</AdminText>}
+        description={<AdminText>{"Installment due dates, follow-ups, deadlines, and custom admin reminders."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/reminders/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Reminder
+              <AdminText>{"New Reminder"}</AdminText>
             </Link>
           )
         }

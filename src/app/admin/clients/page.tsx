@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -126,7 +127,7 @@ export default async function AdminClientsPage() {
 
   return (
     <>
-      <AdminPageHeader title="Clients" description="Everyone who has bought with us, by project — press a name for their link, payment plan and messages." />
+      <AdminPageHeader title={<AdminText>{"Clients"}</AdminText>} description={<AdminText>{"Everyone who has bought with us, by project — press a name for their link, payment plan and messages."}</AdminText>} />
       <div className="p-4 sm:p-6">
         <ClientsOverview
           rows={rows}

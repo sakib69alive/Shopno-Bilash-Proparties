@@ -1,7 +1,10 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { ExplainFinanceButton } from "@/components/admin/finance/FinanceAssistant";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -17,6 +20,7 @@ export interface InstallmentsAdminExplorerProps {
   installments: Installment[];
   canCreate: boolean;
   canDelete: boolean;
+  canExplain?: boolean;
 }
 
 const STATUS_OPTIONS: { value: InstallmentStatus | "all"; label: string }[] = [
@@ -33,7 +37,8 @@ const STATUS_OPTIONS: { value: InstallmentStatus | "all"; label: string }[] = [
  * only real fields available without a Contract repository to join
  * against.
  */
-export function InstallmentsAdminExplorer({ installments, canCreate, canDelete }: InstallmentsAdminExplorerProps) {
+export function InstallmentsAdminExplorer({ installments, canCreate, canDelete, canExplain }: InstallmentsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<InstallmentStatus | "all">("all");
   const [isPending, startTransition] = useTransition();
@@ -80,6 +85,7 @@ export function InstallmentsAdminExplorer({ installments, canCreate, canDelete }
       align: "right",
       render: (i) => (
         <span className="flex items-center justify-end gap-1">
+          {canExplain && <ExplainFinanceButton selection={{ kind: "installment", id: i.id }} />}
           <Link href={`/admin/sales/installments/${i.id}/edit`}>
             <IconButton icon={Pencil} label={`Edit installment #${i.installmentNumber}`} size="sm" />
           </Link>
@@ -107,7 +113,7 @@ export function InstallmentsAdminExplorer({ installments, canCreate, canDelete }
           canCreate && (
             <Link href="/admin/sales/installments/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Schedule Installment
+              <AdminText>{"Schedule Installment"}</AdminText>
             </Link>
           )
         }
@@ -132,7 +138,7 @@ export function InstallmentsAdminExplorer({ installments, canCreate, canDelete }
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as InstallmentStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

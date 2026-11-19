@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -26,14 +27,14 @@ export default async function AdminStoryListPage() {
   return (
     <>
       <AdminPageHeader
-        title="Our Story"
-        description="The timeline shown on the public About page, oldest first."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Our Story" }]}
+        title={<AdminText>{"Our Story"}</AdminText>}
+        description={<AdminText>{"The timeline shown on the public About page, oldest first."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Our Story", localize: true }]}
         primaryAction={
           canCreate && (
             <Link href="/admin/content/story/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Entry
+              <AdminText>{"New Entry"}</AdminText>
             </Link>
           )
         }

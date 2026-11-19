@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -42,13 +43,13 @@ export default async function AdminUsersPage() {
   return (
     <>
       <AdminPageHeader
-        title="Users"
-        description="Every staff and portal account with access to this platform."
+        title={<AdminText>{"Users"}</AdminText>}
+        description={<AdminText>{"Every staff and portal account with access to this platform."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/users/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Account
+              <AdminText>{"New Account"}</AdminText>
             </Link>
           )
         }

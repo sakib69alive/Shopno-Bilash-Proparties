@@ -18,7 +18,7 @@ export async function generateStatement(input: StatementInput): Promise<Generate
   const isNotice = input.kind === "announcement";
   if (!hasPermission(user.role, isNotice ? "reports.view" : "finance.view")) return { error: "You don't have permission to create this document." };
 
-  const result = await buildStatement(input);
+  const result = await buildStatement(input, user);
   if ("error" in result) return { error: result.error };
   return { doc: result, letterhead: await loadLetterhead() };
 }

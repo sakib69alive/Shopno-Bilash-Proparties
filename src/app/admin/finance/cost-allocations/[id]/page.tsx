@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
@@ -12,6 +13,9 @@ import { KpiCard } from "@/components/admin/dashboard/KpiCard";
 import { GenerateContributionsButton } from "@/components/admin/finance/GenerateContributionsButton";
 import { AllocationPreviewTable } from "@/components/admin/finance/AllocationPreviewTable";
 import { GoalInstallmentPlanForm } from "@/components/admin/finance/GoalInstallmentPlanForm";
+import { CustomGoalInstallmentForm } from "@/components/admin/finance/CustomGoalInstallmentForm";
+import { getCustomInstallmentData } from "@/features/costAllocations/customInstallmentData";
+import { prisma } from "@/lib/db";
 import { TierAllocationBuilder } from "@/components/admin/finance/TierAllocationBuilder";
 import { GoalLifecycleActions } from "@/components/admin/finance/GoalLifecycleActions";
 import { ContributionsList, type ContributionRow } from "@/components/admin/finance/ContributionsList";
@@ -129,7 +133,8 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
                   .filter((p) => p.installmentObligationId === obligation.id)
                   .reduce((s, p) => s + p.amount.amount, 0);
                 const obligationState = computeInstallmentObligationState(obligation, installment, paid);
-                return { id: obligation.id, label: installment.label, dueDate: installment.dueDate, outstanding: obligationState.outstanding };
+                const flats = obligation.unitIds?.map((id) => unitsById.get(id)?.unitNumber).filter(Boolean).join(", ");
+                return { id: obligation.id, label: flats ? `${installment.label} · ${flats}` : installment.label, dueDate: installment.dueDate, outstanding: obligationState.outstanding };
               })
             : undefined;
 
@@ -227,6 +232,9 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
   }
 
   const canManage = hasPermission(user.role, "finance.manage");
+  const canSchedule = canManage && allocation.status === "generated" && !allocation.archivedAt && !allocation.completedAt;
+  const customSchedule = canSchedule ? await getCustomInstallmentData(prisma, user, allocation.id) : null;
+  const memberNames = new Map(contributionRows.map((row) => [row.contributionId, row.ownerName]));
   const boundPaymentAction = recordContributionPayment.bind(null, allocation.id);
   const goalStatus = deriveGoalCollectionStatus(allocation, goalStats.collectionPercent);
   const method = resolveAllocationMethod(allocation.allocationMethod);
@@ -253,7 +261,7 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         {notified !== undefined && (
           <div role="status" className="bg-success-soft text-success text-body-sm rounded-md px-4 py-3 lg:col-span-2">
-            Saved. {notified} client{notified === "1" ? "" : "s"} {notified === "1" ? "has" : "have"} been sent the amount and due date in their app.
+            <AdminText>{"Saved. "}</AdminText>{notified}<AdminText>{" client"}</AdminText>{notified === "1" ? "" : "s"} {notified === "1" ? "has" : "have"} been sent the amount and due date in their app.
             {Number(withoutApp) > 0 &&
               ` ${withoutApp} owner${withoutApp === "1" ? " has" : "s have"} no app access yet — copy their link from the Customers list and send it on WhatsApp.`}
           </div>
@@ -261,19 +269,19 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
         {allocation.status === "draft" && (
           <div className="bg-accent-soft text-fg rounded-xl px-4 py-4 lg:col-span-2">
             <p className="text-body">
-              Collect <span className="font-semibold">{formatBDT(allocation.totalAmount.amount)}</span> for{" "}
+              Collect <span className="font-semibold">{formatBDT(allocation.totalAmount.amount)}</span> <AdminText>{"for"}</AdminText>{" "}
               <span className="font-semibold">{allocation.title}</span>
               {project ? <> in {project.name}</> : null}, to be paid by{" "}
               <span className="font-semibold">{formatDate(new Date(allocation.dueDate))}</span>.
             </p>
-            <p className="text-body-sm text-fg-muted mt-1">Choose who pays below. Nothing is sent to anyone until you press Save.</p>
+            <p className="text-body-sm text-fg-muted mt-1"><AdminText>{"Choose who pays below. Nothing is sent to anyone until you press Save."}</AdminText></p>
           </div>
         )}
         <section className={"border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4" + (allocation.status === "draft" ? " hidden" : "")}>
-          <h2 className="text-label text-fg-subtle uppercase">Allocation</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Allocation"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Project</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Project"}</AdminText></p>
               {project ? (
                 <Link href={`/admin/projects/${project.id}`} className="text-body-sm text-accent hover:text-accent-strong mt-0.5 block transition-colors">
                   {project.name}
@@ -310,10 +318,10 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
 
         {allocation.status === "draft" && canManage && method !== "tier" && (
           <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4 lg:col-span-2">
-            <h2 className="text-label text-fg-subtle uppercase">Who pays how much?</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Who pays how much?"}</AdminText></h2>
             {method === "fixed-unit" || method === "custom" ? (
               editableUnits.length === 0 ? (
-                <p className="text-body-sm text-fg-subtle">No owned units found in this project — nothing to allocate.</p>
+                <p className="text-body-sm text-fg-subtle"><AdminText>{"No owned units found in this project — nothing to allocate."}</AdminText></p>
               ) : (
                 <SplitPlanner
                   costAllocationId={allocation.id}
@@ -340,9 +348,9 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
       {allocation.status === "draft" && canManage && method === "tier" && (
         <div className="p-4 sm:p-6 pt-0">
           <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-            <h2 className="text-label text-fg-subtle uppercase">Generate Contributions — Tiered Groups</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Generate Contributions — Tiered Groups"}</AdminText></h2>
             {editableUnits.length === 0 ? (
-              <p className="text-body-sm text-fg-subtle">No owned units found in this project — nothing to allocate.</p>
+              <p className="text-body-sm text-fg-subtle"><AdminText>{"No owned units found in this project — nothing to allocate."}</AdminText></p>
             ) : (
               <TierAllocationBuilder
                 costAllocationId={allocation.id}
@@ -392,7 +400,7 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
               </DashboardSection>
               {extraRows.length > 0 && (
                 <div className="border-border bg-surface-raised mt-4 rounded-lg border p-4">
-                  <h3 className="text-label text-fg-subtle mb-2 uppercase">Who paid more or less than the normal share</h3>
+                  <h3 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Who paid more or less than the normal share"}</AdminText></h3>
                   <ul className="flex flex-col gap-1.5">
                     {extraRows.map((r) => {
                       const avg = contributionRows.length > 0 ? Math.round(allocation.totalAmount.amount / contributionRows.length) : 0;
@@ -419,11 +427,14 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
             </div>
           )}
 
-          <div className="p-4 sm:p-6 pt-0">
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Installment Plan</h2>
+          <div id="installment-plan" className="scroll-mt-24 p-4 sm:p-6 pt-0">
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Installment Plan"}</AdminText></h2>
             {installments && installments.length === 0 ? (
-              canManage ? (
-                <GoalInstallmentPlanForm costAllocationId={allocation.id} />
+              canSchedule ? (
+                <details className="border-border mb-3 rounded-lg border p-3">
+                  <summary className="cursor-pointer text-sm font-medium"><AdminText>{"Split everyone’s contribution on one schedule"}</AdminText></summary>
+                  <div className="mt-3"><GoalInstallmentPlanForm costAllocationId={allocation.id} /></div>
+                </details>
               ) : (
                 <EmptyState title="No installment plan yet" description="This goal is payable as one lump sum until a plan is created." />
               )
@@ -433,19 +444,27 @@ export default async function CostAllocationDetailPage({ params, searchParams }:
                   <div key={installment.id} className="border-border bg-surface-raised flex items-center justify-between rounded-lg border p-3">
                     <div>
                       <p className="text-body-sm text-fg font-medium">{installment.label}</p>
-                      <p className="text-caption text-fg-subtle">Due {formatDate(new Date(installment.dueDate))}</p>
+                      <p className="text-caption text-fg-subtle"><AdminText>{"Due "}</AdminText>{formatDate(new Date(installment.dueDate))}</p>
                     </div>
                     <p className="text-body-sm text-fg-muted">
-                      {installment.amountMode === "percentage" ? `${installment.amountValue}%` : formatBDT(installment.amountValue)}
+                      {installment.customAllocation ? `${formatBDT(installment.amountValue, 2)} total`
+                        : installment.amountMode === "percentage" ? `${installment.amountValue}%` : formatBDT(installment.amountValue)}
                     </p>
                   </div>
                 ))}
               </div>
             )}
+            {customSchedule && "members" in customSchedule && customSchedule.members && (
+              <div className="mt-3">
+                <CustomGoalInstallmentForm allocationId={allocation.id} defaultDueDate={allocation.dueDate.slice(0, 10)}
+                  members={customSchedule.members.map((member) => ({ ...member, name: memberNames.get(member.id) ?? "Member" }))}
+                  budget={customSchedule.budget} />
+              </div>
+            )}
           </div>
 
           <div className="p-4 sm:p-6 pt-0">
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Owner Contributions</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Owner Contributions"}</AdminText></h2>
             <ContributionsList
               costAllocationId={allocation.id}
               rows={contributionRows}

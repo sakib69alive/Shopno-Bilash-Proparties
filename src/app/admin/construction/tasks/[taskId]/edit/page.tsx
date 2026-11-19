@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -49,11 +50,11 @@ export default async function EditTaskPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Task"
+        title={<AdminText>{"Edit Task"}</AdminText>}
         breadcrumbs={[
           { label: "Construction", href: "/admin/construction" },
           { label: phase.name, href: `/admin/construction/${phase.id}` },
-          { label: "Edit Task" },
+          { label: "Edit Task", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

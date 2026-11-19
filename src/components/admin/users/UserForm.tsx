@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -53,7 +54,7 @@ export function UserForm({ action, user, projects, submitLabel }: UserFormProps)
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -87,7 +88,7 @@ export function UserForm({ action, user, projects, submitLabel }: UserFormProps)
 
       {showProjectAssignment && (
         <div className="flex flex-col gap-2">
-          <p className="text-label text-fg-muted">Assigned Projects</p>
+          <p className="text-label text-fg-muted"><AdminText>{"Assigned Projects"}</AdminText></p>
           <p className="text-caption text-fg-subtle">
             Which projects this person can see. Leave empty and they will see nothing in Properties, Construction, Sales, Expenses, or Cost Allocations until assigned.
           </p>

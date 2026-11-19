@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
@@ -75,7 +76,7 @@ export function MilestoneAdminTable({ milestones, canDelete }: MilestoneAdminTab
       emptyDescription="Add your first milestone to publish it on the public About page's timeline."
       emptyAction={
         <Link href="/admin/content/story/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
-          New Entry
+          <AdminText>{"New Entry"}</AdminText>
         </Link>
       }
     />

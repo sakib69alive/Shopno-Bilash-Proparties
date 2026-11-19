@@ -43,7 +43,7 @@ export default async function EditUnitPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Properties", href: "/admin/properties" },
           { label: unit.unitNumber, href: `/admin/properties/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

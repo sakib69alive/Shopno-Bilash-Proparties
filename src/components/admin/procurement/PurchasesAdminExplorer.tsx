@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -45,6 +47,7 @@ export function PurchasesAdminExplorer({
   canDelete,
   initialProjectId,
 }: PurchasesAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<PaymentStatus | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
@@ -144,12 +147,12 @@ export function PurchasesAdminExplorer({
       render: (p) => (
         <span className="flex items-center justify-end gap-1">
           <Link href={`/admin/procurement/purchases/${p.id}`}>
-            <IconButton icon={Pencil} label="View purchase" size="sm" />
+            <IconButton icon={Pencil} label={adminCopy("View purchase")} size="sm" />
           </Link>
           {canDelete && (
             <IconButton
               icon={Trash2}
-              label="Delete purchase"
+              label={adminCopy("Delete purchase")}
               size="sm"
               disabled={isPending}
               onClick={() => handleDelete(p)}
@@ -170,7 +173,7 @@ export function PurchasesAdminExplorer({
           canCreate && (
             <Link href="/admin/procurement/purchases/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Record Purchase
+              <AdminText>{"Record Purchase"}</AdminText>
             </Link>
           )
         }
@@ -195,10 +198,10 @@ export function PurchasesAdminExplorer({
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}

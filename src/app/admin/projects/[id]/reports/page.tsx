@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
@@ -150,15 +151,15 @@ export default async function ProjectReportsPage({ params }: PageProps) {
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                <th className="px-4 py-3 font-normal">Source</th>
-                <th className="px-4 py-3 text-right font-normal">Amount</th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Source"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Amount"}</AdminText></th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-border text-body-sm border-b last:border-b-0">
                 <td className="px-4 py-3">
                   <Link href="/admin/procurement/purchases" className="hover:text-accent transition-colors">
-                    Material Purchases
+                    <AdminText>{"Material Purchases"}</AdminText>
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{formatBDT(stats.costSummary.materialCost)}</td>
@@ -166,7 +167,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
               <tr className="border-border text-body-sm border-b last:border-b-0">
                 <td className="px-4 py-3">
                   <Link href={`/admin/finance/reports/contractor-payments?projectId=${project.id}`} className="hover:text-accent transition-colors">
-                    Contractor Payments
+                    <AdminText>{"Contractor Payments"}</AdminText>
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{formatBDT(stats.costSummary.contractorCost)}</td>
@@ -174,7 +175,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
               <tr className="border-border text-body-sm border-b last:border-b-0">
                 <td className="px-4 py-3">
                   <Link href={`/admin/finance/expenses?projectId=${project.id}`} className="hover:text-accent transition-colors">
-                    Other Expenses
+                    <AdminText>{"Other Expenses"}</AdminText>
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">{formatBDT(stats.costSummary.otherExpenseCost)}</td>
@@ -186,7 +187,7 @@ export default async function ProjectReportsPage({ params }: PageProps) {
 
       <section>
         <h2 className="text-label text-fg-subtle mb-3 uppercase">
-          Outstanding Contributions {stats.overdueContributionCount > 0 && `(${stats.overdueContributionCount} overdue)`}
+          <AdminText>{"Outstanding Contributions "}</AdminText>{stats.overdueContributionCount > 0 && `(${stats.overdueContributionCount} overdue)`}
         </h2>
         {outstandingRows.length === 0 ? (
           <EmptyState
@@ -199,12 +200,12 @@ export default async function ProjectReportsPage({ params }: PageProps) {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-3 font-normal">Owner</th>
-                  <th className="px-4 py-3 font-normal">Allocation</th>
-                  <th className="px-4 py-3 text-right font-normal">Outstanding</th>
-                  <th className="px-4 py-3 text-right font-normal">Total Due</th>
-                  <th className="px-4 py-3 font-normal">Due Date</th>
-                  <th className="px-4 py-3 font-normal">Status</th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Owner"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Allocation"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Outstanding"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Total Due"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Due Date"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Status"}</AdminText></th>
                 </tr>
               </thead>
               <tbody>
@@ -248,10 +249,10 @@ export default async function ProjectReportsPage({ params }: PageProps) {
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                <th className="px-4 py-3 font-normal">Month</th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Month"}</AdminText></th>
                 <th className="px-4 py-3 text-right font-normal">Expected</th>
-                <th className="px-4 py-3 text-right font-normal">Collected</th>
-                <th className="px-4 py-3 text-right font-normal">Outstanding</th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Collected"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Outstanding"}</AdminText></th>
               </tr>
             </thead>
             <tbody>

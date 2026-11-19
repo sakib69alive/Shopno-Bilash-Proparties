@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -76,9 +77,9 @@ export default async function AdminBlueprintDistributionPage() {
   return (
     <>
       <AdminPageHeader
-        title="Blueprint distribution"
-        description="Pick a project, then choose which plan each client gets and whether they see it."
-        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Blueprint AI", href: "/admin/settings/blueprint-ai" }, { label: "Distribution" }]}
+        title={<AdminText>{"Blueprint distribution"}</AdminText>}
+        description={<AdminText>{"Pick a project, then choose which plan each client gets and whether they see it."}</AdminText>}
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Blueprint AI", href: "/admin/settings/blueprint-ai" }, { label: "Distribution", localize: true }]}
       />
       <div className="flex flex-col gap-6 p-4 sm:p-6">
         <BlueprintAiTabs active="distribution" />

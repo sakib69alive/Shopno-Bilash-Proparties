@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -79,7 +80,7 @@ export default async function ProjectWorkspaceLayout({ children, params }: Layou
             {canUpdate && (
               <Link href={`/admin/projects/${project.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
             {canDelete && <DeleteProjectButton id={project.id} name={project.name} />}

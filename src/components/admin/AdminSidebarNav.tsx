@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText, useAdminLanguage } from "./AdminLanguage";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,6 +28,7 @@ export interface AdminSidebarNavProps {
  * being a broken/dead link.
  */
 export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incompleteHrefs }: AdminSidebarNavProps) {
+  const { t } = useAdminLanguage();
   const pathname = usePathname();
   const incompleteSet = new Set(incompleteHrefs);
   const navRef = useRef<HTMLElement>(null);
@@ -43,7 +45,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
   }, [pathname]);
 
   return (
-    <nav ref={navRef} aria-label="Admin" className="flex flex-col gap-6">
+    <nav ref={navRef} aria-label={t("Admin")} className="flex flex-col gap-6">
       {groups.map((group) => {
         const visibleItems = group.items.filter((item) => !item.permission || hasPermission(role, item.permission));
         if (visibleItems.length === 0) return null;
@@ -51,7 +53,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
         return (
           <div key={group.label}>
             {!collapsed && (
-              <p className="text-label text-fg-subtle/70 mb-1.5 px-3 uppercase">{group.label}</p>
+              <p className="text-label text-fg-subtle/70 mb-1.5 px-3 uppercase">{t(group.label)}</p>
             )}
             <ul className="flex flex-col gap-0.5">
               {visibleItems.map((item) => {
@@ -78,18 +80,18 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
                       </span>
                     )}
                     {!collapsed && (
-                      <span className={cn("text-nav flex-1 truncate", active && "font-semibold")}>{item.label}</span>
+                      <span className={cn("text-nav flex-1 truncate", active && "font-semibold")}>{t(item.label)}</span>
                     )}
                     {!collapsed && incomplete && (
                       <span
-                        aria-label="Missing information"
-                        title="Missing information"
+                        aria-label={t("Missing information")}
+                        title={t("Missing information")}
                         className="bg-error size-1.5 shrink-0 rounded-full"
                       />
                     )}
                     {!collapsed && item.comingSoon && (
                       <span className="text-caption text-fg-subtle bg-surface shrink-0 rounded px-1.5 py-0.5">
-                        Soon
+                        <AdminText>{"Soon"}</AdminText>
                       </span>
                     )}
                   </span>
@@ -133,7 +135,7 @@ export function AdminSidebarNav({ groups, role, collapsed, onNavigate, incomplet
                 return (
                   <li key={item.label}>
                     {collapsed ? (
-                      <Tooltip label={item.label} side="right">
+                      <Tooltip label={t(item.label)} side="right">
                         {link}
                       </Tooltip>
                     ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAdminLanguage, AdminText } from "../AdminLanguage";
 import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Search } from "lucide-react";
@@ -72,6 +73,7 @@ function jumpHref(value: string): string {
  * offer an optional "go straight to this flat / customer" shortcut.
  */
 export function QuickOpenHub({ board, role, options, jump }: QuickOpenHubProps) {
+  const { t } = useAdminLanguage();
   const sections = board === "public" ? PUBLIC_PAGE_SECTIONS : board === "money" ? MONEY_PAGE_SECTIONS : CLIENT_PAGE_SECTIONS;
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -87,11 +89,11 @@ export function QuickOpenHub({ board, role, options, jump }: QuickOpenHubProps) 
           items: section.items.filter(
             (item) =>
               (!item.permission || hasPermission(role, item.permission)) &&
-              (!q || item.label.toLowerCase().includes(q) || item.hint.toLowerCase().includes(q) || section.title.toLowerCase().includes(q)),
+              (!q || [item.label, item.hint, section.title].some((text) => text.toLowerCase().includes(q) || t(text).toLowerCase().includes(q))),
           ),
         }))
         .filter((section) => section.items.length > 0),
-    [sections, role, q],
+    [sections, role, q, t],
   );
 
   function pick(item: QuickItem) {
@@ -112,8 +114,8 @@ export function QuickOpenHub({ board, role, options, jump }: QuickOpenHubProps) 
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search a button…"
-          aria-label="Search a button"
+          placeholder={t("Search a button.")}
+          aria-label={t("Search a button")}
           className="bg-surface text-body-sm text-fg placeholder:text-fg-subtle h-11 w-full rounded-full border border-transparent pr-4 pl-10 outline-none focus:border-accent"
         />
       </div>
@@ -126,9 +128,9 @@ export function QuickOpenHub({ board, role, options, jump }: QuickOpenHubProps) 
           <section key={section.title} aria-labelledby={`qs-${section.title}`} className="flex flex-col gap-3">
             <div>
               <h2 id={`qs-${section.title}`} className="text-h5 text-fg">
-                {section.title}
+                <AdminText>{section.title}</AdminText>
               </h2>
-              <p className="text-body-sm text-fg-muted mt-0.5 max-w-2xl">{section.blurb}</p>
+              <p className="text-body-sm text-fg-muted mt-0.5 max-w-2xl"><AdminText>{section.blurb}</AdminText></p>
             </div>
 
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
@@ -150,8 +152,8 @@ export function QuickOpenHub({ board, role, options, jump }: QuickOpenHubProps) 
                       <Icon aria-hidden className="size-[18px]" />
                     </span>
                     <span className="min-w-0 flex-1 text-left">
-                      <span className="text-body-sm text-fg block font-medium">{item.label}</span>
-                      <span className="text-caption text-fg-subtle block">{item.hint}</span>
+                      <span className="text-body-sm text-fg block font-medium"><AdminText>{item.label}</AdminText></span>
+                      <span className="text-caption text-fg-subtle block"><AdminText>{item.hint}</AdminText></span>
                     </span>
                     <ArrowRight aria-hidden className="text-fg-subtle size-4 shrink-0" />
                   </button>
@@ -215,10 +217,10 @@ function Panel({
   return (
     <div ref={panelRef} className="border-accent bg-surface-raised grid gap-5 rounded-lg border p-4 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
       <div className="flex flex-col gap-3">
-        <p className="text-body-sm text-fg font-semibold">{item.label}</p>
+        <p className="text-body-sm text-fg font-semibold"><AdminText>{item.label}</AdminText></p>
         {multi && (
           <>
-            <p className="text-caption text-fg-subtle -mb-1">Tick one client or many. Choose a project to see only its customers, then Select all.</p>
+            <p className="text-caption text-fg-subtle -mb-1"><AdminText>{"Tick one client or many. Choose a project to see only its customers, then Select all."}</AdminText></p>
             <CustomerPicker
               recipients={customers}
               projects={projects.map((p) => ({ value: p.value, label: p.label }))}
@@ -232,7 +234,7 @@ function Panel({
           needs &&
           copy &&
           (options.length === 0 ? (
-            <p className="text-body-sm text-fg-muted">There is nothing to choose from yet.</p>
+            <p className="text-body-sm text-fg-muted"><AdminText>{"There is nothing to choose from yet."}</AdminText></p>
           ) : (
             <Select
               label={copy.question}
@@ -245,7 +247,7 @@ function Panel({
               options={options.map((o) => ({ value: o.value, label: o.kind ? `${o.label} — ${KIND_LABELS[o.kind]}` : o.label }))}
             />
           ))}
-        {blocked && <p className="text-caption text-error">This only works for customers. Pick a customer.</p>}
+        {blocked && <p className="text-caption text-error"><AdminText>{"This only works for customers. Pick a customer."}</AdminText></p>}
         {jumpOptions.length > 0 && (
           <Select
             label="Shortcut (optional): go straight to a flat or customer of this project"
@@ -256,7 +258,7 @@ function Panel({
         )}
         <div>
           <Button type="button" disabled={!ready} onClick={go}>
-            {multi && multiPicked.size > 0 ? `Go with ${multiPicked.size} client${multiPicked.size === 1 ? "" : "s"}` : needs ? "Go" : "Open"}
+            <AdminText values={{ count: multiPicked.size }}>{multi && multiPicked.size > 0 ? multiPicked.size === 1 ? "Go with {count} client" : "Go with {count} clients" : needs ? "Go" : "Open"}</AdminText>
             <ArrowRight aria-hidden className="size-4" />
           </Button>
         </div>
@@ -265,16 +267,16 @@ function Panel({
       {guide && (
         <div className="bg-surface flex flex-col gap-3 rounded-md p-4">
           <div>
-            <p className="text-label text-fg-subtle uppercase">What this does</p>
-            <p className="text-body-sm text-fg mt-1">{guide.what}</p>
+            <p className="text-label text-fg-subtle uppercase"><AdminText>{"What this does"}</AdminText></p>
+            <p className="text-body-sm text-fg mt-1"><AdminText>{guide.what}</AdminText></p>
           </div>
           <div>
-            <p className="text-label text-fg-subtle uppercase">How to do it</p>
+            <p className="text-label text-fg-subtle uppercase"><AdminText>{"How to do it"}</AdminText></p>
             <ol className="text-body-sm text-fg mt-1 list-decimal space-y-1 pl-5">
               {guide.how.map((step) => (
-                <li key={step}>{step}</li>
+                <li key={step}><AdminText>{step}</AdminText></li>
               ))}
-              {jumpOptions.length > 0 && <li>Optional: pick a flat or customer in the shortcut box to skip straight to their page.</li>}
+              {jumpOptions.length > 0 && <li><AdminText>{"Optional: pick a flat or customer in the shortcut box to skip straight to their page."}</AdminText></li>}
             </ol>
           </div>
         </div>

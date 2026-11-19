@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -30,11 +31,11 @@ export default async function NewShareholdingPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="New Shareholding"
+        title={<AdminText>{"New Shareholding"}</AdminText>}
         breadcrumbs={[
           { label: "Shareholders", href: "/admin/shareholders" },
           { label: shareholder.name, href: `/admin/shareholders/${id}` },
-          { label: "New Shareholding" },
+          { label: "New Shareholding", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

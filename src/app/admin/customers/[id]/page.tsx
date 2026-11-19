@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { FileText, Megaphone, Pencil, Wallet } from "lucide-react";
@@ -23,9 +24,31 @@ interface PageProps {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-caption text-fg-subtle uppercase">{label}</p>
+      <p className="text-caption text-fg-subtle uppercase"><AdminText>{label}</AdminText></p>
       <p className="text-body-sm text-fg mt-0.5">{value}</p>
     </div>
+  );
+}
+
+function CustomerAction({ href, icon: Icon, label, hint, primary, compactLabel = label }: {
+  href: string;
+  icon: typeof Wallet;
+  label: string;
+  hint: string;
+  primary?: boolean;
+  compactLabel?: string;
+}) {
+  return (
+    <Link href={href} className={`${buttonVariants({ variant: primary ? "primary" : "outline", size: "sm" })} lg:border-border lg:bg-surface-raised lg:text-fg lg:hover:border-accent lg:hover:bg-surface-raised lg:focus-visible:ring-accent lg:flex lg:h-auto lg:min-w-0 lg:items-start lg:justify-start lg:gap-3 lg:rounded-lg lg:border lg:p-3.5 lg:focus-visible:ring-2`}>
+      <span className={`lg:flex lg:size-9 lg:shrink-0 lg:items-center lg:justify-center lg:rounded-md ${primary ? "lg:bg-accent lg:text-accent-foreground" : "lg:bg-accent-soft lg:text-accent-strong"}`}>
+        <Icon aria-hidden className="size-3.5 lg:size-4" />
+      </span>
+      <span className="lg:hidden"><AdminText>{compactLabel}</AdminText></span>
+      <span className="hidden min-w-0 lg:block">
+        <span className="text-body-sm block font-semibold"><AdminText>{label}</AdminText></span>
+        <span className="text-caption text-fg-muted mt-0.5 block"><AdminText>{hint}</AdminText></span>
+      </span>
+    </Link>
   );
 }
 
@@ -89,7 +112,7 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
             {canUpdate && (
               <Link href={`/admin/customers/${customer.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
             {canDelete && <DeleteCustomerButton id={customer.id} name={customer.name} />}
@@ -99,30 +122,24 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         {(canRecordPayment || canMakeDocuments) && (
-          <div className="flex flex-wrap items-center gap-2 lg:col-span-2">
+          <div className="flex flex-wrap items-center gap-2 lg:col-span-2 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-2.5">
             {canRecordPayment && (
-              <Link href={`/admin/sales/payments/new?customerId=${customer.id}`} className={buttonVariants({ variant: "primary", size: "sm" })}>
-                <Wallet aria-hidden className="size-3.5" />
-                {customer.name.split(" ")[0]} paid money
-              </Link>
+              <CustomerAction href={`/admin/sales/payments/new?customerId=${customer.id}`} icon={Wallet} primary
+                compactLabel={`${customer.name.split(" ")[0]} paid money`} label="Record a payment" hint="Open the payment form with this customer selected." />
             )}
             {canRecordPayment && (
-              <Link href={`/admin/statements?customerId=${customer.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-                <FileText aria-hidden className="size-3.5" />
-                Payment statement
-              </Link>
+              <CustomerAction href={`/admin/statements?customerId=${customer.id}`} icon={FileText}
+                label="Payment statement" hint="Open Statements & Notices with this customer selected." />
             )}
             {canMakeDocuments && (
-              <Link href="/admin/statements" className={buttonVariants({ variant: "outline", size: "sm" })}>
-                <Megaphone aria-hidden className="size-3.5" />
-                Write a notice
-              </Link>
+              <CustomerAction href="/admin/statements" icon={Megaphone}
+                label="Write a notice" hint="Choose who should receive the notice in Statements & Notices." />
             )}
           </div>
         )}
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Contact</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Contact"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Phone" value={customer.phone} />
             <Fact label="Alternate Phone" value={customer.alternatePhone ?? "—"} />
@@ -146,13 +163,13 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
 
           {customer.notes && (
             <section>
-              <h2 className="text-label text-fg-subtle mb-2 uppercase">Notes</h2>
+              <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Notes"}</AdminText></h2>
               <p className="text-body text-fg-muted whitespace-pre-line">{customer.notes}</p>
             </section>
           )}
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(customer.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(customer.updatedAt))} />

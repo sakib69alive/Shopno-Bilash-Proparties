@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, ChevronDown, Compass, Maximize2, RotateCw, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Compass, Maximize2, RotateCw, X } from "lucide-react";
 import { BottomSheet } from "@/components/mobile/BottomSheet";
 import { cn } from "@/lib/utils";
 import { useHomeFlat } from "@/components/portal/HomeFlatSelection";
@@ -35,9 +35,9 @@ function Facts({ unit, className }: { unit: HomeBlueprintUnit; className?: strin
   return (
     <dl className={className}>
       {facts.map((f) => (
-        <div key={f.label}>
-          <dt className="text-fg-subtle text-[0.8125rem]">{f.label}</dt>
-          <dd className="font-display text-fg mt-0.5 text-[1.75rem] leading-none font-medium tracking-tight">{f.value}</dd>
+        <div key={f.label} className="border-border border-b pb-2.5 last:border-b-0 last:pb-0">
+          <dt className="text-fg-muted text-[0.75rem] font-medium leading-tight">{f.label}</dt>
+          <dd className="font-display text-fg mt-1 text-[1.75rem] leading-none font-medium tracking-tight tabular-nums">{f.value}</dd>
         </div>
       ))}
     </dl>
@@ -184,7 +184,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
               {units.length > 1 ? (
                 <button type="button" onClick={() => setSheetOpen(true)} aria-haspopup="dialog" aria-label={`Unit ${first.unitNumber}. Choose another residence`} className="group mt-1 flex items-center gap-1.5 text-left">
                   <span className="font-serif-display text-fg text-[2rem] leading-none">{first.unitNumber}</span>
-                  <span className="bg-surface text-fg-muted flex size-6 items-center justify-center rounded-full transition-transform group-active:scale-90">
+                  <span className="border-border bg-surface text-accent flex size-6 items-center justify-center rounded-full border transition-transform group-active:scale-90">
                     <ChevronDown aria-hidden className="size-3.5" />
                   </span>
                 </button>
@@ -193,9 +193,9 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
               )}
             </div>
             <div>
-              <Facts unit={first} className="flex flex-col gap-5" />
-              <p className="text-fg-subtle mt-5 inline-flex items-start gap-1.5 text-xs">
-                <Compass aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+              <Facts unit={first} className="flex flex-col gap-3" />
+              <p className="text-fg-muted mt-5 inline-flex items-start gap-1.5 text-xs leading-snug">
+                <Compass aria-hidden className="text-accent mt-0.5 size-3.5 shrink-0" />
                 {first.projectName}
               </p>
             </div>
@@ -231,7 +231,7 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
             aria-label={`Open the blueprint of unit ${first.unitNumber} full screen`}
             className={cn(
               "relative isolate -mr-[var(--gutter)] min-h-[26rem] min-w-0 flex-1 overflow-hidden rounded-l-[2rem] transition-transform duration-150 active:scale-[0.99]",
-              !blue && PAPER,
+              blue ? "shadow-[0_8px_22px_-12px_#123f7b]" : PAPER,
             )}
           >
             <div key={first.id} style={{ "--swap-from": `${dir * 36}px` } as React.CSSProperties} className="flat-swap absolute inset-0 will-change-transform">
@@ -271,7 +271,8 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                 ))}
               </span>
             )}
-            <span className={cn("absolute bottom-4 left-4 flex items-center gap-2 rounded-full py-2 pr-3.5 pl-3 text-xs font-semibold text-white", blue ? "border border-white/25 bg-black/40" : "bg-[#1f3d33]")}>
+            <span aria-hidden className={cn("pointer-events-none absolute inset-0 rounded-l-[inherit] border border-r-0", blue ? "border-white/15" : "border-border")} />
+            <span className={cn("absolute bottom-4 left-4 flex items-center gap-2 rounded-full border py-2.5 pr-3.5 pl-3 text-xs font-semibold whitespace-nowrap text-white shadow-sm", blue ? "border-white/30 bg-[#102d52]/85" : "border-white/15 bg-[#1f3d33]")}>
               <Maximize2 aria-hidden className="size-3.5" />
               View full plan
             </span>
@@ -279,8 +280,8 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
         </div>
       </section>
 
-      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Your residences" className="lg:hidden" textured>
-        <ul className="bg-surface-raised border-border divide-border divide-y overflow-hidden rounded-[var(--m-radius-card)] border">
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Your residences" className="lg:hidden">
+        <ul className="space-y-2.5 pt-1">
           {units.map((u, i) => {
             const active = u.id === first.id;
             return (
@@ -293,17 +294,26 @@ export function HomeBlueprint({ units, firstName, className, blue = false, grid 
                     setSheetOpen(false);
                   }}
                   aria-current={active}
-                  className="active:bg-surface flex w-full items-center gap-4 px-5 py-4 text-left transition-colors"
+                  className={cn(
+                    "flex min-h-[4.75rem] w-full items-center gap-3 rounded-[1.125rem] border px-3 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                    active ? "border-accent/35 bg-accent/8" : "border-border bg-surface-raised active:bg-surface",
+                  )}
                 >
+                  <span className={cn(
+                    "font-serif-display grid min-h-11 w-[4.25rem] shrink-0 place-items-center break-all rounded-xl px-1.5 py-1 text-center text-[1.25rem] leading-none",
+                    active ? "bg-accent text-accent-foreground" : "bg-surface text-accent",
+                  )}>
+                    {u.unitNumber}
+                  </span>
                   <span className="min-w-0 flex-1">
-                    <span className="font-serif-display text-fg block text-[1.75rem] leading-none">{u.unitNumber}</span>
-                    <span className="text-fg-subtle mt-1.5 block truncate text-xs">
-                      {u.projectName} · {u.bedrooms} bed · {u.sizeSqft.toLocaleString("en-US")} sqft
+                    <span className="text-fg block break-words text-sm leading-snug font-semibold">{u.projectName}</span>
+                    <span className="text-fg-muted mt-1 block text-xs leading-snug tabular-nums">
+                      {u.bedrooms} {u.bedrooms === 1 ? "bed" : "beds"} · {u.sizeSqft.toLocaleString("en-US")} sq ft
                     </span>
                   </span>
-                  <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-full transition-colors", active ? "bg-accent text-accent-foreground" : "border-border-strong border")}>
-                    {active && <Check aria-hidden className="size-4" />}
-                  </span>
+                  {active
+                    ? <Check aria-hidden className="text-accent size-[1.125rem] shrink-0" />
+                    : <ChevronRight aria-hidden className="text-fg-subtle size-[1.125rem] shrink-0" />}
                 </button>
               </li>
             );

@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -167,7 +168,7 @@ export function StructureBuilder() {
                 <>
                   <span className="font-semibold">
                     {buildingCount > 1 ? `${buildingCount} buildings × ` : ""}
-                    {floorCount} floor{floorCount === 1 ? "" : "s"} = {totalUnits} flat{totalUnits === 1 ? "" : "s"}
+                    {floorCount}<AdminText>{" floor"}</AdminText>{floorCount === 1 ? "" : "s"} = {totalUnits}<AdminText>{" flat"}</AdminText>{totalUnits === 1 ? "" : "s"}
                   </span>
                   {toInt(parking) > 0 && <span> · {toInt(parking)} car parking</span>}
                   {toInt(bikes) > 0 && <span> · {toInt(bikes)} motorcycle</span>}
@@ -180,7 +181,7 @@ export function StructureBuilder() {
               <div className="flex flex-col-reverse gap-1" aria-label="Floors, top floor at the top">
                 {plan.result.map((r) => (
                   <div key={r.floor} className="flex items-center gap-2">
-                    <span className="text-caption text-fg-subtle w-14 shrink-0 text-right">Floor {r.floor}</span>
+                    <span className="text-caption text-fg-subtle w-14 shrink-0 text-right"><AdminText>{"Floor "}</AdminText>{r.floor}</span>
                     <div className="flex min-w-0 flex-1 gap-1">
                       {Array.from({ length: r.units }, (_, i) => (
                         <span

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -44,7 +45,7 @@ export default async function SalesReportsPage() {
 
   return (
     <>
-      <AdminPageHeader title="Sales Reports" description="Unit inventory, lead conversion, and salesperson performance — live." />
+      <AdminPageHeader title={<AdminText>{"Sales Reports"}</AdminText>} description={<AdminText>{"Unit inventory, lead conversion, and salesperson performance — live."}</AdminText>} />
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         <div className="flex flex-col gap-2">
           {[
@@ -63,9 +64,9 @@ export default async function SalesReportsPage() {
         </div>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Unit Inventory</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Unit Inventory"}</AdminText></h2>
           {inventory.length === 0 ? (
-            <p className="text-body-sm text-fg-subtle">No units yet.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"No units yet."}</AdminText></p>
           ) : (
             <div className="flex flex-col gap-3">
               {inventory.map((row) => (
@@ -74,7 +75,7 @@ export default async function SalesReportsPage() {
                     <Link href={`/admin/projects/${row.projectId}`} className="text-body-sm text-fg hover:text-accent font-medium transition-colors">
                       {row.projectName}
                     </Link>
-                    <p className="text-caption text-fg-subtle">{row.total} units</p>
+                    <p className="text-caption text-fg-subtle">{row.total}<AdminText>{" units"}</AdminText></p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {(Object.entries(row.byStatus) as [UnitStatus, number][]).map(([status, count]) => (
@@ -92,14 +93,14 @@ export default async function SalesReportsPage() {
 
         <section>
           <h2 className="text-label text-fg-subtle mb-3 uppercase">
-            Leads / Conversion {conversion.conversionRatePct !== null && `— ${conversion.conversionRatePct}% win rate`}
+            <AdminText>{"Leads / Conversion"}</AdminText> {conversion.conversionRatePct !== null && `— ${conversion.conversionRatePct}% win rate`}
           </h2>
           <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-3 font-normal">Stage</th>
-                  <th className="px-4 py-3 text-right font-normal">Leads</th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Stage"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Leads"}</AdminText></th>
                 </tr>
               </thead>
               <tbody>
@@ -123,19 +124,19 @@ export default async function SalesReportsPage() {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Salesperson Performance</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Salesperson Performance"}</AdminText></h2>
           {performance.length === 0 ? (
-            <p className="text-body-sm text-fg-subtle">No leads or sales assigned to a salesperson yet.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"No leads or sales assigned to a salesperson yet."}</AdminText></p>
           ) : (
             <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-3 font-normal">Salesperson</th>
-                    <th className="px-4 py-3 text-right font-normal">Leads</th>
-                    <th className="px-4 py-3 text-right font-normal">Won</th>
-                    <th className="px-4 py-3 text-right font-normal">Sales</th>
-                    <th className="px-4 py-3 text-right font-normal">Sales Value</th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Salesperson"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Leads"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Won"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Sales"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Sales Value"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>

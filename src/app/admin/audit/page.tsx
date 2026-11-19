@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -38,7 +39,7 @@ export default async function AdminAuditPage() {
 
   return (
     <>
-      <AdminPageHeader title="Audit Log" description="Every login and every content change, in order." />
+      <AdminPageHeader title={<AdminText>{"Audit Log"}</AdminText>} description={<AdminText>{"Every login and every content change, in order."}</AdminText>} />
       <div className="p-4 sm:p-6">
         <AuditLogAdminExplorer entries={entries} users={users} projects={projects} />
       </div>

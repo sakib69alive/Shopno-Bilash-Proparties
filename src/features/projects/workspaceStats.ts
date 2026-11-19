@@ -2,7 +2,7 @@ import { unitRepository } from "@/features/units/repository";
 import { constructionPhaseRepository, constructionTaskRepository, milestoneRepository } from "@/features/construction/repository";
 import { costAllocationRepository, ownerContributionRepository, contributionAdjustmentRepository } from "@/features/costAllocations/repository";
 import { stockMovementRepository, purchaseRepository, materialRepository, materialThresholdRepository } from "@/features/procurement/repository";
-import { projectExpenseRepository, projectBudgetRepository } from "@/features/finance/repository";
+import { financialAdjustmentRepository, projectExpenseRepository, projectBudgetRepository } from "@/features/finance/repository";
 import { contractorPaymentRepository } from "@/features/contractors/repository";
 import { saleRepository } from "@/features/sales/repository";
 import { getRecentOwnershipRecords } from "@/features/ownership/queries";
@@ -90,7 +90,7 @@ export interface ProjectWorkspaceStats {
  * Project List's per-row columns so both read the same numbers.
  */
 export async function getProjectWorkspaceStats(projectId: string): Promise<ProjectWorkspaceStats> {
-  const [units, phases, allocations, contributions, movements, adjustments, purchases, materials, thresholds, tasks, milestones, projectExpenses, contractorPayments, projectBudgets, allSales] =
+  const [units, phases, allocations, contributions, movements, adjustments, purchases, materials, thresholds, tasks, milestones, projectExpenses, contractorPayments, projectBudgets, allSales, costAdjustments] =
     await Promise.all([
       unitRepository.list(),
       constructionPhaseRepository.list(),
@@ -107,6 +107,7 @@ export async function getProjectWorkspaceStats(projectId: string): Promise<Proje
       contractorPaymentRepository.list(),
       projectBudgetRepository.list(),
       saleRepository.list(),
+      financialAdjustmentRepository.list(),
     ]);
   const adjustmentsByContribution = new Map<string, typeof adjustments>();
   for (const adjustment of adjustments) {
@@ -244,6 +245,7 @@ export async function getProjectWorkspaceStats(projectId: string): Promise<Proje
     projectExpenses.filter((e) => e.projectId === projectId),
     contractorPayments.filter((p) => p.projectId === projectId),
     projectBudgets.filter((b) => b.projectId === projectId),
+    costAdjustments.filter((row) => row.projectId === projectId),
   );
 
   return {

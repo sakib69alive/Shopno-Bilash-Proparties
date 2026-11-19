@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -38,7 +39,7 @@ export default async function EditProjectPage({ params }: PageProps) {
 
   return (
     <div className="p-4 sm:p-6">
-      <h1 className="text-h3 mb-5">Edit Project</h1>
+      <h1 className="text-h3 mb-5"><AdminText>{"Edit Project"}</AdminText></h1>
       <ProjectForm action={boundAction} project={project} submitLabel="Save Changes" />
     </div>
   );

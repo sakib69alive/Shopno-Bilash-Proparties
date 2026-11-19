@@ -2,14 +2,14 @@ import { projectRepository } from "@/features/projects/repository";
 import { unitRepository } from "@/features/units/repository";
 import { customerRepository } from "@/features/customers/repository";
 import { saleRepository } from "@/features/sales/repository";
-import { customerPaymentRepository, projectExpenseRepository, projectBudgetRepository } from "@/features/finance/repository";
+import { customerPaymentRepository, projectExpenseRepository, projectBudgetRepository, financialAdjustmentRepository } from "@/features/finance/repository";
 import { constructionPhaseRepository } from "@/features/construction/repository";
 import { contractorPaymentRepository } from "@/features/contractors/repository";
 import { purchaseRepository } from "@/features/procurement/repository";
 import { leadRepository } from "@/features/crm/repository";
 import { documentRepository } from "@/features/documents/repository";
 import { canAccessProjectOptional, filterToVisibleProjects, filterVisibleProjectsList } from "@/lib/projectScope";
-import { countsTowardActualCost } from "@/lib/transactionStatus";
+import { computeProjectActualCost } from "@/lib/projectFinance";
 import type { User } from "@/types/user";
 
 export interface ReportsSummary {
@@ -41,7 +41,7 @@ export interface ReportsSummary {
  */
 /** Scoped to `user`'s visible projects — same reasoning as `getDashboardData`. Documents aren't project-filtered (polymorphic ownership, out of scope for this pass). */
 export async function getReportsSummary(user: User): Promise<ReportsSummary> {
-  const [allProjects, allUnits, customers, allSales, allPayments, allExpenses, allPhases, allLeads, documents, allContractorPayments, allPurchases, allBudgets] =
+  const [allProjects, allUnits, customers, allSales, allPayments, allExpenses, allPhases, allLeads, documents, allContractorPayments, allPurchases, allBudgets, adjustments] =
     await Promise.all([
       projectRepository.list(),
       unitRepository.list(),
@@ -55,6 +55,7 @@ export async function getReportsSummary(user: User): Promise<ReportsSummary> {
       contractorPaymentRepository.list(),
       purchaseRepository.list(),
       projectBudgetRepository.list(),
+      financialAdjustmentRepository.list(),
     ]);
 
   const projects = filterVisibleProjectsList(user, allProjects);
@@ -67,21 +68,16 @@ export async function getReportsSummary(user: User): Promise<ReportsSummary> {
   // `dashboardData.ts`/`projectFinance.ts`/`constructionProgress.ts` apply.
   const sales = allSales.filter((s) => visibleUnitIds.has(s.unitId) && s.status !== "cancelled");
   const payments = allPayments.filter((p) => canAccessProjectOptional(user, p.projectId));
-  const expenses = filterToVisibleProjects(user, allExpenses).filter((e) => countsTowardActualCost(e.status));
+  const expenses = filterToVisibleProjects(user, allExpenses);
   const phases = filterToVisibleProjects(user, allPhases);
   const leads = allLeads.filter((l) => canAccessProjectOptional(user, l.interestedProjectId));
-  const contractorPayments = allContractorPayments
-    .filter((p) => canAccessProjectOptional(user, p.projectId))
-    .filter((p) => countsTowardActualCost(p.status));
-  const purchases = filterToVisibleProjects(user, allPurchases).filter((p) => p.status !== "cancelled");
+  const contractorPayments = allContractorPayments.filter((p) => canAccessProjectOptional(user, p.projectId));
+  const purchases = filterToVisibleProjects(user, allPurchases);
   const budgets = filterToVisibleProjects(user, allBudgets);
 
   const totalSalesValue = sales.reduce((sum, s) => sum + s.salePrice.amount, 0);
   const totalPaymentsReceived = payments.reduce((sum, p) => sum + p.amount.amount, 0);
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount.amount, 0);
-  const totalContractorPayments = contractorPayments.reduce((sum, p) => sum + p.amount.amount, 0);
-  const totalMaterialCost = purchases.reduce((sum, p) => sum + p.total.amount, 0);
-  const totalBudget = budgets.reduce((sum, b) => sum + b.budgeted.amount, 0);
+  const cost = computeProjectActualCost(purchases, expenses, contractorPayments, budgets, filterToVisibleProjects(user, adjustments));
 
   return {
     activeProjects: projects.length,
@@ -94,12 +90,12 @@ export async function getReportsSummary(user: User): Promise<ReportsSummary> {
     totalSalesValue,
     leads: leads.length,
     totalPaymentsReceived,
-    totalExpenses,
+    totalExpenses: cost.otherExpenseCost,
     outstanding: Math.max(0, totalSalesValue - totalPaymentsReceived),
     documents: documents.length,
-    totalContractorPayments,
-    totalMaterialCost,
-    totalBudget,
-    totalActualConstructionCost: totalMaterialCost + totalContractorPayments + totalExpenses,
+    totalContractorPayments: cost.contractorCost,
+    totalMaterialCost: cost.materialCost,
+    totalBudget: cost.budgeted,
+    totalActualConstructionCost: cost.actualCost,
   };
 }

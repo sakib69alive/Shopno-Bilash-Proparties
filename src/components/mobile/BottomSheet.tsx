@@ -12,6 +12,8 @@ export interface BottomSheetProps {
   children: ReactNode;
   /** Extra classes on the outer layer (e.g. `lg:hidden` for a phone-only sheet). */
   className?: string;
+  /** Extra classes on the sliding panel. */
+  panelClassName?: string;
   /** Paints the sheet with the site's blueprint dot-grid on the stone surface colour (the same texture as About's story section). */
   textured?: boolean;
 }
@@ -28,7 +30,7 @@ const DISMISS_DISTANCE = 90;
  * transform (Header.tsx documents the compositor bug that causes) — only
  * the inner, absolutely-positioned panel slides.
  */
-export function BottomSheet({ open, onClose, title, children, className, textured = false }: BottomSheetProps) {
+export function BottomSheet({ open, onClose, title, children, className, panelClassName, textured = false }: BottomSheetProps) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -134,6 +136,7 @@ export function BottomSheet({ open, onClose, title, children, className, texture
           // closed sheet peeks up over the tab bar.
           !dragging && "transition-[transform,visibility] duration-300 ease-[var(--ease-standard)]",
           !dragging && (open ? "visible translate-y-0" : "invisible translate-y-full"),
+          panelClassName,
         )}
       >
         <div

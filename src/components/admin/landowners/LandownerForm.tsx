@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -32,7 +33,7 @@ export function LandownerForm({ action, landowner, submitLabel }: LandownerFormP
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 

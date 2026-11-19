@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { Pencil, Trash2, Plus, Search } from "lucide-react";
@@ -18,6 +20,7 @@ export interface GalleryAdminGridProps {
 
 /** A real photo grid, not a data table — this is the one admin list where the thumbnails themselves ARE the content, so the UI should look like one. */
 export function GalleryAdminGrid({ items, canDelete }: GalleryAdminGridProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [isPending, startTransition] = useTransition();
@@ -46,7 +49,7 @@ export function GalleryAdminGrid({ items, canDelete }: GalleryAdminGridProps) {
         action={
           <Link href="/admin/content/gallery/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
             <Plus aria-hidden className="size-4" />
-            New Image
+            <AdminText>{"New Image"}</AdminText>
           </Link>
         }
       />
@@ -70,10 +73,10 @@ export function GalleryAdminGrid({ items, canDelete }: GalleryAdminGridProps) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          aria-label="Filter by category"
+          aria-label={adminCopy("Filter by category")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All categories</option>
+          <option value="all"><AdminText>{"All categories"}</AdminText></option>
           {GALLERY_CATEGORIES.map((c) => (
             <option key={c} value={c}>
               {c}

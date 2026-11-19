@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { ListPlus, Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -40,19 +41,19 @@ export default async function AdminUnitContentListPage({
   return (
     <>
       <AdminPageHeader
-        title="Properties"
-        description="Individual units shown on the public Properties pages. Use the arrows to choose which come first within each project."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Properties" }]}
+        title={<AdminText>{"Properties"}</AdminText>}
+        description={<AdminText>{"Individual units shown on the public Properties pages. Use the arrows to choose which come first within each project."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Properties", localize: true }]}
         primaryAction={
           canCreate && (
             <div className="flex gap-2">
               <Link href="/admin/content/properties/bulk" className={buttonVariants({ variant: "outline", size: "md" })}>
                 <ListPlus aria-hidden className="size-4" />
-                Add in bulk
+                <AdminText>{"Add in bulk"}</AdminText>
               </Link>
               <Link href="/admin/content/properties/new" className={buttonVariants({ size: "md" })}>
                 <Plus aria-hidden className="size-4" />
-                New Property
+                <AdminText>{"New Property"}</AdminText>
               </Link>
             </div>
           )
@@ -61,7 +62,7 @@ export default async function AdminUnitContentListPage({
       <div className="flex flex-col gap-4 p-4 sm:p-6">
         {added && (
           <p role="status" className="bg-success-soft text-success rounded-md px-3.5 py-3 text-sm">
-            Added {added} {added === "1" ? "unit" : "units"}. Open any of them to add photos or a floor plan.
+            <AdminText>{"Added "}</AdminText>{added} {added === "1" ? "unit" : "units"}. Open any of them to add photos or a floor plan.
           </p>
         )}
         <UnitContentAdminTable

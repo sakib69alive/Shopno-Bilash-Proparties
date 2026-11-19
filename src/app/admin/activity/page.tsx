@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -56,7 +57,7 @@ export default async function ActivityFeedPage() {
 
   return (
     <>
-      <AdminPageHeader title="Activity Feed" description="Who did what, when, and on which project — the last 200 events." />
+      <AdminPageHeader title={<AdminText>{"Activity Feed"}</AdminText>} description={<AdminText>{"Who did what, when, and on which project — the last 200 events."}</AdminText>} />
       <div className="p-4 sm:p-6">
         {entries.length === 0 ? (
           <EmptyState title="No activity yet" description="Every important action across the system will appear here as it happens." />

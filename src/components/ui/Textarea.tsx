@@ -1,3 +1,6 @@
+"use client";
+
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { forwardRef, useId } from "react";
 import type { TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
@@ -10,7 +13,8 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 
 /** Same visible-label/error pattern as <Input>, for multi-line fields. */
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, helperText, id, disabled, rows = 4, ...props }, ref) => {
+  ({ className, label, error, helperText, id, disabled, placeholder, rows = 4, ...props }, ref) => {
+    const { t } = useUiLanguage();
     const generatedId = useId();
     const textareaId = id ?? generatedId;
     const messageId = error || helperText ? `${textareaId}-message` : undefined;
@@ -18,7 +22,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="flex flex-col gap-1.5">
         <label htmlFor={textareaId} className="text-label text-fg-muted">
-          {label}
+          {t(label)}
         </label>
         <textarea
           ref={ref}
@@ -35,11 +39,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             disabled && "bg-disabled-bg text-disabled-fg border-border cursor-not-allowed",
             className,
           )}
+          placeholder={placeholder && t(placeholder)}
           {...props}
         />
         {(error || helperText) && (
           <p id={messageId} className={cn("text-body-sm", error ? "text-error" : "text-fg-subtle")}>
-            {error || helperText}
+            {t(error || helperText || "")}
           </p>
         )}
       </div>

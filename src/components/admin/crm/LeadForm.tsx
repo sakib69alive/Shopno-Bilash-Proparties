@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -62,7 +63,7 @@ export function LeadForm({ action, lead, projects, units, users, submitLabel }: 
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -76,7 +77,7 @@ export function LeadForm({ action, lead, projects, units, users, submitLabel }: 
       <div className="grid gap-5 sm:grid-cols-3">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="lead-source" className="text-label text-fg-muted">
-            Source
+            <AdminText>{"Source"}</AdminText>
           </label>
           <input
             id="lead-source"

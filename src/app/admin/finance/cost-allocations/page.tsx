@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -45,13 +46,13 @@ export default async function AdminCostAllocationsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Cost Allocations"
-        description="Split a shared construction cost across every unit owner, by unit size."
+        title={<AdminText>{"Cost Allocations"}</AdminText>}
+        description={<AdminText>{"Split a shared construction cost across every unit owner, by unit size."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/finance/cost-allocations/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Allocation
+              <AdminText>{"New Allocation"}</AdminText>
             </Link>
           )
         }

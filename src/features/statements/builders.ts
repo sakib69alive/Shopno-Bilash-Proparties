@@ -1,4 +1,6 @@
 import "server-only";
+import type { User } from "@/types/user";
+import { canAccessProject, canAccessProjectOptional, getVisibleProjectIds } from "@/lib/projectScope";
 import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import { customerRepository } from "@/features/customers/repository";
 import { projectRepository } from "@/features/projects/repository";
@@ -76,7 +78,7 @@ function announcement(input: Extract<StatementInput, { kind: "announcement" }>):
 }
 
 // ── Client payment statement ──────────────────────────────────────────────────────────────────
-async function clientStatement(input: Extract<StatementInput, { kind: "client" }>): Promise<StudioDocument | { error: string }> {
+async function clientStatement(input: Extract<StatementInput, { kind: "client" }>, user: User): Promise<StudioDocument | { error: string }> {
   const customer = await customerRepository.findById(input.customerId);
   if (!customer) return { error: "That customer no longer exists." };
 
@@ -89,6 +91,12 @@ async function clientStatement(input: Extract<StatementInput, { kind: "client" }
   const customerSales = allSales.filter((s) => s.customerId === customer.id && s.status !== "cancelled");
   const sales = input.saleId ? customerSales.filter((s) => s.id === input.saleId) : customerSales;
   if (sales.length === 0) return { error: "This customer has no sale recorded yet." };
+
+  // A customer can be sold units across more than one project — only generate the statement if the
+  // caller may see every one of those projects (project-scoped staff are not assigned to all of them).
+  if (!sales.every((s) => canAccessProjectOptional(user, s.projectId))) {
+    return { error: "You don't have access to this customer's records." };
+  }
 
   const blocks: StudioBlock[] = [
     {
@@ -180,11 +188,15 @@ async function clientStatement(input: Extract<StatementInput, { kind: "client" }
  * and what is estimated to remain, then every payment to date. The remaining figure is an estimate — it is
  * the recorded price (with any price changes) minus the payments recorded, nothing more.
  */
-async function paymentReceipt(input: Extract<StatementInput, { kind: "receipt" }>): Promise<StudioDocument | { error: string }> {
+async function paymentReceipt(input: Extract<StatementInput, { kind: "receipt" }>, user: User): Promise<StudioDocument | { error: string }> {
   const payment = await customerPaymentRepository.findById(input.paymentId);
   if (!payment) return { error: "That payment no longer exists." };
   const customer = await customerRepository.findById(payment.customerId);
   if (!customer) return { error: "The customer of this payment no longer exists." };
+
+  if (!canAccessProjectOptional(user, payment.projectId)) {
+    return { error: "You don't have access to this payment." };
+  }
 
   const [allSales, payments, units, projects] = await Promise.all([saleRepository.list(), customerPaymentRepository.list(), unitRepository.list(), projectRepository.list()]);
   const customerSales = allSales.filter((x) => x.customerId === customer.id && x.status !== "cancelled");
@@ -196,6 +208,9 @@ async function paymentReceipt(input: Extract<StatementInput, { kind: "receipt" }
     })();
   const unit = sale ? units.find((u) => u.id === sale.unitId) : undefined;
   const project = projects.find((p) => p.id === (sale?.projectId ?? payment.projectId));
+  if (sale && !canAccessProjectOptional(user, sale.projectId)) {
+    return { error: "You don't have access to this payment." };
+  }
 
   const blocks: StudioBlock[] = [
     {
@@ -266,9 +281,10 @@ async function paymentReceipt(input: Extract<StatementInput, { kind: "receipt" }
 }
 
 // ── Project summary ───────────────────────────────────────────────────────────────────────────
-async function projectSummary(input: Extract<StatementInput, { kind: "project" }>): Promise<StudioDocument | { error: string }> {
+async function projectSummary(input: Extract<StatementInput, { kind: "project" }>, user: User): Promise<StudioDocument | { error: string }> {
   const project = await projectRepository.findById(input.projectId);
   if (!project) return { error: "That project no longer exists." };
+  if (!canAccessProject(user, project.id)) return { error: "You don't have access to that project." };
   const { from, to } = input;
 
   const [customerPays, expenses, purchases, contractorPays, vendors, materials, contractors, contributions, contributionPays] = await Promise.all([
@@ -401,11 +417,18 @@ async function projectSummary(input: Extract<StatementInput, { kind: "project" }
 }
 
 // ── Daily report ──────────────────────────────────────────────────────────────────────────────
-async function dailyReport(input: Extract<StatementInput, { kind: "daily" }>): Promise<StudioDocument | { error: string }> {
+async function dailyReport(input: Extract<StatementInput, { kind: "daily" }>, user: User): Promise<StudioDocument | { error: string }> {
   const day = input.date;
   if (!day) return { error: "Choose a date." };
   const project = input.projectId ? await projectRepository.findById(input.projectId) : null;
   if (input.projectId && !project) return { error: "That project no longer exists." };
+  // With no project chosen the report spans every project — only someone who can already see
+  // every project (super_admin/managing_director) may ask for that; everyone else must pick one
+  // they're assigned to, the same boundary `getMoneyOverview` applies for the same reason.
+  if (getVisibleProjectIds(user) !== "all") {
+    if (!project) return { error: "Choose a project." };
+    if (!canAccessProject(user, project.id)) return { error: "You don't have access to that project." };
+  }
 
   const [customerPays, expenses, purchases, contractorPays, vendors, materials, contractors, projects, customers, contributions, contributionPays] = await Promise.all([
     customerPaymentRepository.list(),
@@ -488,17 +511,17 @@ async function dailyReport(input: Extract<StatementInput, { kind: "daily" }>): P
   return { kind: "Daily report", title: dateLabel(day), subtitle: project ? project.name : "All projects", date: today(), reference: ref("DR"), blocks };
 }
 
-export async function buildStatement(input: StatementInput): Promise<StudioDocument | { error: string }> {
+export async function buildStatement(input: StatementInput, user: User): Promise<StudioDocument | { error: string }> {
   switch (input.kind) {
     case "announcement":
       return announcement(input);
     case "client":
-      return clientStatement(input);
+      return clientStatement(input, user);
     case "receipt":
-      return paymentReceipt(input);
+      return paymentReceipt(input, user);
     case "project":
-      return projectSummary(input);
+      return projectSummary(input, user);
     case "daily":
-      return dailyReport(input);
+      return dailyReport(input, user);
   }
 }

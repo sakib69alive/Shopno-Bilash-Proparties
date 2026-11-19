@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -30,7 +31,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" loading={pending}>
-      Generate
+      <AdminText>{"Generate"}</AdminText>
     </Button>
   );
 }
@@ -51,13 +52,13 @@ export function BulkParkingGeneratorDrawer({ open, onClose, projectId, buildings
         {state.error && (
           <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
             <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-            <p className="text-body-sm">{state.error}</p>
+            <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
           </div>
         )}
         {state.createdParking !== undefined && (
           <div className="bg-success-soft text-success flex items-start gap-2.5 rounded-md px-3.5 py-3">
             <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0" />
-            <p className="text-body-sm">Created {state.createdParking} parking space(s). Edit any of them individually afterward.</p>
+            <p className="text-body-sm"><AdminText>{"Created "}</AdminText>{state.createdParking} parking space(s). Edit any of them individually afterward.</p>
           </div>
         )}
 

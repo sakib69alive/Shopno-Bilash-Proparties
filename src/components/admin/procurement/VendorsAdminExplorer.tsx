@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -97,7 +98,7 @@ export function VendorsAdminExplorer({ vendors, canCreate, canDelete }: VendorsA
           canCreate && (
             <Link href="/admin/procurement/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Vendor
+              <AdminText>{"New Vendor"}</AdminText>
             </Link>
           )
         }

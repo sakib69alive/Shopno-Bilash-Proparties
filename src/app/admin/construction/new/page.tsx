@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -30,7 +31,7 @@ export default async function NewPhasePage() {
 
   return (
     <>
-      <AdminPageHeader title="New Phase" breadcrumbs={[{ label: "Construction", href: "/admin/construction" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"New Phase"}</AdminText>} breadcrumbs={[{ label: "Construction", href: "/admin/construction" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <PhaseForm
           action={createPhase}

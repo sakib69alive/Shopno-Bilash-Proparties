@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -50,13 +51,13 @@ export default async function AdminProjectsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Projects"
-        description="Every development your team is planning, building or has delivered."
+        title={<AdminText>{"Projects"}</AdminText>}
+        description={<AdminText>{"Every development your team is planning, building or has delivered."}</AdminText>}
         primaryAction={
           canCreate && (
             <Link href="/admin/projects/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Project
+              <AdminText>{"New Project"}</AdminText>
             </Link>
           )
         }

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -25,6 +27,7 @@ export interface LandownersAdminExplorerProps {
  * admin explorer.
  */
 export function LandownersAdminExplorer({ landowners, agreements, canCreate, canDelete }: LandownersAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -109,7 +112,7 @@ export function LandownersAdminExplorer({ landowners, agreements, canCreate, can
           canCreate && (
             <Link href="/admin/landowners/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Landowner
+              <AdminText>{"New Landowner"}</AdminText>
             </Link>
           )
         }
@@ -125,7 +128,7 @@ export function LandownersAdminExplorer({ landowners, agreements, canCreate, can
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or email"
+          placeholder={adminCopy("Search by name or email")}
           aria-label="Search landowners"
           className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface-raised pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         />

@@ -130,6 +130,16 @@ export async function updateUser(id: string, _prevState: UserFormState, formData
   const existing = await userRepository.findById(id);
   if (!existing) return { error: "This user no longer exists." };
 
+  // An apex-role account (Super Admin / Managing Director) may only be touched — password,
+  // email, status or role — by someone who already holds `roles.manage`, or by the account's
+  // own holder. Without this, `users.manage` alone (which Managing Director has, but is
+  // deliberately NOT given `roles.manage` — see APEX_ROLES above) would let that role silently
+  // take over or demote a Super Admin by editing its credentials/role/status while never
+  // tripping the role-escalation check below, which only looks at the *new* role requested.
+  if (APEX_ROLES.includes(existing.role) && actor.id !== id && !hasPermission(actor.role, "roles.manage")) {
+    return { error: "You don't have permission to modify a Super Admin or Managing Director account." };
+  }
+
   if (APEX_ROLES.includes(fields.role) && existing.role !== fields.role && !hasPermission(actor.role, "roles.manage")) {
     return { error: "You don't have permission to grant that role." };
   }

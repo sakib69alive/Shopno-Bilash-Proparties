@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
@@ -104,7 +105,7 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
             <div className="flex items-center gap-2">
               <Link href={`/admin/landowners/${landowner.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeleteLandownerButton id={landowner.id} name={landowner.name} />
             </div>
@@ -115,7 +116,7 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Contact</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Contact"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Email" value={landowner.email} />
               <Fact label="Phone" value={landowner.phone} />
@@ -124,7 +125,7 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(landowner.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(landowner.updatedAt))} />
@@ -144,11 +145,11 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-label text-fg-subtle uppercase">Agreements</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Agreements"}</AdminText></h2>
             {canManage && (
               <Link href={`/admin/landowners/${landowner.id}/agreements/new`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Plus aria-hidden className="size-3.5" />
-                Add Agreement
+                <AdminText>{"Add Agreement"}</AdminText>
               </Link>
             )}
           </div>
@@ -178,7 +179,7 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
                           {project.name}
                         </Link>
                       ) : (
-                        <span className="text-body-sm text-fg-subtle">No project linked</span>
+                        <span className="text-body-sm text-fg-subtle"><AdminText>{"No project linked"}</AdminText></span>
                       )}
                       <div className="flex items-center gap-3">
                         <StatusBadge status={agreement.status} />
@@ -187,7 +188,7 @@ export default async function AdminLandownerDetailPage({ params }: PageProps) {
                     </div>
                     <p className="text-body-sm text-fg-muted">{agreement.termsSummary}</p>
                     <div className="text-caption text-fg-subtle flex flex-wrap gap-x-4 gap-y-1">
-                      <span>Signed: {agreement.signedDate ? formatDate(new Date(agreement.signedDate)) : "—"}</span>
+                      <span><AdminText>{"Signed:"}</AdminText> {agreement.signedDate ? formatDate(new Date(agreement.signedDate)) : "—"}</span>
                     </div>
                     {canManage && project && (
                       <UnitAssignmentControl

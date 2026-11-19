@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -55,7 +56,7 @@ export function UnitAssignmentControl({ assignedUnits, availableUnits, onAssign,
           {assignedUnits.map((unit) => (
             <li key={unit.id} className="bg-surface flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5">
               <span className="text-body-sm text-fg">
-                {unit.unitNumber} <span className="text-fg-subtle">· {unit.sizeSqft} sqft</span>
+                {unit.unitNumber} <span className="text-fg-subtle">· {unit.sizeSqft}<AdminText>{" sqft"}</AdminText></span>
               </span>
               <IconButton icon={X} label={`Remove ${unit.unitNumber}`} size="sm" disabled={isPending} onClick={() => handleUnassign(unit.id)} />
             </li>
@@ -79,7 +80,7 @@ export function UnitAssignmentControl({ assignedUnits, availableUnits, onAssign,
             ))}
           </select>
           <Button type="button" variant="outline" size="sm" onClick={handleAssign} loading={isPending} disabled={!selected}>
-            Assign
+            <AdminText>{"Assign"}</AdminText>
           </Button>
         </div>
       ) : (

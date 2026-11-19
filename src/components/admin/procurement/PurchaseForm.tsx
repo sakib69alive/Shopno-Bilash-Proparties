@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -57,7 +58,7 @@ export function PurchaseForm({ action, purchase, vendors, projects, materials, p
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
       {locked && purchase ? (
@@ -162,7 +163,7 @@ export function PurchaseForm({ action, purchase, vendors, projects, materials, p
       )}
 
       <p className="text-body-sm text-fg-muted">
-        Total: <span className="text-fg font-medium tabular-nums">{formatBDT(total)}</span>
+        <AdminText>{"Total: "}</AdminText><span className="text-fg font-medium tabular-nums">{formatBDT(total)}</span>
       </p>
 
       <Input label="Purchase Date" name="purchaseDate" type="date" required defaultValue={purchase?.purchaseDate} />

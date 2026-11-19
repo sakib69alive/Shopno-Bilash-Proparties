@@ -19,8 +19,15 @@ export const QUICK_GUIDES: Record<string, QuickGuide> = {
     how: ["Choose the project and press Go — you land on the Photos box.", "Replace the cover photo or add / remove gallery pictures.", "Save at the bottom."],
   },
   "wp-map": {
-    what: "The map shown on the project page.",
-    how: ["Choose the project and press Go — you land on the Google Maps field.", "In Google Maps open the exact spot → Share → Embed a map → Copy HTML (a link or coordinates also work).", "Paste it and save."],
+    what: "The map shown in the Location part of the project page, with an \"Open in Google Maps\" button under it.",
+    how: [
+      "Choose the project and press Go — you land on the Google Maps field.",
+      "Open Google Maps (maps.google.com, or the app) and search for the exact spot of the project.",
+      "Easiest: on a computer, right-click the spot and click the two numbers at the top (like 23.7925, 90.4078) to copy them. On a phone, press and hold the spot, then copy the numbers at the top.",
+      "Or: press Share → \"Embed a map\" → Copy HTML (computer only). Or copy the normal link from the address bar.",
+      "Paste it into the field and press Save at the bottom.",
+      "Open the project page on the website and scroll to Location to check it. A short link (maps.app.goo.gl…) works only for the button, not for the map inside the page — use the numbers or Embed code for that.",
+    ],
   },
   "wp-media": {
     what: "The video and the 360° virtual tour links of a project.",

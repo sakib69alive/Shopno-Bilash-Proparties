@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -48,13 +49,13 @@ export default async function AdminBookingsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Bookings"
-        description="Temporary unit reservations — before a sale is confirmed."
+        title={<AdminText>{"Bookings"}</AdminText>}
+        description={<AdminText>{"Temporary unit reservations — before a sale is confirmed."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/sales/bookings/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Booking
+              <AdminText>{"New Booking"}</AdminText>
             </Link>
           )
         }

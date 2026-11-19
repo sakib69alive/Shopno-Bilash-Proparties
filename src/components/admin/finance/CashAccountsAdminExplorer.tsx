@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
@@ -17,6 +18,7 @@ import {
   type CashAccountFormState,
 } from "@/features/finance/accountActions";
 import type { CashAccount } from "@/types/finance/account";
+import { ExplainFinanceButton } from "./FinanceAssistant";
 
 export interface CashAccountsAdminExplorerProps {
   accounts: CashAccount[];
@@ -33,7 +35,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" loading={pending}>
-      Add Account
+      <AdminText>{"Add Account"}</AdminText>
     </Button>
   );
 }
@@ -46,7 +48,7 @@ function NewAccountForm() {
     return (
       <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
         <Plus aria-hidden className="size-3.5" />
-        Add Account
+        <AdminText>{"Add Account"}</AdminText>
       </Button>
     );
   }
@@ -56,7 +58,7 @@ function NewAccountForm() {
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-2.5 py-2">
           <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
       <div className="grid gap-3 sm:grid-cols-3">
@@ -71,7 +73,7 @@ function NewAccountForm() {
       <div className="flex items-center gap-2">
         <SubmitButton />
         <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
-          Cancel
+          <AdminText>{"Cancel"}</AdminText>
         </Button>
       </div>
     </PersistForm>
@@ -117,10 +119,12 @@ export function CashAccountsAdminExplorer({ accounts, canManage }: CashAccountsA
       key: "actions",
       header: "",
       align: "right",
-      render: (a) =>
-        canManage && (
-          <IconButton icon={Trash2} label={`Delete ${a.name}`} size="sm" disabled={isPending} onClick={() => handleDelete(a)} className="hover:text-error" />
-        ),
+      render: (a) => (
+        <span className="flex items-center justify-end gap-1">
+          <ExplainFinanceButton selection={{ kind: "account", id: a.id }} />
+          {canManage && <IconButton icon={Trash2} label={`Delete ${a.name}`} size="sm" disabled={isPending} onClick={() => handleDelete(a)} className="hover:text-error" />}
+        </span>
+      ),
     },
   ];
 

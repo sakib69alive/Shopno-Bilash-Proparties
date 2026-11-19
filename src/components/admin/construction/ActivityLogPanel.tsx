@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -25,7 +26,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" loading={pending}>
-      Record Update
+      <AdminText>{"Record Update"}</AdminText>
     </Button>
   );
 }
@@ -43,7 +44,7 @@ export function ActivityLogPanel({ projectId, phaseId, entries, contractors, can
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2">
               <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-              <p className="text-caption">{state.error}</p>
+              <p className="text-caption"><AdminText>{state.error ?? ""}</AdminText></p>
             </div>
           )}
           <input type="hidden" name="projectId" value={projectId} />

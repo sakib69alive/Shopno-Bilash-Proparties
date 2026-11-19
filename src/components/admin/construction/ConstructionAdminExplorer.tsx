@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -44,6 +46,7 @@ const STATUS_OPTIONS: { value: ConstructionStatus | "all"; label: string }[] = [
  * project dataset, same pattern as Admin Step 6's Properties explorer.
  */
 export function ConstructionAdminExplorer({ phases, projects, contractors, canCreate, canDelete, initialProjectId }: ConstructionAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ConstructionStatus | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
@@ -154,7 +157,7 @@ export function ConstructionAdminExplorer({ phases, projects, contractors, canCr
           canCreate && (
             <Link href="/admin/construction/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Phase
+              <AdminText>{"New Phase"}</AdminText>
             </Link>
           )
         }
@@ -179,10 +182,10 @@ export function ConstructionAdminExplorer({ phases, projects, contractors, canCr
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -192,7 +195,7 @@ export function ConstructionAdminExplorer({ phases, projects, contractors, canCr
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as ConstructionStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (
@@ -204,10 +207,10 @@ export function ConstructionAdminExplorer({ phases, projects, contractors, canCr
         <select
           value={contractorId}
           onChange={(e) => setContractorId(e.target.value)}
-          aria-label="Filter by contractor"
+          aria-label={adminCopy("Filter by contractor")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All contractors</option>
+          <option value="all"><AdminText>{"All contractors"}</AdminText></option>
           {contractors.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -216,7 +219,7 @@ export function ConstructionAdminExplorer({ phases, projects, contractors, canCr
         </select>
         <label className="text-body-sm text-fg-muted flex h-10 items-center gap-2 px-1">
           <input type="checkbox" checked={delayedOnly} onChange={(e) => setDelayedOnly(e.target.checked)} />
-          Delayed only
+          <AdminText>{"Delayed only"}</AdminText>
         </label>
       </div>
 

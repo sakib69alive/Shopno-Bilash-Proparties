@@ -35,7 +35,7 @@ export default async function EditShareholderPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Shareholders", href: "/admin/shareholders" },
           { label: shareholder.name, href: `/admin/shareholders/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

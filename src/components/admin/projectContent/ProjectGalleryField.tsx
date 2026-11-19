@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState } from "react";
 import Image from "next/image";
 import { Input } from "@/components/ui/Input";
@@ -29,7 +30,7 @@ export function ProjectGalleryField({ images }: { images: ProjectImage[] }) {
                   </span>
                   <span className="text-caption flex items-center gap-2 px-2 py-1.5">
                     <input type="checkbox" name="removeGallery" value={image.src} className="size-4" />
-                    Remove
+                    <AdminText>{"Remove"}</AdminText>
                   </span>
                 </label>
               </li>

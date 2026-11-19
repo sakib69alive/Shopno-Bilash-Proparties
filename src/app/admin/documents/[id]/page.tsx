@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -93,7 +94,7 @@ export default async function AdminDocumentDetailPage({ params }: PageProps) {
             {canManage && (
               <Link href={`/admin/documents/${document.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
             {canDelete && <DeleteDocumentButton id={document.id} name={document.name} />}
@@ -103,7 +104,7 @@ export default async function AdminDocumentDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">File</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"File"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Type" value={document.type} />
             <Fact label="Category" value={document.category} />
@@ -117,19 +118,19 @@ export default async function AdminDocumentDetailPage({ params }: PageProps) {
             rel="noopener noreferrer"
             className="text-body-sm text-accent hover:text-accent-strong transition-colors"
           >
-            Open file →
+            <AdminText>{"Open file →"}</AdminText>
           </a>
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Belongs To</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Belongs To"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Owner Type" value={OWNER_TYPE_LABEL[document.ownerType] ?? document.ownerType} />
             <Fact label="Owner" value={owner?.label ?? "—"} />
           </div>
           {owner?.href && (
             <Link href={owner.href} className="text-body-sm text-accent hover:text-accent-strong transition-colors">
-              View {OWNER_TYPE_LABEL[document.ownerType]?.toLowerCase() ?? document.ownerType} →
+              <AdminText>{"View "}</AdminText>{OWNER_TYPE_LABEL[document.ownerType]?.toLowerCase() ?? document.ownerType} →
             </Link>
           )}
         </section>
@@ -143,7 +144,7 @@ export default async function AdminDocumentDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(document.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(document.updatedAt))} />

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -21,7 +22,7 @@ export default async function NewReminderPage() {
 
   return (
     <>
-      <AdminPageHeader title="New Reminder" breadcrumbs={[{ label: "Reminders", href: "/admin/reminders" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"New Reminder"}</AdminText>} breadcrumbs={[{ label: "Reminders", href: "/admin/reminders" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <ReminderForm action={createReminder} projects={projects} users={users} submitLabel="Create Reminder" />
       </div>

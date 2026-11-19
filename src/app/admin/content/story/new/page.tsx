@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -18,11 +19,11 @@ export default async function NewMilestonePage() {
   return (
     <>
       <AdminPageHeader
-        title="New Entry"
+        title={<AdminText>{"New Entry"}</AdminText>}
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Our Story", href: "/admin/content/story" },
-          { label: "New" },
+          { label: "New", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

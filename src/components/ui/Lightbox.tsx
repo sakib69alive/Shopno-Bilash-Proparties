@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ZoomPan } from "@/components/plan/ZoomPan";
+import { BlueprintImage } from "@/components/plan/BlueprintImage";
 import type { ImageAsset } from "@/content/shared";
 
 export interface LightboxImage extends ImageAsset {
@@ -22,6 +23,7 @@ export interface LightboxProps {
   label?: string;
   /** "light" seats the image on an ivory panel — for drawings (floor plans, blueprints) whose dark lines vanish on the black backdrop. */
   surface?: "dark" | "light";
+  blueprintPreview?: boolean;
 }
 
 /**
@@ -31,7 +33,7 @@ export interface LightboxProps {
  * single-image viewers (e.g. a floor plan) that don't want the grid, and
  * by the Gallery page for its richer per-image caption/project link.
  */
-export function Lightbox({ images, index, onClose, onNavigate, label = "Image viewer", surface = "dark" }: LightboxProps) {
+export function Lightbox({ images, index, onClose, onNavigate, label = "Image viewer", surface = "dark", blueprintPreview = false }: LightboxProps) {
   const open = index !== null;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
@@ -120,9 +122,19 @@ export function Lightbox({ images, index, onClose, onNavigate, label = "Image vi
 
       {current && (
         // Pinch to zoom the picture itself (not the page); a fresh zoom for every picture.
-        <ZoomPan key={index} label={current.alt} className={cn("h-[75svh] w-[90vw]", surface === "light" && "bg-bg h-[72svh] w-[92vw] rounded-lg")}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={current.src} alt={current.alt} draggable={false} className={cn("size-full object-contain select-none", surface === "light" && "p-3 sm:p-5")} />
+        <ZoomPan
+          key={index}
+          label={current.alt}
+          lowCost={blueprintPreview}
+          className={cn("h-[75svh] w-[90vw]", surface === "light" && "bg-bg h-[72svh] w-[92vw] rounded-lg")}
+          renderContent={blueprintPreview ? (scale) => (
+            <BlueprintImage src={current.src} alt={current.alt} detail vectorKey={scale > 1.01 ? "fullscreen" : undefined} className="size-full object-contain p-3 select-none sm:p-5" />
+          ) : undefined}
+        >
+          {!blueprintPreview && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={current.src} alt={current.alt} draggable={false} className={cn("size-full object-contain select-none", surface === "light" && "p-3 sm:p-5")} />
+          )}
         </ZoomPan>
       )}
 

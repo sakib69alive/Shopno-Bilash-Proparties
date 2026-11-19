@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useEffect, useState } from "react";
 import { RotateCcw, RotateCw } from "lucide-react";
 import { BlueprintPaper, BLUEPRINT_GRID_STYLE } from "@/components/portal/BlueprintPaper";
@@ -173,14 +174,14 @@ export function ClientPlanPreview({
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="secondary" size="sm" onClick={() => setFlatTurn(flatTurn - 90)}>
               <RotateCcw aria-hidden className="size-4" />
-              Turn left
+              <AdminText>{"Turn left"}</AdminText>
             </Button>
             <Button type="button" variant="secondary" size="sm" onClick={() => setFlatTurn(flatTurn + 90)}>
               <RotateCw aria-hidden className="size-4" />
-              Turn right
+              <AdminText>{"Turn right"}</AdminText>
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setFlatTurn(0)}>
-              Reset
+              <AdminText>{"Reset"}</AdminText>
             </Button>
           </div>
           <Slider label="Fine angle" value={flatTurn} min={-180} max={180} step={0.5} unit="°" onChange={setFlatTurn} />
@@ -208,14 +209,14 @@ export function ClientPlanPreview({
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" variant="secondary" size="sm" onClick={() => setFlatTurn(flatTurn - 90)}>
               <RotateCcw aria-hidden className="size-4" />
-              Turn left
+              <AdminText>{"Turn left"}</AdminText>
             </Button>
             <Button type="button" variant="secondary" size="sm" onClick={() => setFlatTurn(flatTurn + 90)}>
               <RotateCw aria-hidden className="size-4" />
-              Turn right
+              <AdminText>{"Turn right"}</AdminText>
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setFlatTurn(0)}>
-              Reset
+              <AdminText>{"Reset"}</AdminText>
             </Button>
           </div>
           <Slider label="Fine angle" value={flatTurn} min={-180} max={180} step={0.5} unit="°" onChange={setFlatTurn} />

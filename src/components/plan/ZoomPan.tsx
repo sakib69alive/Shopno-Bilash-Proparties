@@ -19,13 +19,16 @@ const MAX_SCALE = 5;
  */
 export function ZoomPan({
   children,
+  renderContent,
   className,
   controls = true,
   extraControls,
   max = MAX_SCALE,
   label = "Floor plan",
+  lowCost = false,
 }: {
-  children: ReactNode;
+  children?: ReactNode;
+  renderContent?: (scale: number) => ReactNode;
   className?: string;
   /** The small + / − buttons. Off for a card that sits inside a button (pinch still works). */
   controls?: boolean;
@@ -33,6 +36,8 @@ export function ZoomPan({
   extraControls?: ReactNode;
   max?: number;
   label?: string;
+  /** Skip backdrop filters when zooming a detailed drawing. */
+  lowCost?: boolean;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const scaleRef = useRef(1);
@@ -83,37 +88,45 @@ export function ZoomPan({
     if (!el) return;
     let startDist = 0;
     let startScale = 1;
+    let pinchBounds: DOMRect | null = null;
+    let paintFrame = 0;
     // While two fingers are down the drawing is only scaled with a transform (smooth, no re-layout); it is laid out for real when they lift.
     let live: { target: number; fx: number; fy: number } | null = null;
 
     const dist = (e: TouchEvent) => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
     const mid = (e: TouchEvent) => ({ x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 });
 
+    function paintPinch() {
+      paintFrame = 0;
+      const node = inner.current;
+      if (!node || !live) return;
+      node.style.transformOrigin = `${el!.scrollLeft + live.fx}px ${el!.scrollTop + live.fy}px`;
+      node.style.transform = `scale(${live.target / startScale})`;
+    }
+
     function onStart(e: TouchEvent) {
       if (e.touches.length >= 2) multi.current = true;
       if (e.touches.length === 2) {
         startDist = dist(e);
         startScale = scaleRef.current;
+        pinchBounds = el!.getBoundingClientRect();
       }
     }
     function onMove(e: TouchEvent) {
-      if (e.touches.length !== 2 || startDist === 0) return;
+      if (e.touches.length !== 2 || startDist === 0 || !pinchBounds) return;
       e.preventDefault(); // our pinch, not the browser's page zoom
-      const box = el!.getBoundingClientRect();
       const m = mid(e);
       const target = Math.min(max, Math.max(1, startScale * (dist(e) / startDist)));
-      const fx = m.x - box.left;
-      const fy = m.y - box.top;
+      const fx = m.x - pinchBounds.left;
+      const fy = m.y - pinchBounds.top;
       live = { target, fx, fy };
-      const node = inner.current;
-      if (node) {
-        node.style.transformOrigin = `${el!.scrollLeft + fx}px ${el!.scrollTop + fy}px`;
-        node.style.transform = `scale(${target / startScale})`;
-      }
+      if (!paintFrame) paintFrame = requestAnimationFrame(paintPinch);
     }
     function onEnd(e: TouchEvent) {
       if (e.touches.length < 2 && startDist !== 0) {
         startDist = 0;
+        cancelAnimationFrame(paintFrame);
+        paintFrame = 0;
         const node = inner.current;
         if (node) {
           node.style.transform = "";
@@ -138,17 +151,18 @@ export function ZoomPan({
     el.addEventListener("touchcancel", onEnd, { passive: true });
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => {
+      cancelAnimationFrame(paintFrame);
       el.removeEventListener("touchstart", onStart);
       el.removeEventListener("touchmove", onMove);
       el.removeEventListener("touchend", onEnd);
       el.removeEventListener("touchcancel", onEnd);
       el.removeEventListener("wheel", onWheel);
     };
-  }, [zoomTo]);
+  }, [max, zoomTo]);
 
   // A zoomed-in plan owns its touches: a viewer behind it (the photo carousel) must not take a swipe as "next".
   const onTouchStartTap = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) tapStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() };
+    if (e.touches.length === 1) tapStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: e.timeStamp };
     keepTouches(e);
   };
   const keepTouches = (e: React.TouchEvent) => {
@@ -164,14 +178,14 @@ export function ZoomPan({
       lastTap.current = 0;
       return;
     }
-    const now = Date.now();
+    const now = e.timeStamp;
     const t = e.changedTouches[0];
     // only a quick, still tap counts
     if (now - start.t > 280 || Math.hypot(t.clientX - start.x, t.clientY - start.y) > 12) {
       lastTap.current = 0;
       return;
     }
-    if (now - lastTap.current < 300) {
+    if (lastTap.current > 0 && now - lastTap.current < 300) {
       lastTap.current = 0;
       zoomTo(scaleRef.current > 1.05 ? 1 : 2.5, { x: t.clientX, y: t.clientY });
     } else {
@@ -196,11 +210,11 @@ export function ZoomPan({
         className="no-scrollbar absolute inset-0 overflow-auto overscroll-contain"
       >
         <div ref={inner} style={{ width: `${scale * 100}%`, height: `${scale * 100}%` }}>
-          {children}
+          {renderContent ? renderContent(scale) : children}
         </div>
       </div>
       {controls && (
-        <div className="absolute right-3 bottom-3 flex items-center gap-1.5">
+        <div className={cn("absolute right-3 bottom-3 flex items-center gap-1.5", lowCost && "[&>button]:bg-black/75 [&>button]:backdrop-filter-none")}>
           {extraControls}
           {scale > 1.01 && (
             <button

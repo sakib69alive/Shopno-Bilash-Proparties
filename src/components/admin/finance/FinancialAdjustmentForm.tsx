@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -29,7 +30,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="sm" loading={pending}>
-      Add Adjustment
+      <AdminText>{"Add Adjustment"}</AdminText>
     </Button>
   );
 }
@@ -57,7 +58,7 @@ export function FinancialAdjustmentForm({ targetType, targetId }: FinancialAdjus
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-2.5 py-2">
           <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -76,7 +77,7 @@ export function FinancialAdjustmentForm({ targetType, targetId }: FinancialAdjus
       <div className="flex items-center gap-2">
         <SubmitButton />
         <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
-          Cancel
+          <AdminText>{"Cancel"}</AdminText>
         </Button>
       </div>
     </PersistForm>

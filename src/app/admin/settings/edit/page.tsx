@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -22,7 +23,7 @@ export default async function EditSettingsPage() {
 
   return (
     <>
-      <AdminPageHeader title="Edit Settings" breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Edit" }]} />
+      <AdminPageHeader title={<AdminText>{"Edit Settings"}</AdminText>} breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Edit", localize: true }]} />
       <div className="p-4 sm:p-6">
         <SettingsForm action={updateCompanySettings} settings={settings} />
       </div>

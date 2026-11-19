@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -38,11 +39,11 @@ export default async function EditShareholdingPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Shareholding"
+        title={<AdminText>{"Edit Shareholding"}</AdminText>}
         breadcrumbs={[
           { label: "Shareholders", href: "/admin/shareholders" },
           { label: shareholder.name, href: `/admin/shareholders/${shareholder.id}` },
-          { label: "Edit Shareholding" },
+          { label: "Edit Shareholding", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

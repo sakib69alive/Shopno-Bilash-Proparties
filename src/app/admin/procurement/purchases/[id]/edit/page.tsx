@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -42,11 +43,11 @@ export default async function EditPurchasePage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Purchase"
+        title={<AdminText>{"Edit Purchase"}</AdminText>}
         breadcrumbs={[
           { label: "Procurement", href: "/admin/procurement" },
           { label: "Purchases", href: "/admin/procurement/purchases" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

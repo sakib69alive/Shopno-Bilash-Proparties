@@ -1,3 +1,4 @@
+import { UiText } from "./UiLanguage";
 import { forwardRef, useId } from "react";
 import type { InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
@@ -23,8 +24,8 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
         )}
       >
         <span className="flex flex-col">
-          <span className="text-body-sm text-fg">{label}</span>
-          {description && <span className="text-caption text-fg-subtle mt-0.5">{description}</span>}
+          <span className="text-body-sm text-fg"><UiText>{label}</UiText></span>
+          {description && <span className="text-caption text-fg-subtle mt-0.5"><UiText>{description}</UiText></span>}
         </span>
         <span className="relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center">
           <input

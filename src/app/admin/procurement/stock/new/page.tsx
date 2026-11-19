@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -41,11 +42,11 @@ export default async function NewStockMovementPage({ searchParams }: PageProps) 
   return (
     <>
       <AdminPageHeader
-        title="Record Stock Movement"
+        title={<AdminText>{"Record Stock Movement"}</AdminText>}
         breadcrumbs={[
           { label: "Procurement", href: "/admin/procurement" },
           { label: "Stock", href: "/admin/procurement/stock" },
-          { label: "New" },
+          { label: "New", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

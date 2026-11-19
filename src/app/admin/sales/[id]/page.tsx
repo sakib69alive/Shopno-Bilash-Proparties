@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
@@ -105,7 +106,7 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
             {canUpdate && (
               <Link href={`/admin/sales/${sale.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
             {canDelete && <DeleteSaleButton id={sale.id} />}
@@ -115,7 +116,7 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Unit</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Unit"}</AdminText></h2>
           {unit ? (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -126,7 +127,7 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
                 href={`/admin/properties/${unit.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View unit →
+                <AdminText>{"View unit →"}</AdminText>
               </Link>
             </>
           ) : (
@@ -135,7 +136,7 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Customer</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Customer"}</AdminText></h2>
           {customer ? (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -146,17 +147,17 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
                 href={`/admin/customers/${customer.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View customer →
+                <AdminText>{"View customer →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">This customer no longer exists.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"This customer no longer exists."}</AdminText></p>
           )}
         </section>
 
         <section>
           <div className="mb-2 flex items-center gap-2">
-            <h2 className="text-label text-fg-subtle uppercase">Sale</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Sale"}</AdminText></h2>
             <StatusBadge status={sale.status} />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -181,14 +182,14 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
         {paymentSummary && (
           <section className="lg:col-span-2">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-label text-fg-subtle uppercase">Payments received</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Payments received"}</AdminText></h2>
               {hasPermission(user.role, "finance.manage") && (
                 <Link
                   href={`/admin/sales/payments/new?customerId=${sale.customerId}&saleId=${sale.id}`}
                   className={buttonVariants({ variant: "primary", size: "sm" })}
                 >
                   <Plus aria-hidden className="size-3.5" />
-                  Record payment
+                  <AdminText>{"Record payment"}</AdminText>
                 </Link>
               )}
             </div>
@@ -199,15 +200,15 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
                 <p className="text-h3 text-fg mt-1">{formatBDT(paymentSummary.price)}</p>
               </div>
               <div className="border-border bg-surface-raised rounded-lg border p-4">
-                <p className="text-caption text-fg-subtle uppercase">Received</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Received"}</AdminText></p>
                 <p className="text-h3 text-fg mt-1">{formatBDT(paymentSummary.paid)}</p>
               </div>
               <div className="border-border bg-surface-raised rounded-lg border p-4">
-                <p className="text-caption text-fg-subtle uppercase">Remaining</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Remaining"}</AdminText></p>
                 <p className="text-h3 text-fg mt-1">{formatBDT(paymentSummary.remaining)}</p>
               </div>
               <div className="border-border bg-surface-raised rounded-lg border p-4">
-                <p className="text-caption text-fg-subtle uppercase">Paid so far</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Paid so far"}</AdminText></p>
                 <p className="text-h3 text-fg mt-1">{paymentSummary.percentPaid}%</p>
                 <div className="bg-border mt-2 h-1 overflow-hidden rounded-full">
                   <div className="bg-accent h-full rounded-full" style={{ width: `${paymentSummary.percentPaid}%` }} />
@@ -217,18 +218,18 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
 
             {paymentSummary.payments.length === 0 ? (
               <p className="text-body-sm text-fg-subtle border-border mt-3 rounded-lg border border-dashed p-4">
-                No payment has been recorded for this sale yet.
+                <AdminText>{"No payment has been recorded for this sale yet."}</AdminText>
               </p>
             ) : (
               <div className="border-border mt-3 overflow-x-auto scrollbar-none rounded-lg border">
                 <table className="text-body-sm w-full min-w-[34rem] text-left">
                   <thead className="bg-surface text-caption text-fg-subtle uppercase">
                     <tr>
-                      <th className="px-4 py-2.5 font-medium">Date</th>
-                      <th className="px-4 py-2.5 font-medium">For</th>
-                      <th className="px-4 py-2.5 font-medium">Method</th>
-                      <th className="px-4 py-2.5 font-medium">Reference / receipt</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Amount</th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"Date"}</AdminText></th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"For"}</AdminText></th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"Method"}</AdminText></th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"Reference / receipt"}</AdminText></th>
+                      <th className="px-4 py-2.5 text-right font-medium"><AdminText>{"Amount"}</AdminText></th>
                     </tr>
                   </thead>
                   <tbody className="divide-border divide-y">
@@ -255,25 +256,25 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
         {paymentSummary && (
           <section className="lg:col-span-2">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h2 className="text-label text-fg-subtle uppercase">Installments</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Installments"}</AdminText></h2>
               {hasPermission(user.role, "sales.create") && (
                 <Link href={`/admin/sales/installments/new?saleId=${sale.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Plus aria-hidden className="size-3.5" />
-                  Add installment
+                  <AdminText>{"Add installment"}</AdminText>
                 </Link>
               )}
             </div>
             {saleInstallments.length === 0 ? (
-              <p className="text-body-sm text-fg-subtle border-border rounded-lg border border-dashed p-4">No installment is scheduled for this sale yet. Once added, the owner sees each one with its live status.</p>
+              <p className="text-body-sm text-fg-subtle border-border rounded-lg border border-dashed p-4"><AdminText>{"No installment is scheduled for this sale yet. Once added, the owner sees each one with its live status."}</AdminText></p>
             ) : (
               <div className="border-border overflow-x-auto scrollbar-none rounded-lg border">
                 <table className="text-body-sm w-full text-left">
                   <thead className="bg-surface text-caption text-fg-subtle uppercase">
                     <tr>
                       <th className="px-4 py-2.5 font-medium">#</th>
-                      <th className="px-4 py-2.5 font-medium">Due</th>
-                      <th className="px-4 py-2.5 text-right font-medium">Amount</th>
-                      <th className="px-4 py-2.5 font-medium">Status now</th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"Due"}</AdminText></th>
+                      <th className="px-4 py-2.5 text-right font-medium"><AdminText>{"Amount"}</AdminText></th>
+                      <th className="px-4 py-2.5 font-medium"><AdminText>{"Status now"}</AdminText></th>
                     </tr>
                   </thead>
                   <tbody className="divide-border divide-y">
@@ -314,7 +315,7 @@ export default async function AdminSaleDetailPage({ params }: PageProps) {
         )}
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(sale.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(sale.updatedAt))} />

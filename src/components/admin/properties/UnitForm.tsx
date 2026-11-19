@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -73,7 +74,7 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -158,7 +159,7 @@ export function UnitForm({ action, unit, projects, buildings, floors, submitLabe
       <h2 className="text-label text-fg-subtle -mb-2 uppercase">Design</h2>
       <div className="border-border bg-surface flex flex-col gap-4 rounded-xl border p-4">
         <p className="text-body-sm text-fg-muted">
-          <b>Blueprint.</b> This flat uses its project&rsquo;s shared blueprint type. Pick one below, or leave it on automatic to match by the
+          <b><AdminText>{"Blueprint."}</AdminText></b> This flat uses its project&rsquo;s shared blueprint type. Pick one below, or leave it on automatic to match by the
           flat code (e.g. 3A → the type with code A). If this flat&rsquo;s design is different, upload a custom blueprint — that one wins.
         </p>
         {projectTypes.length > 0 ? (

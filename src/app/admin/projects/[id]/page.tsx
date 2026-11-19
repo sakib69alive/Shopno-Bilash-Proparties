@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, MapPin } from "lucide-react";
@@ -84,7 +85,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
         <div className="bg-error-soft text-error flex items-center gap-2.5 rounded-md px-4 py-3">
           <AlertTriangle aria-hidden className="size-4 shrink-0" />
           <p className="text-body-sm flex-1">
-            {stats.overdueContributionCount} owner contribution{stats.overdueContributionCount === 1 ? "" : "s"} overdue on this
+            {stats.overdueContributionCount}<AdminText>{" owner contribution"}</AdminText>{stats.overdueContributionCount === 1 ? "" : "s"} overdue on this
             project.
           </p>
           <Link href={`/admin/projects/${id}/reports`} className="text-body-sm font-medium underline">
@@ -101,7 +102,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
               description="Units for this project will appear here once added."
               action={
                 <Link href="/admin/properties/new" className="text-body-sm text-accent font-medium hover:underline">
-                  Add Unit
+                  <AdminText>{"Add Unit"}</AdminText>
                 </Link>
               }
             />
@@ -126,7 +127,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
               description="Track this project's build stages once phases are added."
               action={
                 <Link href="/admin/construction" className="text-body-sm text-accent font-medium hover:underline">
-                  Add Phase
+                  <AdminText>{"Add Phase"}</AdminText>
                 </Link>
               }
             />
@@ -155,7 +156,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
               href={`/admin/construction/${stats.currentConstructionStage.id}`}
               className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border p-4 transition-colors hover:border-fg-subtle"
             >
-              <p className="text-label text-fg-subtle uppercase">Current Construction Stage</p>
+              <p className="text-label text-fg-subtle uppercase"><AdminText>{"Current Construction Stage"}</AdminText></p>
               <div className="flex items-center justify-between">
                 <p className="text-h4 text-fg">{stats.currentConstructionStage.name}</p>
                 <StatusBadge status={stats.currentConstructionStage.status} />
@@ -175,7 +176,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
           )}
           {stats.nextConstructionStage && (
             <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border border-dashed p-4">
-              <p className="text-label text-fg-subtle uppercase">Next Stage</p>
+              <p className="text-label text-fg-subtle uppercase"><AdminText>{"Next Stage"}</AdminText></p>
               <p className="text-h4 text-fg">{stats.nextConstructionStage.name}</p>
               <Fact
                 label="Planned Start"
@@ -250,7 +251,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
               description="This project's material inventory will appear here once tracked."
               action={
                 <Link href={`/admin/projects/${id}/materials`} className="text-body-sm text-accent font-medium hover:underline">
-                  Record Movement
+                  <AdminText>{"Record Movement"}</AdminText>
                 </Link>
               }
             />
@@ -314,7 +315,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
 
         <div className="flex flex-col gap-6">
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Location</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Location"}</AdminText></h2>
             <p className="text-body text-fg flex items-start gap-2">
               <MapPin aria-hidden className="text-fg-subtle mt-0.5 size-4 shrink-0" />
               <span>
@@ -326,7 +327,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Description</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Description"}</AdminText></h2>
             <p className="text-body text-fg-muted whitespace-pre-line">{project.description}</p>
           </section>
 
@@ -344,7 +345,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
           )}
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Timeline</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Timeline"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <Fact label="Launch" value={project.launchDate ? formatDate(new Date(project.launchDate)) : "—"} />
               <Fact
@@ -360,7 +361,7 @@ export default async function AdminProjectDetailPage({ params }: PageProps) {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(project.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(project.updatedAt))} />

@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -31,8 +33,10 @@ import type { RoleName } from "@/config/roles";
 import type { SimbaStatus } from "@/features/simba/status";
 import { askSimba, buildAiPrompt, buildFullTour, explain, extraFor, guideFor, pickTarget, problemFor, projectIdFrom, type AskResult, type Explained } from "./simbaHelp";
 import { SimbaTour } from "./SimbaTour";
+import { FINANCE_PROJECT_EVENT, FINANCE_SELECT_EVENT, FinanceMode } from "../finance/FinanceAssistant";
+import { financePage, type FinanceSelection } from "@/lib/financeAssistant";
 
-type Tab = "today" | "next" | "learn" | "page" | "project" | "ask";
+type Tab = "today" | "next" | "learn" | "page" | "project" | "ask" | "finance";
 
 interface Notice {
   message: string;
@@ -91,7 +95,19 @@ interface Row {
   tour?: string;
 }
 
+function translateSetupDetail(detail: string, t: (text: string) => string) {
+  const translated = t(detail);
+  if (translated !== detail) return translated;
+
+  return detail.split(", ").map((part) => {
+    const match = /^(\d+) (staff accounts?|projects?|buildings?|floors?|units?|parking spots?|customers?|shareholders?|landowners?|sales?|installments?|payments?|budgets?|cost splits?|phases?|vendors?|purchases?|documents?)$/.exec(part);
+    return match ? `${match[1]} ${t(match[2])}` : part;
+  }).join(", ");
+}
+
 function ChecklistRow({ row, open, onToggle, onTour }: { row: Row; open: boolean; onToggle: () => void; onTour?: (id: string) => void }) {
+  const { locale, t } = useUiLanguage();
+  const detail = row.detail && (locale === "bn" ? translateSetupDetail(row.detail, t) : row.detail);
   return (
     <li className="border-border overflow-hidden rounded-xl border bg-surface-raised">
       <button type="button" onClick={onToggle} aria-expanded={open} className="hover:bg-surface flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors">
@@ -99,28 +115,28 @@ function ChecklistRow({ row, open, onToggle, onTour }: { row: Row; open: boolean
           {row.done ? <Check aria-hidden className="size-3.5" /> : <Circle aria-hidden className="size-2 opacity-0" />}
         </span>
         <span className="min-w-0 flex-1">
-          <span className={cn("text-body-sm block font-medium", row.done && "text-fg-muted")}>{row.title}</span>
-          {row.detail && <span className="text-caption text-fg-subtle block truncate">{row.detail}</span>}
+          <span className={cn("text-body-sm block font-medium", row.done && "text-fg-muted")}><AdminText>{row.title}</AdminText></span>
+          {detail && <span className="text-caption text-fg-subtle block truncate">{detail}</span>}
         </span>
         <ChevronDown aria-hidden className={cn("text-fg-subtle size-4 shrink-0 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
         <div className="border-border border-t px-3 py-3">
-          <p className="text-body-sm text-fg-muted">{row.why}</p>
+          <p className="text-body-sm text-fg-muted"><AdminText>{row.why}</AdminText></p>
           <ol className="text-body-sm text-fg mt-2 list-decimal space-y-1 pl-5">
             {row.how.map((h) => (
-              <li key={h}>{h}</li>
+              <li key={h}><AdminText>{h}</AdminText></li>
             ))}
           </ol>
           <div className="mt-3 flex flex-wrap items-center gap-4">
             {row.tour && onTour && (
               <button type="button" onClick={() => onTour(row.tour!)} className="text-body-sm bg-accent text-accent-foreground inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-semibold">
                 <Play aria-hidden className="size-3.5" />
-                Show me on screen
+                <AdminText>{"Show me on screen"}</AdminText>
               </button>
             )}
             <Link href={row.href} className="text-body-sm text-accent inline-flex items-center gap-1.5 font-semibold">
-              {row.done ? "Open it" : "Take me there"}
+              <AdminText>{row.done ? "Open it" : "Take me there"}</AdminText>
               <ArrowRight aria-hidden className="size-4" />
             </Link>
           </div>
@@ -138,9 +154,9 @@ function Checklist({ rows, label, onTour }: { rows: Row[]; label?: string; onTou
     list.length > 0 && (
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <p className="text-label text-fg-subtle uppercase">{title}</p>
+          <p className="text-label text-fg-subtle uppercase"><AdminText>{title}</AdminText></p>
           <p className="text-caption text-fg-subtle">
-            {list.filter((r) => r.done).length}/{list.length} · {hint}
+            {list.filter((r) => r.done).length}/{list.length} · <AdminText>{hint}</AdminText>
           </p>
         </div>
         <ul className="flex flex-col gap-1.5">
@@ -152,7 +168,7 @@ function Checklist({ rows, label, onTour }: { rows: Row[]; label?: string; onTou
     );
   return (
     <div className="flex flex-col gap-4">
-      {label && <p className="text-body-sm text-fg-muted">{label}</p>}
+      {label && <p className="text-body-sm text-fg-muted"><AdminText>{label}</AdminText></p>}
       {group("Must do", major, "needed before it is useful")}
       {group("Optional", optional, "nice to have")}
     </div>
@@ -169,11 +185,11 @@ function NextCard({ row, who }: { row: Row | null; who: string }) {
     );
   return (
     <div className="bg-accent text-accent-foreground rounded-2xl p-4">
-      <p className="text-caption tracking-wide uppercase opacity-80">Do this next</p>
-      <p className="mt-1 text-[1.05rem] leading-snug font-semibold">{row.title}</p>
-      <p className="text-body-sm mt-1.5 opacity-90">{row.why}</p>
+      <p className="text-caption tracking-wide uppercase opacity-80"><AdminText>{"Do this next"}</AdminText></p>
+      <p className="mt-1 text-[1.05rem] leading-snug font-semibold"><AdminText>{row.title}</AdminText></p>
+      <p className="text-body-sm mt-1.5 opacity-90"><AdminText>{row.why}</AdminText></p>
       <Link href={row.href} className="text-body-sm mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-2 font-semibold hover:bg-white/25">
-        Take me there
+        <AdminText>{"Take me there"}</AdminText>
         <ArrowRight aria-hidden className="size-4" />
       </Link>
     </div>
@@ -181,6 +197,7 @@ function NextCard({ row, who }: { row: Row | null; who: string }) {
 }
 
 function ExplainCard({ info, onClose }: { info: Explained; onClose: () => void }) {
+  const { t: adminCopy } = useUiLanguage();
   const accent = info.tone === "action" ? RED : ORANGE;
   return (
     <div className="flex flex-col gap-3">
@@ -191,13 +208,13 @@ function ExplainCard({ info, onClose }: { info: Explained; onClose: () => void }
           </span>
           <p className="text-h5 text-fg mt-1.5 leading-snug break-words">{info.name}</p>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close explanation" className="text-fg-muted hover:bg-surface -mt-1 -mr-1 flex size-8 shrink-0 items-center justify-center rounded-full">
+        <button type="button" onClick={onClose} aria-label={adminCopy("Close explanation")} className="text-fg-muted hover:bg-surface -mt-1 -mr-1 flex size-8 shrink-0 items-center justify-center rounded-full">
           <X aria-hidden className="size-4" />
         </button>
       </div>
       <div>
         <p className="text-label text-fg-subtle uppercase">What it does</p>
-        <p className="text-body-sm text-fg mt-1">{info.what}</p>
+        <p className="text-body-sm text-fg mt-1"><AdminText>{info.what}</AdminText></p>
       </div>
       {info.says && (
         <div>
@@ -208,8 +225,8 @@ function ExplainCard({ info, onClose }: { info: Explained; onClose: () => void }
       {info.opens && (
         <div>
           <p className="text-label text-fg-subtle uppercase">Opens</p>
-          <p className="text-body-sm text-fg mt-1 font-medium">{info.opens.label}</p>
-          {info.opens.summary && <p className="text-body-sm text-fg-muted mt-0.5">{info.opens.summary}</p>}
+          <p className="text-body-sm text-fg mt-1 font-medium"><AdminText>{info.opens.label}</AdminText></p>
+          {info.opens.summary && <p className="text-body-sm text-fg-muted mt-0.5"><AdminText>{info.opens.summary}</AdminText></p>}
         </div>
       )}
       {info.example && (
@@ -243,9 +260,16 @@ function ExplainCard({ info, onClose }: { info: Explained; onClose: () => void }
 }
 
 export function SimbaAgent({ role }: { role: RoleName }) {
+  const { t: adminCopy } = useUiLanguage();
   const pathname = usePathname();
+  const finance = financePage(pathname);
+  const financeAvailable = !!finance && hasPermission(role, "finance.view") &&
+    (finance.tab !== "report" || hasPermission(role, "reports.view")) &&
+    (finance.tab !== "installment" || hasPermission(role, "sales.view"));
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("next");
+  const [financeSelection, setFinanceSelection] = useState<{ path: string; selection: FinanceSelection }>();
+  const [financeFilter, setFinanceFilter] = useState<{ path: string; project: string }>();
   const [status, setStatus] = useState<SimbaStatus | null>(null);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [failed, setFailed] = useState(false);
@@ -565,7 +589,13 @@ export function SimbaAgent({ role }: { role: RoleName }) {
   const attentionCount = (attention?.today.length ?? 0) + (attention?.warnings.length ?? 0);
 
   function openPanel() {
-    setOpen((v) => !v);
+    if (!open && financeAvailable) {
+      setPicked(null);
+      setExplainOn(false);
+      setFinanceSelection(undefined);
+      setTab("finance");
+    }
+    setOpen(!open);
     try {
       window.sessionStorage.setItem("simba-greeted", "1");
     } catch {
@@ -580,9 +610,43 @@ export function SimbaAgent({ role }: { role: RoleName }) {
   });
   useEffect(() => {
     const onToggle = () => openPanelRef.current();
+    function onShortcut(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.repeat || event.isComposing || event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.key !== "`") return;
+      if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable]:not([contenteditable=false]), [role=textbox]")) return;
+      event.preventDefault();
+      onToggle();
+    }
     window.addEventListener("simba:toggle", onToggle);
-    return () => window.removeEventListener("simba:toggle", onToggle);
+    document.addEventListener("keydown", onShortcut);
+    return () => {
+      window.removeEventListener("simba:toggle", onToggle);
+      document.removeEventListener("keydown", onShortcut);
+    };
   }, []);
+  useEffect(() => {
+    if (!financeAvailable) return;
+    function selectFinance(event: Event) {
+      const detail = (event as CustomEvent<{ path: string; selection: FinanceSelection }>).detail;
+      if (detail.path !== pathname) return;
+      setFinanceSelection(detail);
+      setExplainOn(false);
+      setPicked(null);
+      setTab("finance");
+      setOpen(true);
+    }
+    function filterFinance(event: Event) {
+      const detail = (event as CustomEvent<{ path: string; project: string }>).detail;
+      if (detail.path !== pathname) return;
+      setFinanceFilter(detail);
+      setFinanceSelection(undefined);
+    }
+    window.addEventListener(FINANCE_SELECT_EVENT, selectFinance);
+    window.addEventListener(FINANCE_PROJECT_EVENT, filterFinance);
+    return () => {
+      window.removeEventListener(FINANCE_SELECT_EVENT, selectFinance);
+      window.removeEventListener(FINANCE_PROJECT_EVENT, filterFinance);
+    };
+  }, [financeAvailable, pathname]);
   const hasAttention = attentionCount > 0 || !!notice;
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("simba:state", { detail: { open, attention: hasAttention } }));
@@ -596,12 +660,13 @@ export function SimbaAgent({ role }: { role: RoleName }) {
     ...(showProject ? [{ key: "project" as const, label: "Project", icon: ListChecks }] : []),
     { key: "ask", label: "Ask", icon: LifeBuoy },
   ];
-  const activeTab = tab === "project" && !showProject ? "next" : tab;
+  const activeTab = (tab === "project" && !showProject) || (tab === "finance" && !financeAvailable) ? "next" : tab;
+  const financeMode = activeTab === "finance" && !picked;
   // No pop-up nudges: the guide waits quietly until it is opened.
   const showWelcomeOffer = false && !greeted && !open && !tour;
 
   return (
-    <div data-simba className="hidden lg:block print:hidden">
+    <div data-simba className={cn("print:hidden", !financeAvailable && "hidden lg:block")}>
       {/* hover outline while explain mode is on */}
       <div ref={highlight} aria-hidden className="pointer-events-none fixed z-[80] hidden rounded-md border-2 transition-[left,top,width,height] duration-75" />
 
@@ -609,10 +674,10 @@ export function SimbaAgent({ role }: { role: RoleName }) {
         <div className="fixed top-20 left-1/2 z-[90] flex -translate-x-1/2 items-center gap-3 rounded-full bg-[#1c1b19] px-4 py-2.5 text-white shadow-xl lg:left-[calc(50%+8rem)]">
           <MousePointerClick aria-hidden className="size-4" />
           <span className="text-body-sm">
-            Click anything — I will explain it. <span className="opacity-60">Nothing you click will run.</span>
+            <AdminText>{"Click anything — I will explain it. "}</AdminText><span className="opacity-60"><AdminText>{"Nothing you click will run."}</AdminText></span>
           </span>
           <button type="button" onClick={() => setExplainOn(false)} className="text-body-sm rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25">
-            Stop
+            <AdminText>{"Stop"}</AdminText>
           </button>
         </div>
       )}
@@ -623,19 +688,19 @@ export function SimbaAgent({ role }: { role: RoleName }) {
           <div className="flex items-start gap-3">
             <img src="/simba.webp" alt="" className="size-10 shrink-0 rounded-full" />
             <div className="min-w-0 flex-1">
-              <p className="text-body-sm text-fg font-semibold">{notice.title ?? "I saw a problem"}</p>
-              <p className="text-caption text-fg-subtle mt-0.5 line-clamp-2">“{notice.message}”</p>
+              <p className="text-body-sm text-fg font-semibold"><AdminText>{notice.title ?? "I saw a problem"}</AdminText></p>
+              <p className="text-caption text-fg-subtle mt-0.5 line-clamp-2">“<AdminText>{notice.message}</AdminText>”</p>
               <ul className="text-body-sm text-fg-muted mt-2 list-disc space-y-0.5 pl-4">
                 {notice.fix?.map((f) => (
-                  <li key={f}>{f}</li>
+                  <li key={f}><AdminText>{f}</AdminText></li>
                 ))}
               </ul>
               <div className="mt-3 flex gap-2">
                 <button type="button" onClick={() => { setTab("ask"); setOpen(true); }} className="text-body-sm text-accent font-semibold">
-                  More help
+                  <AdminText>{"More help"}</AdminText>
                 </button>
                 <button type="button" onClick={() => setNotice(null)} className="text-body-sm text-fg-subtle">
-                  Dismiss
+                  <AdminText>{"Dismiss"}</AdminText>
                 </button>
               </div>
             </div>
@@ -647,16 +712,16 @@ export function SimbaAgent({ role }: { role: RoleName }) {
       {open && (
         <section
           role="dialog"
-          aria-label="Simba, your admin helper"
-          className="border-border bg-bg fixed top-[4.5rem] right-6 z-[70] flex max-h-[min(42rem,calc(100vh-6rem))] w-[27rem] flex-col overflow-hidden rounded-3xl border shadow-[0_24px_60px_rgb(0_0_0/0.22)]"
+          aria-label={adminCopy("Simba, your admin helper")}
+          className="border-border bg-bg fixed top-[calc(4.5rem+env(safe-area-inset-top))] right-3 left-3 z-[70] flex max-h-[min(42rem,calc(100dvh-6rem-env(safe-area-inset-top)))] flex-col overflow-hidden rounded-3xl border shadow-[0_24px_60px_rgb(0_0_0/0.22)] sm:right-6 sm:left-auto sm:w-[27rem]"
         >
           <header className="from-accent to-accent-strong text-accent-foreground flex items-center gap-3 bg-gradient-to-br px-5 py-4">
             <img src="/simba.webp" alt="" className="size-12 shrink-0 rounded-full bg-white/90 object-cover p-0.5" />
             <div className="min-w-0 flex-1">
               <p className="text-[1.05rem] leading-tight font-semibold">Simba</p>
-              <p className="text-caption opacity-80">Your guide through the admin panel</p>
+              <p className="text-caption opacity-80">{adminCopy(financeMode ? "Finance mode" : "Your guide through the admin panel")}</p>
             </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close Simba" className="flex size-9 items-center justify-center rounded-full hover:bg-white/15">
+            <button type="button" onClick={() => setOpen(false)} aria-label={adminCopy("Close Simba")} className="flex size-9 items-center justify-center rounded-full hover:bg-white/15">
               <X aria-hidden className="size-5" />
             </button>
           </header>
@@ -667,18 +732,18 @@ export function SimbaAgent({ role }: { role: RoleName }) {
               <div className="mt-5 flex gap-2">
                 {!explainOn && (
                   <button type="button" onClick={() => { setPicked(null); setExplainOn(true); }} className="text-body-sm bg-accent text-accent-foreground rounded-full px-4 py-2 font-semibold">
-                    Explain something else
+                    <AdminText>{"Explain something else"}</AdminText>
                   </button>
                 )}
                 <button type="button" onClick={() => setPicked(null)} className="text-body-sm border-border text-fg rounded-full border px-4 py-2 font-semibold">
-                  Back to my guide
+                  <AdminText>{"Back to my guide"}</AdminText>
                 </button>
               </div>
             </div>
           ) : (
             <>
               <div className="border-border flex items-center justify-between gap-3 border-b px-5 py-3">
-                <p className="text-body-sm text-fg-muted">Not sure what something is?</p>
+                <p className="text-body-sm text-fg-muted"><AdminText>{"Not sure what something is?"}</AdminText></p>
                 <button
                   type="button"
                   onClick={() => {
@@ -688,11 +753,11 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                   className="text-body-sm border-border text-fg hover:bg-surface inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-medium transition-colors"
                 >
                   <MousePointerClick aria-hidden className="size-4" />
-                  Explain what I click
+                  <AdminText>{"Explain what I click"}</AdminText>
                 </button>
               </div>
 
-              <nav role="tablist" aria-label="Simba sections" className="border-border flex gap-1 border-b px-3 pt-2">
+              <nav role="tablist" aria-label={adminCopy("Simba sections")} className="border-border flex shrink-0 flex-wrap gap-x-1 border-b px-3 pt-2">
                 {tabs.map((t) => (
                   <button
                     key={t.key}
@@ -703,12 +768,20 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                     className={cn("text-body-sm -mb-px flex items-center gap-1 border-b-2 px-2.5 py-2 font-medium transition-colors", activeTab === t.key ? "border-accent text-fg" : "text-fg-subtle hover:text-fg border-transparent")}
                   >
                     <t.icon aria-hidden className="size-4" />
-                    {t.label}
+                    {adminCopy(t.label)}
                   </button>
                 ))}
               </nav>
 
               <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
+                {financeMode && (
+                  <Suspense fallback={<p role="status" className="text-body-sm text-fg-muted"><AdminText>{"Loading finance context…"}</AdminText></p>}>
+                    <FinanceMode key={pathname}
+                      selection={financeSelection?.path === pathname ? financeSelection.selection : undefined}
+                      projectFilter={financeFilter?.path === pathname ? financeFilter.project : undefined}
+                      onClear={() => setFinanceSelection(undefined)} onClose={() => setOpen(false)} />
+                  </Suspense>
+                )}
                 {activeTab === "today" && (
                   <div className="flex flex-col gap-5">
                     <AttentionList title="Needs you today" items={attention?.today} empty="Nothing urgent right now." loading={!status} />
@@ -721,28 +794,28 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                     <div className="flex items-center gap-4">
                       <Ring percent={journeyPercent} />
                       <div>
-                        <p className="text-body-sm text-fg font-semibold">Your whole system is {journeyPercent}% set up</p>
+                        <p className="text-body-sm text-fg font-semibold"><AdminText values={{ percent: journeyPercent }}>{"Your whole system is {percent}% set up"}</AdminText></p>
                         <p className="text-caption text-fg-subtle">
-                          {failed ? "Cannot refresh right now." : updatedAt ? "Live — updates as you save." : "Checking…"}
+                          <AdminText>{failed ? "Cannot refresh right now." : updatedAt ? "Live — updates as you save." : "Checking…"}</AdminText>
                         </p>
                       </div>
                     </div>
                     <NextCard row={nextMajor} who="your system" />
                     <Checklist rows={journeyRows} onTour={startTour} />
                     <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-2xl border p-4">
-                      <p className="text-body-sm text-fg font-semibold">New here?</p>
-                      <p className="text-body-sm text-fg-muted">I can walk you through every single option in the sidebar, one by one, and say what each one is.</p>
+                      <p className="text-body-sm text-fg font-semibold"><AdminText>{"New here?"}</AdminText></p>
+                      <p className="text-body-sm text-fg-muted"><AdminText>{"I can walk you through every single option in the sidebar, one by one, and say what each one is."}</AdminText></p>
                       <div className="flex flex-wrap gap-2">
                         <button type="button" onClick={() => startTour(buildFullTour(role))} className="text-body-sm bg-accent text-accent-foreground inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 font-semibold">
                           <Play aria-hidden className="size-3.5" />
-                          Explain every option
+                          <AdminText>{"Explain every option"}</AdminText>
                         </button>
                         <button type="button" onClick={() => startTour(WELCOME_TOUR)} className="text-body-sm border-border text-fg rounded-full border px-3.5 py-2 font-semibold">
-                          One-minute tour
+                          <AdminText>{"One-minute tour"}</AdminText>
                         </button>
                         <button type="button" onClick={() => setTab("learn")} className="text-body-sm border-border text-fg inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 font-semibold">
                           <GraduationCap aria-hidden className="size-3.5" />
-                          Learn by doing
+                          <AdminText>{"Learn by doing"}</AdminText>
                         </button>
                       </div>
                     </div>
@@ -752,20 +825,20 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                 {activeTab === "learn" && (
                   <div className="flex flex-col gap-5">
                     <div>
-                      <p className="text-body-sm text-fg font-semibold">Pick what you want to learn</p>
-                      <p className="text-caption text-fg-subtle mt-0.5">I open the real page and point at every field and button in order, with sample values and practice files. Delete buttons are explained, never pressed.</p>
+                      <p className="text-body-sm text-fg font-semibold"><AdminText>{"Pick what you want to learn"}</AdminText></p>
+                      <p className="text-caption text-fg-subtle mt-0.5"><AdminText>{"I open the real page and point at every field and button in order, with sample values and practice files. Delete buttons are explained, never pressed."}</AdminText></p>
                     </div>
                     <div className="bg-accent text-accent-foreground rounded-2xl p-4">
-                      <p className="text-caption tracking-wide uppercase opacity-80">Watch it happen</p>
-                      <p className="mt-1 text-[1.05rem] leading-snug font-semibold">{FULL_DEMO.title}</p>
-                      <p className="text-body-sm mt-1.5 opacity-90">{FULL_DEMO.summary}</p>
+                      <p className="text-caption tracking-wide uppercase opacity-80"><AdminText>{"Watch it happen"}</AdminText></p>
+                      <p className="mt-1 text-[1.05rem] leading-snug font-semibold"><AdminText>{FULL_DEMO.title}</AdminText></p>
+                      <p className="text-body-sm mt-1.5 opacity-90"><AdminText>{FULL_DEMO.summary}</AdminText></p>
                       <p className="text-caption mt-1.5 opacity-80">
                         Everything it adds is named “Simba Demo …” and it deletes it all again at the end. A new step every 3 seconds; Pause stops it any time (or press Esc).
                       </p>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <button type="button" onClick={() => startTour(FULL_DEMO, { auto: true })} className="text-body-sm inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3.5 py-2 font-semibold hover:bg-white/25">
                           <Play aria-hidden className="size-3.5" />
-                          Run the demo
+                          <AdminText>{"Run the demo"}</AdminText>
                         </button>
                         <button
                           type="button"
@@ -783,7 +856,7 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                           }}
                           className="text-body-sm rounded-full border border-white/40 px-3.5 py-2 font-semibold hover:bg-white/10"
                         >
-                          Remove leftover demo records{status?.ids?.demoCount ? " (" + status.ids.demoCount + ")" : ""}
+                          <AdminText>{"Remove leftover demo records"}</AdminText>{status?.ids?.demoCount ? " (" + status.ids.demoCount + ")" : ""}
                         </button>
                       </div>
                       {cleaning && cleaning !== "busy" && <p className="text-caption mt-2 opacity-90">{cleaning}</p>}
@@ -793,20 +866,20 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                       {LESSONS.map((l) => (
                         <li key={l.id} className="border-border bg-surface-raised flex items-start gap-3 rounded-xl border p-3">
                           <div className="min-w-0 flex-1">
-                            <p className="text-body-sm font-semibold">{l.title}</p>
-                            <p className="text-caption text-fg-muted mt-0.5">{l.summary}</p>
+                            <p className="text-body-sm font-semibold"><AdminText>{l.title}</AdminText></p>
+                            <p className="text-caption text-fg-muted mt-0.5"><AdminText>{l.summary}</AdminText></p>
                             <p className="text-caption text-fg-subtle mt-1">
-                              {l.steps.length} steps · about {l.minutes} min
+                              <AdminText values={{ count: l.steps.length, minutes: l.minutes }}>{"{count} steps · about {minutes} min"}</AdminText>
                             </p>
                           </div>
                           <div className="flex shrink-0 flex-col gap-1.5">
                             <button type="button" onClick={() => startTour(l)} className="text-body-sm border-border text-fg inline-flex items-center justify-center gap-1.5 rounded-full border px-3.5 py-1.5 font-semibold">
-                              Guide me
+                              <AdminText>{"Guide me"}</AdminText>
                             </button>
                             {l.doable && (
                               <button type="button" onClick={() => startTour(l, { auto: true })} className="text-body-sm bg-accent text-accent-foreground inline-flex items-center justify-center gap-1.5 rounded-full px-3.5 py-1.5 font-semibold">
                                 <Play aria-hidden className="size-3.5" />
-                                Do it for me
+                                <AdminText>{"Do it for me"}</AdminText>
                               </button>
                             )}
                           </div>
@@ -814,16 +887,16 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                       ))}
                     </ul>
                     <div className="flex flex-col gap-2">
-                      <p className="text-label text-fg-subtle uppercase">Practice files</p>
-                      <p className="text-caption text-fg-subtle">Sample pictures and plans to upload while you practise. They are kept separately and are always available.</p>
+                      <p className="text-label text-fg-subtle uppercase"><AdminText>{"Practice files"}</AdminText></p>
+                      <p className="text-caption text-fg-subtle"><AdminText>{"Sample pictures and plans to upload while you practise. They are kept separately and are always available."}</AdminText></p>
                       <ul className="flex flex-col gap-1.5">
                         {SAMPLE_FILES.map((f) => (
                           <li key={f.name}>
                             <a href={"/simba-demo/" + f.name} download className="border-border bg-surface-raised hover:border-accent flex items-center gap-3 rounded-xl border px-3 py-2 transition-colors">
                               <Download aria-hidden className="text-accent size-4 shrink-0" />
                               <span className="min-w-0 flex-1">
-                                <span className="text-body-sm block font-medium">{f.label}</span>
-                                <span className="text-caption text-fg-subtle block truncate">{f.use}</span>
+                                <span className="text-body-sm block font-medium"><AdminText>{f.label}</AdminText></span>
+                                <span className="text-caption text-fg-subtle block truncate"><AdminText>{f.use}</AdminText></span>
                               </span>
                             </a>
                           </li>
@@ -837,22 +910,22 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                   <div className="flex flex-col gap-4">
                     {extra && (
                       <div className="flex flex-col gap-3">
-                        <p className="text-h5 text-fg">{extra.title}</p>
-                        <p className="text-body-sm text-fg-muted">{extra.about}</p>
+                        <p className="text-h5 text-fg"><AdminText>{extra.title}</AdminText></p>
+                        <p className="text-body-sm text-fg-muted"><AdminText>{extra.about}</AdminText></p>
                         <div>
-                          <p className="text-label text-fg-subtle uppercase">What to do here</p>
+                          <p className="text-label text-fg-subtle uppercase"><AdminText>{"What to do here"}</AdminText></p>
                           <ol className="text-body-sm text-fg mt-1 list-decimal space-y-1 pl-5">
                             {extra.steps.map((s) => (
-                              <li key={s}>{s}</li>
+                              <li key={s}><AdminText>{s}</AdminText></li>
                             ))}
                           </ol>
                         </div>
                         {extra.check && (
                           <div>
-                            <p className="text-label text-fg-subtle uppercase">Check before you leave</p>
+                            <p className="text-label text-fg-subtle uppercase"><AdminText>{"Check before you leave"}</AdminText></p>
                             <ul className="text-body-sm text-fg-muted mt-1 list-disc space-y-1 pl-5">
                               {extra.check.map((s) => (
-                                <li key={s}>{s}</li>
+                                <li key={s}><AdminText>{s}</AdminText></li>
                               ))}
                             </ul>
                           </div>
@@ -861,12 +934,12 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                     )}
                     {guide && (
                       <div className="flex flex-col gap-3">
-                        {!extra && <p className="text-h5 text-fg">{guide.label}</p>}
-                        {extra && <p className="text-label text-fg-subtle uppercase">From the admin guide: {guide.label}</p>}
-                        <p className="text-body-sm text-fg-muted">{guide.summary}</p>
+                        {!extra && <p className="text-h5 text-fg"><AdminText>{guide.label}</AdminText></p>}
+                        {extra && <p className="text-label text-fg-subtle uppercase">From the admin guide: <AdminText>{guide.label}</AdminText></p>}
+                        <p className="text-body-sm text-fg-muted"><AdminText>{guide.summary}</AdminText></p>
                         <ul className="text-body-sm text-fg list-disc space-y-1.5 pl-5">
                           {(showAllNotes ? guide.details : guide.details.slice(0, 3)).map((d) => (
-                            <li key={d.slice(0, 40)}>{d}</li>
+                            <li key={d.slice(0, 40)}><AdminText>{d}</AdminText></li>
                           ))}
                         </ul>
                         {guide.details.length > 3 && (
@@ -878,11 +951,11 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                     )}
                     {!guide && !extra && (
                       <p className="text-body-sm text-fg-muted">
-                        I do not have a written guide for this exact page, but I can still explain any button, switch or field here. Press <b>Explain what I click</b> above and click it.
+                        I do not have a written guide for this exact page, but I can still explain any button, switch or field here. Press <b><AdminText>{"Explain what I click"}</AdminText></b> above and click it.
                       </p>
                     )}
                     <Link href="/admin/help" className="text-body-sm text-accent inline-flex items-center gap-1.5 font-semibold">
-                      Open the full Admin Guide <ArrowRight aria-hidden className="size-4" />
+                      <AdminText>{"Open the full Admin Guide "}</AdminText><ArrowRight aria-hidden className="size-4" />
                     </Link>
                   </div>
                 )}
@@ -893,7 +966,7 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                       <Ring percent={projectPercent} />
                       <div className="min-w-0">
                         <p className="text-body-sm text-fg truncate font-semibold">{status.project.name}</p>
-                        <p className="text-caption text-fg-subtle">{projectPercent}% set up · live, updates as you save</p>
+                        <p className="text-caption text-fg-subtle"><AdminText values={{ percent: projectPercent }}>{"{percent}% set up · live, updates as you save"}</AdminText></p>
                       </div>
                     </div>
                     <NextCard row={projectNext} who="this project" />
@@ -910,17 +983,17 @@ export function SimbaAgent({ role }: { role: RoleName }) {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Ask in English or বাংলা — e.g. নতুন কিস্তি / notice kemne dibo?"
-                        aria-label="Ask Simba"
+                        aria-label={adminCopy("Ask Simba")}
                         className="bg-surface text-body-sm text-fg placeholder:text-fg-subtle h-11 w-full rounded-full border border-transparent pr-4 pl-10 outline-none focus:border-accent"
                       />
                     </div>
                     {notice && (
                       <div className="bg-error-soft text-error rounded-xl p-3">
                         <p className="text-body-sm font-semibold">Just now on this page: {notice.title ?? "a problem"}</p>
-                        <p className="text-caption mt-0.5">“{notice.message}”</p>
+                        <p className="text-caption mt-0.5">“<AdminText>{notice.message}</AdminText>”</p>
                         <ul className="text-body-sm mt-2 list-disc space-y-0.5 pl-4">
                           {notice.fix?.map((f) => (
-                            <li key={f}>{f}</li>
+                            <li key={f}><AdminText>{f}</AdminText></li>
                           ))}
                         </ul>
                       </div>
@@ -1085,18 +1158,18 @@ const DOT = { high: "bg-error", medium: "bg-[#f59e0b]", low: "bg-fg-subtle" } as
 function AttentionList({ title, items, empty, loading }: { title: string; items?: { id: string; text: string; href: string; severity: "high" | "medium" | "low" }[]; empty: string; loading: boolean }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-label text-fg-subtle uppercase">{title}</p>
+      <p className="text-label text-fg-subtle uppercase"><AdminText>{title}</AdminText></p>
       {loading ? (
-        <p className="text-body-sm text-fg-muted">Checking…</p>
+        <p className="text-body-sm text-fg-muted"><AdminText>{"Checking…"}</AdminText></p>
       ) : !items || items.length === 0 ? (
-        <p className="text-body-sm text-fg-muted">{empty}</p>
+        <p className="text-body-sm text-fg-muted"><AdminText>{empty}</AdminText></p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {items.map((i) => (
             <li key={i.id}>
               <Link href={i.href} className="border-border bg-surface-raised hover:border-accent flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors">
                 <span aria-hidden className={cn("mt-1.5 size-2.5 shrink-0 rounded-full", DOT[i.severity])} />
-                <span className="text-body-sm flex-1">{i.text}</span>
+                <span className="text-body-sm flex-1"><AdminText>{i.text}</AdminText></span>
                 <ArrowRight aria-hidden className="text-fg-subtle mt-1 size-4 shrink-0" />
               </Link>
             </li>
@@ -1114,7 +1187,7 @@ function AskRow({ result, onTour }: { result: AskResult; onTour: (id: string) =>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="hover:bg-surface flex w-full items-start gap-3 px-3 py-2.5 text-left">
         <span className="min-w-0 flex-1">
           <span className="text-caption text-fg-subtle block uppercase">{result.kind}</span>
-          <span className="text-body-sm block font-medium">{result.title}</span>
+          <span className="text-body-sm block font-medium"><AdminText>{result.title}</AdminText></span>
           {!open && <span className="text-caption text-fg-muted line-clamp-2 block">{result.snippet}</span>}
         </span>
         <ChevronDown aria-hidden className={cn("text-fg-subtle mt-1 size-4 shrink-0 transition-transform", open && "rotate-180")} />
@@ -1133,12 +1206,12 @@ function AskRow({ result, onTour }: { result: AskResult; onTour: (id: string) =>
             {result.tour && (TOURS[result.tour] || LESSONS.some((l) => l.id === result.tour)) && (
               <button type="button" onClick={() => onTour(result.tour!)} className="text-body-sm bg-accent text-accent-foreground inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-semibold">
                 <Play aria-hidden className="size-3.5" />
-                Show me on screen
+                <AdminText>{"Show me on screen"}</AdminText>
               </button>
             )}
             {result.href && (
               <Link href={result.href} className="text-body-sm text-accent inline-flex items-center gap-1.5 font-semibold">
-                Open it <ArrowRight aria-hidden className="size-4" />
+                <AdminText>{"Open it "}</AdminText><ArrowRight aria-hidden className="size-4" />
               </Link>
             )}
           </div>

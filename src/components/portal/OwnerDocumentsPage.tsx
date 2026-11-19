@@ -6,6 +6,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { DocumentStack } from "@/components/ui/DocumentStack";
 import { formatDate } from "@/lib/format";
 import { getOwnerDocuments } from "@/features/ownerPortal/queries";
+import type { Document } from "@/types/document";
 
 const HOW_IT_WORKS = [
   { icon: FolderOpen, title: "Shared By Your Team", description: "Agreements, receipts and approvals are added here as your project moves forward — nothing to upload yourself." },
@@ -28,7 +29,10 @@ export async function OwnerDocumentsPage() {
   }
 
   const documents = await getOwnerDocuments(context.ownerType, context.ownerId);
+  return <OwnerDocumentsView documents={documents} />;
+}
 
+export function OwnerDocumentsView({ documents }: { documents: Document[] }) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-4 sm:p-6 lg:p-10">
       <div>

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, FileText, Landmark } from "lucide-react";
@@ -231,7 +232,7 @@ export default async function AdminPropertyDetailPage({ params }: PageProps) {
           </div>
         </section>
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(unit.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(unit.updatedAt))} />
@@ -253,7 +254,7 @@ export default async function AdminPropertyDetailPage({ params }: PageProps) {
         <Media src={plan.src} alt={`${unit.unitNumber} floor plan`} ratio="standard" radius="lg" sizes="(min-width: 1024px) 50vw, 100vw" />
       ) : (
         <div className="border-border bg-surface text-fg-subtle flex aspect-[4/3] max-w-md items-center justify-center rounded-lg border border-dashed">
-          <p className="text-body-sm">No floor plan yet</p>
+          <p className="text-body-sm"><AdminText>{"No floor plan yet"}</AdminText></p>
         </div>
       )}
       {unit.galleryImages && unit.galleryImages.length > 0 ? (
@@ -276,7 +277,7 @@ export default async function AdminPropertyDetailPage({ params }: PageProps) {
         description="Agreements, receipts, and specification sheets for this unit will appear here."
         action={
           <Link href={`/admin/documents/new?ownerType=unit&ownerId=${unit.id}`} className="text-body-sm text-accent font-medium hover:underline">
-            Add Document
+            <AdminText>{"Add Document"}</AdminText>
           </Link>
         }
       />
@@ -395,7 +396,7 @@ export default async function AdminPropertyDetailPage({ params }: PageProps) {
               <>
                 <Link href={`/admin/properties/${unit.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
                 <DeleteUnitButton id={unit.id} unitNumber={unit.unitNumber} />
               </>

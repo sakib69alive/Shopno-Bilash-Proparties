@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -62,14 +63,14 @@ export default async function AdminPurchasesPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Purchases"
-        description="Materials bought from a vendor and invoiced against a project — the cost side of construction."
-        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Purchases" }]}
+        title={<AdminText>{"Purchases"}</AdminText>}
+        description={<AdminText>{"Materials bought from a vendor and invoiced against a project — the cost side of construction."}</AdminText>}
+        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Purchases", localize: true }]}
         primaryAction={
           canManage && (
             <Link href="/admin/procurement/purchases/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Record Purchase
+              <AdminText>{"Record Purchase"}</AdminText>
             </Link>
           )
         }

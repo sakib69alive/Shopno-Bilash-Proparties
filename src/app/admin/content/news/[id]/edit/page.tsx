@@ -36,7 +36,7 @@ export default async function EditNewsArticlePage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "News", href: "/admin/content/news" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -58,7 +59,7 @@ export default async function ProjectFloorPlansPage({ params }: PageProps) {
   return (
     <div className="flex flex-col gap-5 p-4 sm:p-6">
       <div className="max-w-3xl">
-        <h2 className="text-h3">Floor plans</h2>
+        <h2 className="text-h3"><AdminText>{"Floor plans"}</AdminText></h2>
         <p className="text-body-sm text-fg-muted mt-1.5">
           Upload the architect&rsquo;s <b>whole floor</b> once, tell it which floors use it, and mark where each flat (A, B, C…) sits. When an owner opens their flat they see this plan
           with <b>their own flat lit up</b> and the other flats dimmed. Most buildings need one <b>typical floor</b> (leave Floors empty) and, only if they differ, a plan for those floors

@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -60,7 +61,7 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -68,14 +69,14 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         <div className="bg-accent-soft border-border flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
           <p className="text-body-sm">
             <span className="font-semibold">{unitStats.listed}</span> {unitStats.listed === 1 ? "unit" : "units"} listed ·{" "}
-            <span className="font-semibold">{unitStats.available}</span> available
+            <span className="font-semibold">{unitStats.available}</span><AdminText>{" available"}</AdminText>
           </p>
           <div className="flex gap-4">
             <a href={unitStats.manageHref} className="text-button text-accent">
               Manage units
             </a>
             <a href={unitStats.bulkHref} className="text-button text-accent">
-              Add units in bulk
+              <AdminText>{"Add units in bulk"}</AdminText>
             </a>
           </div>
         </div>
@@ -197,11 +198,11 @@ export function ProjectContentForm({ action, project, submitLabel, unitStats }: 
         autoCorrect="off"
         defaultValue={project?.mapUrl}
         placeholder="Paste the Google Maps link, the embed code, or 23.7925, 90.4078"
-        helperText="In Google Maps open the project's exact spot → Share → “Embed a map” → Copy HTML (best: shows a live map), or just copy the link or coordinates. Leave empty to keep the plain placeholder."
+        helperText="Find the exact spot in Google Maps. Easiest: right-click it and click the two numbers at the top (like 23.7925, 90.4078) to copy them, then paste here. The “Embed a map” code (Share → Embed a map → Copy HTML) or a normal link also work. A short maps.app.goo.gl link only gives the “Open in Google Maps” button, not the map inside the page. Leave empty for a plain placeholder."
       />
 
       <fieldset id="photos" className="border-border flex scroll-mt-24 flex-col gap-5 rounded-md border p-4">
-        <legend className="text-label px-1.5">Photos</legend>
+        <legend className="text-label px-1.5"><AdminText>{"Photos"}</AdminText></legend>
         <AdminImageField
           label={project ? "Replace cover photo (optional)" : "Cover photo"}
           name="coverImage"

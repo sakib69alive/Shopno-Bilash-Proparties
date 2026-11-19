@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -52,13 +53,13 @@ export default async function AdminParkingPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Parking"
-        description="Every parking space across your projects — independent of any unit's owner."
+        title={<AdminText>{"Parking"}</AdminText>}
+        description={<AdminText>{"Every parking space across your projects — independent of any unit's owner."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/parking/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Add Parking
+              <AdminText>{"Add Parking"}</AdminText>
             </Link>
           )
         }

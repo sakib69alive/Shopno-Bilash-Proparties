@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -92,7 +93,7 @@ export function ContractorsAdminExplorer({ contractors, canCreate, canDelete }: 
           canCreate && (
             <Link href="/admin/construction/contractors/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Add Contractor
+              <AdminText>{"Add Contractor"}</AdminText>
             </Link>
           )
         }

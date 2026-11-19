@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -38,7 +39,7 @@ export default async function NewDocumentPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <AdminPageHeader title="New Document" breadcrumbs={[{ label: "Documents", href: "/admin/documents" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"New Document"}</AdminText>} breadcrumbs={[{ label: "Documents", href: "/admin/documents" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <DocumentForm
           action={createDocument}

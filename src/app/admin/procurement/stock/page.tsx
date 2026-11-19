@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -74,14 +75,14 @@ export default async function AdminStockPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Stock"
-        description="Opening, received, used and wastage per material, computed from the movement ledger."
+        title={<AdminText>{"Stock"}</AdminText>}
+        description={<AdminText>{"Opening, received, used and wastage per material, computed from the movement ledger."}</AdminText>}
         primaryAction={
           canManage &&
           projectId && (
             <Link href={`/admin/procurement/stock/new?projectId=${projectId}`} className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Record Movement
+              <AdminText>{"Record Movement"}</AdminText>
             </Link>
           )
         }
@@ -99,7 +100,7 @@ export default async function AdminStockPage({ searchParams }: PageProps) {
             description="Add a material to start tracking its stock."
             action={
               <Link href="/admin/procurement/materials" className={buttonVariants({ variant: "outline", size: "md" })}>
-                Go to Materials
+                <AdminText>{"Go to Materials"}</AdminText>
               </Link>
             }
           />
@@ -110,13 +111,13 @@ export default async function AdminStockPage({ searchParams }: PageProps) {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-3 font-normal">Material</th>
-                  <th className="px-4 py-3 font-normal">Category</th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Material"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Category"}</AdminText></th>
                   <th className="px-4 py-3 text-right font-normal">Opening</th>
-                  <th className="px-4 py-3 text-right font-normal">Received</th>
-                  <th className="px-4 py-3 text-right font-normal">Used</th>
-                  <th className="px-4 py-3 text-right font-normal">Wastage</th>
-                  <th className="px-4 py-3 text-right font-normal">Current Stock</th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Received"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Used"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Wastage"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Current Stock"}</AdminText></th>
                   <th className="px-4 py-3 font-normal">Min. Stock</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -146,7 +147,7 @@ export default async function AdminStockPage({ searchParams }: PageProps) {
                       </td>
                       <td className={`px-4 py-3 text-right font-medium tabular-nums ${low ? "text-error" : "text-fg"}`}>
                         {formatNumber(summary.currentStock)} {material.unit}
-                        {low && <span className="text-caption ml-2 font-normal">Low Stock</span>}
+                        {low && <span className="text-caption ml-2 font-normal"><AdminText>{"Low Stock"}</AdminText></span>}
                       </td>
                       <td className="px-4 py-3">
                         {canManage && projectId ? (

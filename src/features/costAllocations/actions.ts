@@ -10,6 +10,8 @@ import {
   costAllocationRepository,
   ownerContributionRepository,
   contributionPaymentRepository,
+  ownerInstallmentObligationRepository,
+  goalInstallmentRepository,
   unitAllocationRepository,
   unitTierRepository,
 } from "@/features/costAllocations/repository";
@@ -23,6 +25,7 @@ import { unitRepository } from "@/features/units/repository";
 import { landownerAllocationRepository } from "@/features/landowners/repository";
 import { parkingRepository } from "@/features/parking/repository";
 import { resolveDocumentOwner } from "@/features/documents/resolveOwner";
+import { canAccessProject } from "@/lib/projectScope";
 import { reconcileRounding } from "@/features/costAllocations/rounding";
 import {
   resolveAllocationMethod,
@@ -535,7 +538,17 @@ export async function recordContributionPayment(
 
   if (!contributionId) return { error: "Missing contribution." };
   const contribution = await ownerContributionRepository.findById(contributionId);
-  if (!contribution) return { error: "This contribution no longer exists." };
+  if (!contribution || contribution.costAllocationId !== costAllocationId || !canAccessProject(user, contribution.projectId)) {
+    return { error: "This contribution isn't available for this project goal." };
+  }
+  if (installmentObligationId) {
+    const obligation = await ownerInstallmentObligationRepository.findById(installmentObligationId);
+    const installment = obligation && await goalInstallmentRepository.findById(obligation.goalInstallmentId);
+    if (!obligation || obligation.contributionId !== contributionId || obligation.projectId !== contribution.projectId ||
+      !installment || installment.costAllocationId !== costAllocationId || installment.projectId !== contribution.projectId) {
+      return { error: "Choose an installment assigned to this member and project goal." };
+    }
+  }
 
   const amount = Number(amountRaw);
   if (!Number.isFinite(amount) || amount <= 0) return { error: "Enter a valid payment amount." };
@@ -563,6 +576,33 @@ export async function recordContributionPayment(
   const paidAmount = allPayments.filter((p) => p.contributionId === contributionId).reduce((sum, p) => sum + p.amount.amount, 0);
 
   await ownerContributionRepository.update(contributionId, { paidAmount: { amount: paidAmount, currency: "BDT" } });
+
+  // Tell the owner their payment arrived (in-app + phone notification).
+  try {
+    const repo = contribution.ownerType === "customer" ? customerRepository
+      : contribution.ownerType === "shareholder" ? shareholderRepository : landownerRepository;
+    const recipientUserId = (await repo.findById(contribution.ownerId))?.userId;
+    if (recipientUserId) {
+      const base = contribution.ownerType === "customer" ? "/portal" : `/portal/${contribution.ownerType}`;
+      await notificationRepository.create({
+        id: randomUUID(),
+        recipientUserId,
+        event: "payment.received",
+        channel: "in-app",
+        title: "Payment received",
+        body: `We received your payment of ${formatBDT(amount)} dated ${formatDate(new Date(date))}. Thank you!`,
+        relatedEntityId: id,
+        category: "finance",
+        priority: "medium",
+        projectId: contribution.projectId,
+        actionHref: `${base}/payments`,
+        actorUserId: user.id,
+        createdAt: now,
+      });
+    }
+  } catch {
+    // A notification problem must never undo a recorded payment.
+  }
 
   await recordAuditEvent({
     actorUserId: user.id,

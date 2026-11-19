@@ -11,6 +11,8 @@ export interface CompanySettings extends AuditFields {
   id: ID;
   legalName: string;
   displayName: string;
+  /** Ordered project IDs for the public mobile homepage. Null or unset uses the default order. */
+  homeFeaturedProjectIds?: ID[] | null;
   /**
    * A custom uploaded logo, replacing the bundled `/logo.webp` everywhere
    * the site shows a logo (public header/footer, login page, Admin

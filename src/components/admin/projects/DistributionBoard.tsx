@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightLeft, Car, Check, Home, Lock, Undo2, X } from "lucide-react";
@@ -378,7 +379,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
             {moveCount > 0 && (
               <Button type="button" onClick={handleMove} loading={isPending} disabled={!person} className="w-full">
                 <ArrowRightLeft aria-hidden className="size-4" />
-                Move {moveCount} to {person?.name.split(" ")[0] ?? "…"} instead
+                Move {moveCount} <AdminText>{"to"}</AdminText> {person?.name.split(" ")[0] ?? "…"} instead
               </Button>
             )}
             {releaseCount > 0 && (
@@ -390,7 +391,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
             {(selectedUnits.size > 0 || selectedParking.size > 0) && (
               <button type="button" onClick={clearSelection} className="text-body-sm text-fg-muted hover:text-fg inline-flex items-center justify-center gap-1.5 py-1 transition-colors">
                 <X aria-hidden className="size-3.5" />
-                Clear selection
+                <AdminText>{"Clear selection"}</AdminText>
               </button>
             )}
           </div>
@@ -419,7 +420,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
                       <span className="text-body-sm truncate">{r.name}</span>
                     </span>
                     <span className="text-caption text-fg-muted shrink-0 text-right">
-                      {r.units.length} flat{r.units.length === 1 ? "" : "s"} · {formatSqft(r.units.reduce((s, u) => s + u.sqft, 0))} sqft
+                      {r.units.length}<AdminText>{" flat"}</AdminText>{r.units.length === 1 ? "" : "s"} · {formatSqft(r.units.reduce((s, u) => s + u.sqft, 0))}<AdminText>{" sqft"}</AdminText>
                       {r.parking > 0 ? ` · ${r.parking} parking` : ""}
                     </span>
                   </li>
@@ -427,7 +428,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
             </ul>
           )}
           <p className="text-caption text-fg-subtle mt-1">
-            Still free: {totalFree} flat{totalFree === 1 ? "" : "s"}
+            Still free: {totalFree}<AdminText>{" flat"}</AdminText>{totalFree === 1 ? "" : "s"}
             {parking.length > 0 ? `, ${totalFreeParking} parking` : ""}.
           </p>
         </div>
@@ -509,7 +510,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
                     onClick={() => toggleSize(ids)}
                     className={cn("text-body-sm rounded-full border px-3 py-1 transition-colors active:scale-95", on ? "border-accent bg-accent text-accent-foreground" : "border-border-strong bg-surface-raised hover:border-accent")}
                   >
-                    {formatSqft(size)} sqft <span className="opacity-70">· {ids.length} free</span>
+                    {formatSqft(size)}<AdminText>{" sqft "}</AdminText><span className="opacity-70">· {ids.length} free</span>
                   </button>
                 );
               })}
@@ -553,7 +554,7 @@ export function DistributionBoard({ projectId, groups, parking, people, canAssig
                       >
                         <span className="text-body-sm font-semibold leading-none">{unit.number}</span>
                         <span className="text-caption leading-tight">
-                          {formatSqft(unit.sqft)} sqft
+                          {formatSqft(unit.sqft)}<AdminText>{" sqft"}</AdminText>
                           {owned && <span className="block max-w-full truncate font-medium">{unit.ownerLabel}</span>}
                         </span>
                         {unit.locked && <Lock aria-hidden className="absolute top-1.5 right-1.5 size-3 opacity-70" />}

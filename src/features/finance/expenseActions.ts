@@ -3,12 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission, hasAnyPermission } from "@/lib/permissions";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectExpenseRepository } from "@/features/finance/repository";
 import { projectRepository } from "@/features/projects/repository";
 import type { TransactionPaymentMethod, TransactionStatus } from "@/types/finance/base";
+import { canAccessProject } from "@/lib/projectScope";
+import { calculateFinanceDraft } from "@/lib/financeCalculation";
+import { getFinanceCalculation } from "@/features/finance/calculations";
 
 export interface ExpenseFormState {
   error?: string;
@@ -68,19 +73,36 @@ async function parseExpenseFields(formData: FormData) {
 }
 
 export async function createExpense(_prevState: ExpenseFormState, formData: FormData): Promise<ExpenseFormState> {
+  return recordExpense(formData);
+}
+
+export async function createExpenseFromCalculation(id: string, revision: number, _prevState: ExpenseFormState, formData: FormData) {
+  return recordExpense(formData, { id, revision });
+}
+
+async function recordExpense(formData: FormData, source?: { id: string; revision: number }): Promise<ExpenseFormState> {
   const user = await requireFinancePermission();
+  const id = source ? `calculation-${source.id}` : randomUUID();
+  if (source) {
+    const draft = await getFinanceCalculation(user.id, source.id);
+    if (!draft || draft.revision !== source.revision) return { error: "This calculation changed. Open the latest saved draft and review it again." };
+    const amount = calculateFinanceDraft(draft.data)?.total;
+    if (!amount) return { error: "The calculation needs a positive total to become an expense." };
+    formData.set("amount", String(amount));
+  }
 
   const parsed = await parseExpenseFields(formData);
   if ("error" in parsed) return { error: parsed.error };
   const { fields } = parsed;
+  if (!canAccessProject(user, fields.projectId)) return { error: "You don't have access to record expenses for that project." };
+  if (source && await projectExpenseRepository.findById(id)) return { error: "An expense has already been recorded from this calculation." };
 
-  const id = randomUUID();
   const now = new Date().toISOString();
 
-  await projectExpenseRepository.create({
+  const expense = {
     id,
     date: fields.date,
-    amount: { amount: fields.amount, currency: "BDT" },
+    amount: { amount: fields.amount, currency: "BDT" as const },
     category: fields.category,
     subcategory: fields.subcategory,
     projectId: fields.projectId,
@@ -96,11 +118,29 @@ export async function createExpense(_prevState: ExpenseFormState, formData: Form
     createdAt: now,
     updatedAt: now,
     createdBy: user.id,
-  });
-
-  await recordAuditEvent({ actorUserId: user.id, action: "expense.create", entityType: "ProjectExpense", entityId: id });
+  };
+  const audit = { actorUserId: user.id, action: "expense.create", entityType: "ProjectExpense", entityId: id };
+  if (source) {
+    const auditId = randomUUID();
+    try {
+      await prisma.$transaction([
+        prisma.projectExpense.create({ data: { id, data: expense } }),
+        prisma.auditLog.create({ data: { id: auditId, data: { id: auditId, ...audit, occurredAt: now, projectId: fields.projectId } } }),
+      ]);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        return { error: "An expense has already been recorded from this calculation." };
+      }
+      throw error;
+    }
+  } else {
+    await projectExpenseRepository.create(expense);
+    await recordAuditEvent(audit);
+  }
 
   revalidatePath("/admin/finance/expenses");
+  revalidatePath("/admin/money-page");
+  if (source) redirect(`/admin/finance/expenses/${id}`);
   redirect("/admin/finance/expenses");
 }
 

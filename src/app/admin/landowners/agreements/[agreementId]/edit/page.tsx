@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -38,11 +39,11 @@ export default async function EditAgreementPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Agreement"
+        title={<AdminText>{"Edit Agreement"}</AdminText>}
         breadcrumbs={[
           { label: "Landowners", href: "/admin/landowners" },
           { label: landowner.name, href: `/admin/landowners/${landowner.id}` },
-          { label: "Edit Agreement" },
+          { label: "Edit Agreement", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

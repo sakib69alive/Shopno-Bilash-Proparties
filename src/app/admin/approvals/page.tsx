@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -34,8 +35,8 @@ export default async function ApprovalsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Approval Queue"
-        description="Ownership transfers, expenses, and contractor payments waiting on a decision."
+        title={<AdminText>{"Approval Queue"}</AdminText>}
+        description={<AdminText>{"Ownership transfers, expenses, and contractor payments waiting on a decision."}</AdminText>}
       />
       <div className="p-4 sm:p-6">
         <ApprovalQueueExplorer items={items} projects={projects} canManage={hasPermission(user.role, "approvals.manage")} />

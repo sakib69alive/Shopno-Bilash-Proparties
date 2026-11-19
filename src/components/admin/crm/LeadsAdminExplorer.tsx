@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -41,6 +43,7 @@ const STATUS_OPTIONS: { value: LeadStatus | "all"; label: string }[] = [
  * an "AI" search.
  */
 export function LeadsAdminExplorer({ leads, projects, canCreate, canDelete, initialProjectId }: LeadsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<LeadStatus | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
@@ -135,7 +138,7 @@ export function LeadsAdminExplorer({ leads, projects, canCreate, canDelete, init
           canCreate && (
             <Link href="/admin/leads/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Lead
+              <AdminText>{"New Lead"}</AdminText>
             </Link>
           )
         }
@@ -160,10 +163,10 @@ export function LeadsAdminExplorer({ leads, projects, canCreate, canDelete, init
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -173,7 +176,7 @@ export function LeadsAdminExplorer({ leads, projects, canCreate, canDelete, init
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as LeadStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -26,14 +27,14 @@ export default async function AdminPolicyListPage() {
   return (
     <>
       <AdminPageHeader
-        title="Company Policy"
-        description="Numbered rules shown on the public Company Policy page, in the order added."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Company Policy" }]}
+        title={<AdminText>{"Company Policy"}</AdminText>}
+        description={<AdminText>{"Numbered rules shown on the public Company Policy page, in the order added."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Company Policy", localize: true }]}
         primaryAction={
           canCreate && (
             <Link href="/admin/content/policy/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Rule
+              <AdminText>{"New Rule"}</AdminText>
             </Link>
           )
         }

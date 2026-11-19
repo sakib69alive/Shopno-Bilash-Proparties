@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -46,7 +47,7 @@ export function ScheduleRevisionPanel({ targetType, targetId, currentTargetDate,
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2">
               <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-              <p className="text-caption">{state.error}</p>
+              <p className="text-caption"><AdminText>{state.error ?? ""}</AdminText></p>
             </div>
           )}
           <p className="text-caption text-fg-subtle">Current target: {currentTargetDate ? formatDate(new Date(currentTargetDate)) : "not set"}</p>

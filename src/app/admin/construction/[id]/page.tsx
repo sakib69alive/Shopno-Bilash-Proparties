@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
@@ -150,7 +151,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
               <>
                 <Link href={`/admin/construction/${phase.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
                 <DeletePhaseButton id={phase.id} name={phase.name} />
               </>
@@ -174,7 +175,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
           </div>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Timeline</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Timeline"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Planned Start" value={phase.startDate ? formatDate(new Date(phase.startDate)) : "—"} />
               <Fact label="Planned Target End" value={phase.endDate ? formatDate(new Date(phase.endDate)) : "—"} />
@@ -189,7 +190,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Contractor</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Contractor"}</AdminText></h2>
             {canManage ? (
               <ContractorAssignmentPanel phaseId={phase.id} currentContractorId={phase.contractorId} contractors={contractors} history={assignmentHistory} />
             ) : (
@@ -200,7 +201,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Cost</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Cost"}</AdminText></h2>
             <PhaseCostPanel
               phaseId={phase.id}
               projectId={phase.projectId}
@@ -216,7 +217,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
 
           {usageMovements.length > 0 && (
             <section>
-              <h2 className="text-label text-fg-subtle mb-2 uppercase">Materials Used</h2>
+              <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Materials Used"}</AdminText></h2>
               <div className="border-border bg-surface-raised flex flex-col rounded-lg border">
                 {[...materialUsageByMaterial.entries()].map(([materialId, qty]) => {
                   const material = materialsById.get(materialId);
@@ -236,7 +237,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
           )}
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(phase.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(phase.updatedAt))} />
@@ -247,11 +248,11 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
         <div className="flex flex-col gap-6">
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <h2 className="text-label text-fg-subtle uppercase">Tasks</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Tasks"}</AdminText></h2>
               {canManage && (
                 <Link href={`/admin/construction/${phase.id}/tasks/new`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Plus aria-hidden className="size-3.5" />
-                  Add Task
+                  <AdminText>{"Add Task"}</AdminText>
                 </Link>
               )}
             </div>
@@ -275,15 +276,15 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
                       </div>
                       {task.progressPercentage !== undefined && <ProgressBar value={task.progressPercentage} className="max-w-64" />}
                       <div className="text-caption text-fg-subtle flex flex-wrap gap-x-4 gap-y-1">
-                        <span>Responsible: {task.responsibleUserId ? (responsibleUsers.get(task.responsibleUserId) ?? "—") : "—"}</span>
-                        <span>Start: {task.startDate ? formatDate(new Date(task.startDate)) : "—"}</span>
+                        <span><AdminText>{"Responsible:"}</AdminText> {task.responsibleUserId ? (responsibleUsers.get(task.responsibleUserId) ?? "—") : "—"}</span>
+                        <span><AdminText>{"Start:"}</AdminText> {task.startDate ? formatDate(new Date(task.startDate)) : "—"}</span>
                         <span>
-                          Due: {task.endDate ? formatDate(new Date(task.endDate)) : "—"}
+                          <AdminText>{"Due:"}</AdminText> {task.endDate ? formatDate(new Date(task.endDate)) : "—"}
                           {taskDelay.isDelayed && <span className="text-error"> (+{taskDelay.daysDelayed}d)</span>}
                         </span>
                       </div>
                       {incompleteDeps.length > 0 && (
-                        <p className="text-caption text-warning">Waiting on: {incompleteDeps.map((d) => d.title).join(", ")}</p>
+                        <p className="text-caption text-warning"><AdminText>{"Waiting on:"}</AdminText> {incompleteDeps.map((d) => d.title).join(", ")}</p>
                       )}
                       {task.notes && <p className="text-body-sm text-fg-muted whitespace-pre-line">{task.notes}</p>}
                     </div>
@@ -294,7 +295,7 @@ export default async function AdminConstructionPhaseDetailPage({ params }: PageP
           </div>
 
           <div>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Activity Log</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Activity Log"}</AdminText></h2>
             <ActivityLogPanel projectId={phase.projectId} phaseId={phase.id} entries={activityEntries} contractors={contractors} canManage={canManage} />
           </div>
         </div>

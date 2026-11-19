@@ -1,3 +1,4 @@
+import { AdminText } from "../AdminLanguage";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export function BlueprintAiTabs({ active }: { active: "prompts" | "control" | "d
           aria-current={t.key === active ? "page" : undefined}
           className={cn("text-body-sm rounded-full px-4 py-2 font-semibold transition-colors", t.key === active ? "bg-accent text-accent-foreground" : "text-fg-muted hover:text-fg")}
         >
-          {t.label}
+          <AdminText>{t.label}</AdminText>
         </Link>
       ))}
     </nav>

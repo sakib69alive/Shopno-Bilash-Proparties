@@ -7,6 +7,7 @@ import { GlobalSearch } from "@/components/admin/search/GlobalSearch";
 import { ROLE_LABELS } from "@/config/roles";
 import { logoutAction } from "@/lib/auth/actions";
 import type { User } from "@/types/user";
+import { AdminLanguageToggle, useAdminLanguage } from "./AdminLanguage";
 
 export interface AdminHeaderProps {
   user: User;
@@ -36,23 +37,25 @@ function initials(name: string): string {
  * longer occupies space in normal flow.
  */
 export function AdminHeader({ user }: AdminHeaderProps) {
+  const { t } = useAdminLanguage();
   return (
     <header className="border-border bg-bg/95 fixed inset-x-0 top-0 z-30 hidden h-16 items-center gap-4 border-b px-4 backdrop-blur-sm print:hidden sm:px-6 lg:left-64 lg:flex">
       <GlobalSearch user={user} />
 
       <div className="ml-auto flex items-center gap-2">
+        <AdminLanguageToggle />
         <SimbaLauncher />
-        <IconButton icon={Bell} label="Notifications" />
+        <IconButton icon={Bell} label={t("Notifications")} />
         <div className="border-border ml-1 flex items-center gap-2.5 border-l pl-3">
           <span className="bg-accent text-accent-foreground text-label flex size-8 items-center justify-center rounded-full">
             {initials(user.name)}
           </span>
           <span className="hidden flex-col leading-tight md:flex">
             <span className="text-body-sm text-fg">{user.name}</span>
-            <span className="text-caption text-fg-subtle">{ROLE_LABELS[user.role]}</span>
+            <span className="text-caption text-fg-subtle">{t(ROLE_LABELS[user.role])}</span>
           </span>
           <form action={logoutAction}>
-            <IconButton icon={LogOut} label="Sign out" type="submit" />
+            <IconButton icon={LogOut} label={t("Sign out")} type="submit" />
           </form>
         </div>
       </div>

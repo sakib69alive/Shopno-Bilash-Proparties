@@ -11,6 +11,7 @@ import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { DesktopOnly } from "@/components/mobile/DesktopOnly";
 import { HomeM } from "@/components/mobile/HomeM";
 import { projectContentRepository } from "@/features/projectContent/repository";
+import { getHomeFeaturedProjects } from "@/features/projectContent/homeFeatured";
 import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import { getPropertyListingsAsync } from "@/lib/propertiesAsync";
 
@@ -20,7 +21,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  // A real project for the phone's featured band: the one marked featured, else one under construction, else the first.
   const [projects, listings, settings] = await Promise.all([
     projectContentRepository.list(),
     getPropertyListingsAsync(),
@@ -31,7 +31,12 @@ export default async function Home() {
 
   return (
     <>
-      <HomeM projects={projects} listings={listings} companyName={settings?.displayName || "Shopno Bilash Properties"} />
+      <HomeM
+        projects={projects}
+        featuredProjects={getHomeFeaturedProjects(projects, settings?.homeFeaturedProjectIds)}
+        listings={listings}
+        companyName={settings?.displayName || "Shopno Bilash Properties"}
+      />
       <DesktopOnly>
       <Hero />
       <CompanyStatement />

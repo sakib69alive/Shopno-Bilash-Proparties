@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -160,7 +162,7 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
               <span key={i} className="size-3.5 rounded-full border border-black/10" style={{ backgroundColor: colors ? tintOf(i * 4).dot : "#e5e1d6" }} />
             ))}
           </span>
-          Colours {colors ? "on" : "off"}
+          <AdminText>{"Colours"}</AdminText> {colors ? "on" : "off"}
         </button>
       </div>
       <header className="text-center">
@@ -170,10 +172,10 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
             <Input label="Heading of the extra section at the bottom" value={extraDraft} onChange={(e) => setExtraDraft(e.target.value)} maxLength={80} />
             <div className="flex gap-2">
               <Button type="button" size="sm" onClick={saveTitles} loading={isPending}>
-                <Check aria-hidden className="size-4" /> Save
+                <Check aria-hidden className="size-4" /><AdminText>{" Save"}</AdminText>
               </Button>
               <Button type="button" size="sm" variant="outline" onClick={() => setEditingTitles(false)}>
-                Cancel
+                <AdminText>{"Cancel"}</AdminText>
               </Button>
             </div>
           </div>
@@ -181,11 +183,11 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
           <>
             <h2 className="font-serif-display text-fg text-[2.25rem] leading-tight sm:text-[3rem]">{title}</h2>
             <p className="text-fg-subtle mt-1 text-sm">
-              {rows.length} client{rows.length === 1 ? "" : "s"} · {projects.length} project{projects.length === 1 ? "" : "s"}
+              {rows.length}<AdminText>{" client"}</AdminText>{rows.length === 1 ? "" : "s"} · {projects.length}<AdminText>{" project"}</AdminText>{projects.length === 1 ? "" : "s"}
             </p>
             {canEdit && (
               <button type="button" onClick={() => setEditingTitles(true)} className="text-accent mt-2 inline-flex items-center gap-1.5 text-sm font-semibold">
-                <Pencil aria-hidden className="size-3.5" /> Change the titles
+                <Pencil aria-hidden className="size-3.5" /> <AdminText>{"Change the titles"}</AdminText>
               </button>
             )}
           </>
@@ -199,7 +201,7 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
         </section>
       )}
 
-      {groups.length === 0 && <p className="text-fg-muted text-center">No clients yet.</p>}
+      {groups.length === 0 && <p className="text-fg-muted text-center"><AdminText>{"No clients yet."}</AdminText></p>}
 
       {groups.map((g) => (
         <section key={g.key}>
@@ -221,9 +223,9 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
 
       <section className="border-border border-t pt-8">
         <h3 className="font-serif-display text-fg text-[1.5rem] leading-tight">{extraTitle}</h3>
-        <p className="text-fg-subtle mt-1 text-sm">Shown only here, not again under the projects above.</p>
+        <p className="text-fg-subtle mt-1 text-sm"><AdminText>{"Shown only here, not again under the projects above."}</AdminText></p>
         {extraRows.length === 0 ? (
-          <p className="text-fg-muted border-border mt-4 rounded-2xl border border-dashed p-5 text-sm">No one added yet.</p>
+          <p className="text-fg-muted border-border mt-4 rounded-2xl border border-dashed p-5 text-sm"><AdminText>{"No one added yet."}</AdminText></p>
         ) : (
           <ul className="mt-4 flex flex-col gap-3">
             {extraRows.map((c) => (
@@ -261,7 +263,7 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
               aria-label="Choose a client to add"
               className="text-body-sm border-border-strong bg-surface-raised h-11 min-w-0 flex-1 rounded-md border px-3 sm:max-w-xs sm:flex-none"
             >
-              <option value="">Choose a client…</option>
+              <option value=""><AdminText>{"Choose a client…"}</AdminText></option>
               {regular.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -279,7 +281,7 @@ export function ClientsOverview({ rows, projects, title, extraTitle, canEdit, ca
                 setPickValue("");
               }}
             >
-              <Plus aria-hidden className="size-4" /> Add here
+              <Plus aria-hidden className="size-4" /> <AdminText>{"Add here"}</AdminText>
             </Button>
           </div>
         )}
@@ -312,7 +314,7 @@ function AttentionList({ title, hint, rows, onOpen, tone }: { title: string; hin
       </h3>
       <p className="text-fg-subtle mt-0.5 text-xs">{hint}</p>
       {rows.length === 0 ? (
-        <p className="text-fg-muted mt-3 text-sm">Everyone is done.</p>
+        <p className="text-fg-muted mt-3 text-sm"><AdminText>{"Everyone is done."}</AdminText></p>
       ) : (
         <>
           <ul className="mt-3 flex flex-wrap gap-2">
@@ -400,7 +402,7 @@ function FlatViewControls({ clientId, flat, canEdit }: { clientId: string; flat:
       </span>
       <div className="flex items-end gap-2">
         <label className="text-caption text-fg-subtle flex flex-col gap-1">
-          Size (sqft)
+          <AdminText>{"Size (sqft)"}</AdminText>
           <input
             inputMode="numeric"
             value={size}
@@ -411,7 +413,7 @@ function FlatViewControls({ clientId, flat, canEdit }: { clientId: string; flat:
         </label>
         {canEdit && (
           <Button type="button" size="sm" variant="outline" loading={pending} disabled={size.replace(/,/g, "").trim() === String(flat.sizeSqft)} onClick={() => save({})}>
-            Save size
+            <AdminText>{"Save size"}</AdminText>
           </Button>
         )}
       </div>
@@ -454,6 +456,7 @@ function ClientPanel({
   onClose: () => void;
   onToggleExtra: (on: boolean) => void;
 }) {
+  const { t: adminCopy } = useUiLanguage();
   const router = useRouter();
   const [amount, setAmount] = useState(row.plan?.amount !== undefined ? String(row.plan.amount) : "");
   const [date, setDate] = useState(row.plan?.date ?? "");
@@ -494,15 +497,15 @@ function ClientPanel({
 
   return (
     <div className="fixed inset-0 z-[80] flex justify-end" role="dialog" aria-modal="true" aria-label={row.name}>
-      <button type="button" aria-label="Close" onClick={onClose} className="absolute inset-0 bg-black/45" />
+      <button type="button" aria-label={adminCopy("Close")} onClick={onClose} className="absolute inset-0 bg-black/45" />
       <div className="bg-bg relative flex h-full w-full max-w-lg flex-col overflow-y-auto shadow-2xl">
         <div className="bg-bg border-border sticky top-0 z-10 flex items-start justify-between gap-3 border-b px-5 py-4">
           <div className="min-w-0">
-            <p className="text-label text-fg-subtle uppercase">Client</p>
+            <p className="text-label text-fg-subtle uppercase"><AdminText>{"Client"}</AdminText></p>
             <h3 className="font-serif-display text-fg truncate text-[1.75rem] leading-tight">{row.name}</h3>
             <p className="text-fg-subtle text-sm">{row.phone}</p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="border-border flex size-11 shrink-0 items-center justify-center rounded-full border">
+          <button type="button" onClick={onClose} aria-label={adminCopy("Close")} className="border-border flex size-11 shrink-0 items-center justify-center rounded-full border">
             <X aria-hidden className="size-5" />
           </button>
         </div>
@@ -510,17 +513,17 @@ function ClientPanel({
         <div className="flex flex-col gap-7 px-5 py-6">
           {/* Link */}
           <section>
-            <h4 className="text-label text-fg-subtle mb-2 uppercase">Their link</h4>
+            <h4 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Their link"}</AdminText></h4>
             {canManageLinks ? (
               <PortalLinkControls variant="full" ownerType="customer" ownerId={row.id} ownerName={row.name} phone={row.phone} summary={row.link} />
             ) : (
-              <p className="text-fg-muted text-sm">You don&apos;t have permission to make or copy links.</p>
+              <p className="text-fg-muted text-sm"><AdminText>{"You don't have permission to make or copy links."}</AdminText></p>
             )}
           </section>
 
           {/* What they will pay */}
           <section className="flex flex-col gap-3">
-            <h4 className="text-label text-fg-subtle uppercase">What they will pay</h4>
+            <h4 className="text-label text-fg-subtle uppercase"><AdminText>{"What they will pay"}</AdminText></h4>
             <div className="grid grid-cols-2 gap-3">
               <Input label="Amount (৳)" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g. 50000" disabled={!canEdit} />
               <Input label="On this day" type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!canEdit} />
@@ -528,42 +531,42 @@ function ClientPanel({
             <Input label="Note (optional)" value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. after selling the land" maxLength={300} disabled={!canEdit} />
             {row.plan && (row.plan.amount !== undefined || row.plan.date) && !planChanged && (
               <p className="bg-accent-soft text-fg rounded-md px-3 py-2 text-sm">
-                Expecting <span className="font-semibold">{row.plan.amount !== undefined ? formatBDT(row.plan.amount) : "an amount not set"}</span>
+                <AdminText>{"Expecting"}</AdminText> <span className="font-semibold">{row.plan.amount !== undefined ? formatBDT(row.plan.amount) : "an amount not set"}</span>
                 {row.plan.date && <> on <span className="font-semibold">{new Date(row.plan.date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></>}.
               </p>
             )}
             {canEdit && (
               <div>
                 <Button type="button" size="sm" disabled={!planChanged} loading={isPending} onClick={() => run(() => saveClientPlan(row.id, amount, date, note), "Saved.")}>
-                  <Check aria-hidden className="size-4" /> Save
+                  <Check aria-hidden className="size-4" /><AdminText>{" Save"}</AdminText>
                 </Button>
               </div>
             )}
-            <p className="text-caption text-fg-subtle">This is only your plan for the client — it does not change what they owe or have paid.</p>
+            <p className="text-caption text-fg-subtle"><AdminText>{"This is only your plan for the client — it does not change what they owe or have paid."}</AdminText></p>
           </section>
 
           {/* Activity — live */}
           <section className="border-border bg-surface-raised flex flex-col gap-3 rounded-2xl border p-4">
             <h4 className="text-label text-fg-subtle flex items-center gap-2 uppercase">
-              Their activity <span className="bg-success inline-block size-2 animate-pulse rounded-full" aria-label="live" />
+              <AdminText>{"Their activity"}</AdminText> <span className="bg-success inline-block size-2 animate-pulse rounded-full" aria-label="live" />
             </h4>
-            {!row.hasAccount && <p className="text-fg-muted text-sm">No app account yet — copy their link above and send it; their activity shows here after they open it.</p>}
+            {!row.hasAccount && <p className="text-fg-muted text-sm"><AdminText>{"No app account yet — copy their link above and send it; their activity shows here after they open it."}</AdminText></p>}
             <div className="grid gap-3 text-sm">
               <div>
-                <p className="text-caption text-fg-subtle uppercase">Last in the app</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Last in the app"}</AdminText></p>
                 <p className="mt-0.5"><When iso={row.lastSeenAt} /></p>
               </div>
               {row.link && (
                 <div>
-                  <p className="text-caption text-fg-subtle uppercase">Link opened</p>
+                  <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Link opened"}</AdminText></p>
                   <p className="mt-0.5">
-                    {row.link.useCount} time{row.link.useCount === 1 ? "" : "s"}
+                    {row.link.useCount}<AdminText>{" time"}</AdminText>{row.link.useCount === 1 ? "" : "s"}
                     {row.link.lastUsedAt && <> · last <When iso={row.link.lastUsedAt} /></>}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-caption text-fg-subtle uppercase">Your last message to them</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Your last message to them"}</AdminText></p>
                 {lastMsg ? (
                   <>
                     <p className="mt-0.5 font-medium">{lastMsg.title}</p>
@@ -572,12 +575,12 @@ function ClientPanel({
                       {lastMsg.readAt ? "Seen" : "Not seen yet"}
                     </p>
                     <p className="text-fg-subtle mt-1 text-xs">
-                      Sent <When iso={lastMsg.createdAt} />
+                      <AdminText>{"Sent"}</AdminText> <When iso={lastMsg.createdAt} />
                       {lastMsg.readAt && <> · seen <When iso={lastMsg.readAt} /></>}
                     </p>
                   </>
                 ) : (
-                  <p className="text-fg-subtle mt-0.5">Nothing sent yet.</p>
+                  <p className="text-fg-subtle mt-0.5"><AdminText>{"Nothing sent yet."}</AdminText></p>
                 )}
               </div>
             </div>
@@ -586,7 +589,7 @@ function ClientPanel({
           {/* Message */}
           {canEdit && (
             <section className="flex flex-col gap-2">
-              <h4 className="text-label text-fg-subtle uppercase">Send a message</h4>
+              <h4 className="text-label text-fg-subtle uppercase"><AdminText>{"Send a message"}</AdminText></h4>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
@@ -597,7 +600,7 @@ function ClientPanel({
               />
               <div>
                 <Button type="button" size="sm" disabled={message.trim().length < 2} loading={isPending} onClick={() => run(() => sendClientMessage(row.id, message), "Message sent.", () => setMessage(""))}>
-                  <Send aria-hidden className="size-4" /> Send
+                  <Send aria-hidden className="size-4" /><AdminText>{" Send"}</AdminText>
                 </Button>
               </div>
             </section>
@@ -606,7 +609,7 @@ function ClientPanel({
           {/* Document */}
           {canSendDocument && (
             <section className="flex flex-col gap-3">
-              <h4 className="text-label text-fg-subtle uppercase">Send a document</h4>
+              <h4 className="text-label text-fg-subtle uppercase"><AdminText>{"Send a document"}</AdminText></h4>
               <Input label="Name (optional)" value={docName} onChange={(e) => setDocName(e.target.value)} placeholder="e.g. Booking letter" />
               <input ref={fileRef} type="file" className="text-body-sm file:bg-surface-raised file:border-border-strong block w-full file:mr-3 file:rounded-md file:border file:px-3 file:py-2" />
               <div>
@@ -629,7 +632,7 @@ function ClientPanel({
                     });
                   }}
                 >
-                  <FileUp aria-hidden className="size-4" /> Send document
+                  <FileUp aria-hidden className="size-4" /> <AdminText>{"Send document"}</AdminText>
                 </Button>
               </div>
             </section>
@@ -643,9 +646,9 @@ function ClientPanel({
 
           {/* Flats */}
           <section className="flex flex-col gap-2">
-            <h4 className="text-label text-fg-subtle uppercase">Their flats — and what they see in the app</h4>
+            <h4 className="text-label text-fg-subtle uppercase"><AdminText>{"Their flats — and what they see in the app"}</AdminText></h4>
             {row.flats.length === 0 ? (
-              <p className="text-fg-muted text-sm">No flat yet.</p>
+              <p className="text-fg-muted text-sm"><AdminText>{"No flat yet."}</AdminText></p>
             ) : (
               <ul className="flex flex-col gap-2">
                 {row.flats.map((f) => (
@@ -656,10 +659,10 @@ function ClientPanel({
           </section>
 
           <div className="border-border flex flex-wrap items-center gap-2 border-t pt-5">
-            <Link href={`/admin/customers/${row.id}`} className="text-accent text-sm font-semibold">Open full record</Link>
+            <Link href={`/admin/customers/${row.id}`} className="text-accent text-sm font-semibold"><AdminText>{"Open full record"}</AdminText></Link>
             <span className="text-fg-subtle">·</span>
             <Link href={`/admin/sales/payments/new?customerId=${row.id}`} className="text-accent inline-flex items-center gap-1 text-sm font-semibold">
-              <Wallet aria-hidden className="size-3.5" /> Record a payment
+              <Wallet aria-hidden className="size-3.5" /><AdminText>{" Record a payment"}</AdminText>
             </Link>
             {canEdit && (
               <>

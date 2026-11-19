@@ -36,7 +36,7 @@ export default async function EditUserPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Users", href: "/admin/users" },
           { label: targetUser.name, href: `/admin/users/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

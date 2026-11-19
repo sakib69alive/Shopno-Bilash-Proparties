@@ -1,6 +1,9 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
+import { setFinanceAssistantProject } from "./FinanceAssistant";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { AlertTriangle } from "lucide-react";
@@ -26,6 +29,7 @@ export interface ExpenseFormProps {
   buildings: Building[];
   accounts: CashAccount[];
   submitLabel: string;
+  calculation?: { description: string; amount: number };
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -47,7 +51,9 @@ export function ExpenseForm({
   buildings,
   accounts,
   submitLabel,
+  calculation,
 }: ExpenseFormProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [state, formAction] = useActionState(action, {});
   const [projectId, setProjectId] = useState(expense?.projectId ?? "");
   const phasesForProject = useMemo(() => phases.filter((p) => p.projectId === projectId), [phases, projectId]);
@@ -58,7 +64,7 @@ export function ExpenseForm({
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -68,7 +74,7 @@ export function ExpenseForm({
         required
         options={projects.map((p) => ({ value: p.id, label: p.name }))}
         value={projectId}
-        onChange={(e) => setProjectId(e.target.value)}
+        onChange={(e) => { setProjectId(e.target.value); setFinanceAssistantProject(e.target.value); }}
         placeholder={projects.length > 0 ? "Choose a project" : "No projects yet — add one first"}
       />
 
@@ -93,12 +99,12 @@ export function ExpenseForm({
         )}
       </div>
 
-      <Input label="Description" name="description" required defaultValue={expense?.description} placeholder="What was this cost for?" />
+      <Input label="Description" name="description" required defaultValue={expense?.description ?? calculation?.description} placeholder="What was this cost for?" />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="expense-category" className="text-label text-fg-muted">
-            Category
+            <AdminText>{"Category"}</AdminText>
           </label>
           <input
             id="expense-category"
@@ -106,7 +112,7 @@ export function ExpenseForm({
             list="expense-category-options"
             required
             defaultValue={expense?.category}
-            placeholder="e.g. Materials, Labor, Permits"
+            placeholder={adminCopy("e.g. Materials, Labor, Permits")}
             className="text-body h-11 w-full rounded-md border border-border-strong bg-surface-raised px-3.5 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
           <datalist id="expense-category-options">
@@ -119,7 +125,8 @@ export function ExpenseForm({
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Input label="Amount (BDT)" name="amount" type="number" required defaultValue={expense?.amount.amount} />
+        <Input label="Amount (BDT)" name="amount" type="number" step="0.01" required readOnly={!!calculation}
+          defaultValue={expense?.amount.amount ?? calculation?.amount} />
         <Input label="Date" name="date" type="date" required defaultValue={expense?.date} />
       </div>
 

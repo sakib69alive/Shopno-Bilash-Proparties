@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -106,7 +107,7 @@ export default async function AdminParkingDetailPage({ params }: PageProps) {
             {canManage && (
               <Link href={`/admin/parking/${parking.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
           </div>
@@ -115,7 +116,7 @@ export default async function AdminParkingDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Details</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Details"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Project" value={project?.name ?? "—"} />
             <Fact label="Building" value={building?.name ?? "Not tied to a building"} />
@@ -126,7 +127,7 @@ export default async function AdminParkingDetailPage({ params }: PageProps) {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-3 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Owner</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Owner"}</AdminText></h2>
           {canManage ? (
             <ParkingOwnerControl
               parkingId={parking.id}
@@ -145,14 +146,14 @@ export default async function AdminParkingDetailPage({ params }: PageProps) {
               <p className="text-body text-fg font-medium">{ownerLabel}</p>
             )
           ) : (
-            <p className="text-body-sm text-fg-subtle">No owner assigned — independent of any unit&rsquo;s owner.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"No owner assigned — independent of any unit’s owner."}</AdminText></p>
           )}
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Assignment History</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Assignment History"}</AdminText></h2>
           {!history || history.length === 0 ? (
-            <p className="text-body-sm text-fg-subtle">No assignment changes recorded yet.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"No assignment changes recorded yet."}</AdminText></p>
           ) : (
             <div className="flex flex-col gap-2">
               {history.map((row) => (
@@ -168,7 +169,7 @@ export default async function AdminParkingDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(parking.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(parking.updatedAt))} />

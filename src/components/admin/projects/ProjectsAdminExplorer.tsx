@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -47,6 +49,7 @@ const STATUS_GROUP_OPTIONS: { value: StatusGroup; label: string }[] = [
  * plain substring match over name/city/area/address (brief §7).
  */
 export function ProjectsAdminExplorer({ projects, stats, canCreate, canDelete }: ProjectsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [statusGroup, setStatusGroup] = useState<StatusGroup>("all");
   const [isPending, startTransition] = useTransition();
@@ -133,7 +136,7 @@ export function ProjectsAdminExplorer({ projects, stats, canCreate, canDelete }:
           canCreate && (
             <Link href="/admin/projects/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Project
+              <AdminText>{"New Project"}</AdminText>
             </Link>
           )
         }
@@ -158,7 +161,7 @@ export function ProjectsAdminExplorer({ projects, stats, canCreate, canDelete }:
         <select
           value={statusGroup}
           onChange={(e) => setStatusGroup(e.target.value as StatusGroup)}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_GROUP_OPTIONS.map((opt) => (

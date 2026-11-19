@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -52,7 +53,7 @@ export default async function AlertsPage() {
 
   return (
     <>
-      <AdminPageHeader title="Alerts" description="Live issues surfaced from real data — never a stored, staleable list." />
+      <AdminPageHeader title={<AdminText>{"Alerts"}</AdminText>} description={<AdminText>{"Live issues surfaced from real data — never a stored, staleable list."}</AdminText>} />
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         <DashboardSection title="Summary">
           <KpiCard label="Critical" value={summary.critical} status={summary.critical > 0 ? "error" : "success"} />

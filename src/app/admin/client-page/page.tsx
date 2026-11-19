@@ -1,4 +1,6 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
+import Link from "next/link";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -9,6 +11,7 @@ import { shareholderRepository } from "@/features/shareholders/repository";
 import { landownerRepository } from "@/features/landowners/repository";
 import { unitRepository } from "@/features/units/repository";
 import { filterVisibleProjectsList } from "@/lib/projectScope";
+import { canInspectClientPortals } from "@/features/ownerPortal/inspectionAccess";
 
 /** Quick-open board for everything the client app (owner portal) shows: pick a button, pick a project or client if asked, land on the exact screen. */
 export default async function AdminClientPageHub() {
@@ -73,7 +76,15 @@ export default async function AdminClientPageHub() {
 
   return (
     <>
-      <AdminPageHeader title="Client page" description="Pick what you want to manage in the client app — it takes you straight to the right screen." />
+      <AdminPageHeader
+        title={<AdminText>{"Client page"}</AdminText>}
+        description={<AdminText>{"Pick what you want to manage in the client app - it takes you straight to the right screen."}</AdminText>}
+        primaryAction={canInspectClientPortals(user) ? (
+          <Link href="/admin/client-page/installations" className="border-border rounded-lg border px-4 py-2 text-sm font-medium">
+            <AdminText>{"App installations & inspection"}</AdminText>
+          </Link>
+        ) : undefined}
+      />
       <QuickOpenHub
         board="client"
         jump={jump}

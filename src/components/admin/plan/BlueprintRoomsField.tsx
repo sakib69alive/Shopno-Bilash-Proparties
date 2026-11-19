@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useEffect, useRef, useState } from "react";
 import { Check, MousePointerClick, Plus, RotateCcw, RotateCw, Sparkles, Square, Trash2, Undo2, Waypoints, X } from "lucide-react";
 import { AdminImageField } from "@/components/admin/settings/AdminImageField";
@@ -182,6 +184,7 @@ export function BlueprintRoomsField({
   initialOutline?: FlatOutline;
   helperText?: string;
 }) {
+  const { t: adminCopy } = useUiLanguage();
   const presets = preset === "building" ? BUILDING_PRESETS : FLAT_PRESETS;
   const noun = preset === "building" ? "flats, lift and stairs" : "rooms";
   const rootRef = useRef<HTMLDivElement>(null);
@@ -409,17 +412,17 @@ export function BlueprintRoomsField({
           )}
 
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-caption text-fg-muted">Not the right way up?</p>
+            <p className="text-caption text-fg-muted"><AdminText>{"Not the right way up?"}</AdminText></p>
             <Button type="button" variant="ghost" size="sm" disabled={!canTurn || busy} onClick={() => turn(-90)}>
               <RotateCcw aria-hidden className="size-4" />
-              Turn left
+              <AdminText>{"Turn left"}</AdminText>
             </Button>
             <Button type="button" variant="ghost" size="sm" disabled={!canTurn || busy} onClick={() => turn(90)}>
               <RotateCw aria-hidden className="size-4" />
-              Turn right
+              <AdminText>{"Turn right"}</AdminText>
             </Button>
             <Button type="button" variant="ghost" size="sm" disabled={!canTurn || busy} onClick={() => turn(180)}>
-              Flip over
+              <AdminText>{"Flip over"}</AdminText>
             </Button>
             {!canTurn && <span className="text-caption text-fg-subtle">Only an SVG can be turned.</span>}
           </div>
@@ -460,9 +463,9 @@ export function BlueprintRoomsField({
 
           {/* Doors: two clicks, one at each end of the door. */}
           <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-md border p-3">
-            <p className="text-body-sm text-fg font-semibold">Doors — just two clicks each</p>
+            <p className="text-body-sm text-fg font-semibold"><AdminText>{"Doors — just two clicks each"}</AdminText></p>
             <p className="text-caption text-fg-muted">
-              Press a button, then click <b>one end of the door</b> and <b>the other end</b>. The <b>main door</b> is shown in green at all times; a <b>room door</b> is shown in pink while that
+              <AdminText>{"Press a button, then click "}</AdminText><b><AdminText>{"one end of the door"}</AdminText></b> and <b><AdminText>{"the other end"}</AdminText></b>. The <b><AdminText>{"main door"}</AdminText></b> is shown in green at all times; a <b><AdminText>{"room door"}</AdminText></b> is shown in pink while that
               room is pressed. An SVG can carry them too: <code>data-door=&quot;main&quot;</code> or <code>data-door=&quot;room&quot;</code> on a line.
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -472,7 +475,7 @@ export function BlueprintRoomsField({
               </button>
               <button type="button" disabled={marking} onClick={() => { setDraft([]); setMark("door"); }} className="inline-flex items-center gap-2 rounded-full border-2 border-[#e11d48] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#be123c] transition-colors hover:bg-[#e11d48]/10 disabled:opacity-50">
                 <span aria-hidden className="size-2.5 rounded-full bg-[#e11d48]" />
-                Door of a room
+                <AdminText>{"Door of a room"}</AdminText>
               </button>
             </div>
           </div>
@@ -485,11 +488,11 @@ export function BlueprintRoomsField({
               </p>
               <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft([])}>
                 <Undo2 aria-hidden className="size-4" />
-                Redo first point
+                <AdminText>{"Redo first point"}</AdminText>
               </Button>
               <Button type="button" variant="ghost" onClick={() => { setDraft([]); setMark(null); }}>
                 <X aria-hidden className="size-4" />
-                Cancel
+                <AdminText>{"Cancel"}</AdminText>
               </Button>
             </div>
           )}
@@ -504,7 +507,7 @@ export function BlueprintRoomsField({
                 )}
                 {mark === "room" && (
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-label text-fg-muted">Kind</span>
+                    <span className="text-label text-fg-muted"><AdminText>{"Kind"}</AdminText></span>
                     <select
                       value={roomType ?? "auto"}
                       onChange={(e) => setRoomType(isRoomType(e.target.value) ? e.target.value : null)}
@@ -520,15 +523,15 @@ export function BlueprintRoomsField({
                   </label>
                 )}
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-label text-fg-muted">Draw as</span>
+                  <span className="text-label text-fg-muted"><AdminText>{"Draw as"}</AdminText></span>
                   <div className="border-border-strong bg-surface-raised inline-flex overflow-hidden rounded-md border">
                     <button type="button" onClick={() => { setDrawMode("box"); setDraft([]); }} className={cn("inline-flex h-11 items-center gap-1.5 px-3 text-sm font-semibold", drawMode === "box" ? "bg-accent text-accent-foreground" : "text-fg-muted")}>
                       <Square aria-hidden className="size-4" />
-                      Box (2 clicks)
+                      <AdminText>{"Box (2 clicks)"}</AdminText>
                     </button>
                     <button type="button" onClick={() => { setDrawMode("shape"); setDraft([]); }} className={cn("inline-flex h-11 items-center gap-1.5 px-3 text-sm font-semibold", drawMode === "shape" ? "bg-accent text-accent-foreground" : "text-fg-muted")}>
                       <Waypoints aria-hidden className="size-4" />
-                      Shape (many corners)
+                      <AdminText>{"Shape (many corners)"}</AdminText>
                     </button>
                   </div>
                 </div>
@@ -542,18 +545,18 @@ export function BlueprintRoomsField({
                 )}
                 <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft((d) => d.slice(0, -1))}>
                   <Undo2 aria-hidden className="size-4" />
-                  Undo
+                  <AdminText>{"Undo"}</AdminText>
                 </Button>
                 <Button type="button" variant="ghost" onClick={() => { setDraft([]); setMark(null); }}>
                   <X aria-hidden className="size-4" />
-                  Cancel
+                  <AdminText>{"Cancel"}</AdminText>
                 </Button>
               </div>
               <p className="text-caption text-accent">
                 {drawMode === "box"
                   ? `Click one corner of ${mark === "outline" ? "this flat" : `“${roomName.trim() || "the area"}”`}, then the opposite corner — it is added at once.`
                   : `Click the corners of ${mark === "outline" ? "this flat" : `“${roomName.trim() || "the area"}”`} one after another around its edge, then press Finish.`}{" "}
-                Click a corner to remove it · Ctrl+Z undoes the last · Esc cancels.
+                <AdminText>{"Click a corner to remove it · Ctrl+Z undoes the last · Esc cancels."}</AdminText>
               </p>
             </div>
           )}
@@ -576,7 +579,7 @@ export function BlueprintRoomsField({
                   <>
                     <span className="text-caption text-success">Outline set — only this flat will show.</span>
                     <Button type="button" variant="ghost" size="sm" onClick={() => setOutline(null)}>
-                      Clear
+                      <AdminText>{"Clear"}</AdminText>
                     </Button>
                   </>
                 )}
@@ -600,7 +603,7 @@ export function BlueprintRoomsField({
                     ) : (
                       <>
                         <input
-                          aria-label="Name"
+                          aria-label={adminCopy("Name")}
                           value={r.label}
                           onChange={(e) => setRooms((all) => all.map((x) => (x.id === r.id ? { ...x, label: e.target.value } : x)))}
                           onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,13 +43,13 @@ export default async function AdminFounderProfilePage() {
   return (
     <>
       <AdminPageHeader
-        title="Founder Profile"
-        description="The owner/founder photo and bio shown on the public site's profile page."
+        title={<AdminText>{"Founder Profile"}</AdminText>}
+        description={<AdminText>{"The owner/founder photo and bio shown on the public site's profile page."}</AdminText>}
         secondaryActions={
           hasPermission(user.role, "content.update") && (
             <Link href="/admin/content/founder/edit" className={buttonVariants({ variant: "outline", size: "sm" })}>
               <Pencil aria-hidden className="size-3.5" />
-              Edit
+              <AdminText>{"Edit"}</AdminText>
             </Link>
           )
         }
@@ -58,58 +59,58 @@ export default async function AdminFounderProfilePage() {
           {profile.photo ? (
             <Image src={profile.photo} alt={profile.name} fill className="object-cover" />
           ) : (
-            <div className="text-caption text-fg-subtle flex h-full items-center justify-center uppercase">No photo</div>
+            <div className="text-caption text-fg-subtle flex h-full items-center justify-center uppercase"><AdminText>{"No photo"}</AdminText></div>
           )}
         </div>
 
         <div className="flex flex-col gap-6">
           <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-            <h2 className="text-label text-fg-subtle uppercase">Profile</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Profile"}</AdminText></h2>
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Name</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Name"}</AdminText></p>
               <p className="text-body-sm text-fg mt-0.5">{profile.name}</p>
             </div>
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Title / Role</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Title / Role"}</AdminText></p>
               <p className="text-body-sm text-fg mt-0.5">{profile.title}</p>
             </div>
             {profile.intro && (
               <div>
-                <p className="text-caption text-fg-subtle uppercase">Hero Intro</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Hero Intro"}</AdminText></p>
                 <p className="text-body-sm text-fg mt-0.5">{profile.intro}</p>
               </div>
             )}
             <div>
-              <p className="text-caption text-fg-subtle uppercase">Bio</p>
+              <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Bio"}</AdminText></p>
               <p className="text-body-sm text-fg mt-0.5 whitespace-pre-line">{profile.bio}</p>
             </div>
           </section>
 
           {profile.statement && (
             <section className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border p-4">
-              <h2 className="text-label text-fg-subtle uppercase">Founder Statement</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Founder Statement"}</AdminText></h2>
               <p className="text-body-sm text-fg whitespace-pre-line">{profile.statement}</p>
             </section>
           )}
 
           {(profile.vision || profile.mission || profile.philosophy) && (
             <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-              <h2 className="text-label text-fg-subtle uppercase">Vision &amp; Philosophy</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Vision & Philosophy"}</AdminText></h2>
               {profile.vision && (
                 <div>
-                  <p className="text-caption text-fg-subtle uppercase">Vision</p>
+                  <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Vision"}</AdminText></p>
                   <p className="text-body-sm text-fg mt-0.5">{profile.vision}</p>
                 </div>
               )}
               {profile.mission && (
                 <div>
-                  <p className="text-caption text-fg-subtle uppercase">Mission</p>
+                  <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Mission"}</AdminText></p>
                   <p className="text-body-sm text-fg mt-0.5">{profile.mission}</p>
                 </div>
               )}
               {profile.philosophy && (
                 <div>
-                  <p className="text-caption text-fg-subtle uppercase">Philosophy</p>
+                  <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Philosophy"}</AdminText></p>
                   <p className="text-body-sm text-fg mt-0.5">{profile.philosophy}</p>
                 </div>
               )}
@@ -118,7 +119,7 @@ export default async function AdminFounderProfilePage() {
 
           {profile.principles.length > 0 && (
             <section className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border p-4">
-              <h2 className="text-label text-fg-subtle uppercase">Leadership Principles</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Leadership Principles"}</AdminText></h2>
               <ul className="mt-0.5 list-disc pl-4">
                 {profile.principles.map((principle) => (
                   <li key={principle} className="text-body-sm text-fg">
@@ -131,7 +132,7 @@ export default async function AdminFounderProfilePage() {
 
           {profile.highlights.length > 0 && (
             <section className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border p-4">
-              <h2 className="text-label text-fg-subtle uppercase">Highlights</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Highlights"}</AdminText></h2>
               <ul className="mt-0.5 list-disc pl-4">
                 {profile.highlights.map((highlight) => (
                   <li key={highlight} className="text-body-sm text-fg">
@@ -144,7 +145,7 @@ export default async function AdminFounderProfilePage() {
 
           {profile.gallery.length > 0 && (
             <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-              <h2 className="text-label text-fg-subtle uppercase">Gallery</h2>
+              <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Gallery"}</AdminText></h2>
               <div className="grid grid-cols-3 gap-3">
                 {profile.gallery.map((img) => (
                   <div key={img.src} className="flex flex-col gap-1.5">
@@ -159,14 +160,14 @@ export default async function AdminFounderProfilePage() {
           )}
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-caption text-fg-subtle uppercase">Created</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Created"}</AdminText></p>
                 <p className="text-body-sm text-fg mt-0.5">{formatDate(new Date(profile.createdAt))}</p>
               </div>
               <div>
-                <p className="text-caption text-fg-subtle uppercase">Last Updated</p>
+                <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Last Updated"}</AdminText></p>
                 <p className="text-body-sm text-fg mt-0.5">{formatDate(new Date(profile.updatedAt))}</p>
               </div>
             </div>

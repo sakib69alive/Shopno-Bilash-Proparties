@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -100,7 +101,7 @@ export default async function ContractorDetailPage({ params }: PageProps) {
                 <SetLifecycleStatusButton status={contractor.status} label={contractor.name} onSetStatus={setContractorStatus.bind(null, contractor.id)} />
                 <Link href={`/admin/construction/contractors/${contractor.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
                 <DeleteContractorButton id={contractor.id} name={contractor.name} />
               </>
@@ -112,7 +113,7 @@ export default async function ContractorDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Contact</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Contact"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Company" value={contractor.companyName ?? "—"} />
               <Fact label="Contact Person" value={contractor.contactPerson ?? "—"} />
@@ -125,7 +126,7 @@ export default async function ContractorDetailPage({ params }: PageProps) {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(contractor.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(contractor.updatedAt))} />
@@ -144,7 +145,7 @@ export default async function ContractorDetailPage({ params }: PageProps) {
           </DashboardSection>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Assigned Phases</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Assigned Phases"}</AdminText></h2>
             {phases.length === 0 ? (
               <EmptyState title="No phases assigned yet" description="Construction phases assigned to this contractor will appear here." />
             ) : (

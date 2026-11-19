@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -26,6 +28,7 @@ export interface ShareholdersAdminExplorerProps {
  * pattern as every other admin explorer.
  */
 export function ShareholdersAdminExplorer({ shareholders, shareholdings, canCreate, canDelete }: ShareholdersAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -114,7 +117,7 @@ export function ShareholdersAdminExplorer({ shareholders, shareholdings, canCrea
           canCreate && (
             <Link href="/admin/shareholders/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Shareholder
+              <AdminText>{"New Shareholder"}</AdminText>
             </Link>
           )
         }
@@ -130,7 +133,7 @@ export function ShareholdersAdminExplorer({ shareholders, shareholdings, canCrea
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or email"
+          placeholder={adminCopy("Search by name or email")}
           aria-label="Search shareholders"
           className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface-raised pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         />

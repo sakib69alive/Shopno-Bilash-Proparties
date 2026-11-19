@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import type { ReactNode } from "react";
 import { Inbox, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,9 +30,9 @@ export function EmptyState({
       )}
     >
       <Icon className="size-8 text-fg-subtle" aria-hidden />
-      <p className="text-h4">{title}</p>
+      <p className="text-h4"><UiText>{title}</UiText></p>
       {description && (
-        <p className="text-body-sm text-fg-muted max-w-sm">{description}</p>
+        <p className="text-body-sm text-fg-muted max-w-sm"><UiText>{description}</UiText></p>
       )}
       {(action || secondaryAction) && (
         <div className="mt-1 flex items-center gap-2.5">

@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
@@ -78,7 +79,7 @@ export function SalePortalControls({
       <section className="border-border bg-surface-raised flex flex-col gap-3 rounded-lg border p-4">
         <h3 className="text-label text-fg-subtle uppercase">Change the price</h3>
         <p className="text-body-sm text-fg-muted">
-          Agreed price {formatBDT(agreedPrice)}
+          <AdminText>{"Agreed price"}</AdminText> {formatBDT(agreedPrice)}
           {adjustments.length > 0 && (
             <>
               {" "}
@@ -116,7 +117,7 @@ export function SalePortalControls({
           {state.error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2.5">
               <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-              <p className="text-body-sm">{state.error}</p>
+              <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">

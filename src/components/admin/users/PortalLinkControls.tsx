@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useRef, useState, useTransition } from "react";
 import { Check, Link2, Link2Off, MessageCircle, RefreshCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -247,7 +248,7 @@ export function PortalLinkControls({ ownerType, ownerId, ownerName, phone, summa
         {state.enabled ? (
           state.useCount > 0 ? (
             <>
-              Opened {state.useCount} time{state.useCount === 1 ? "" : "s"}
+              Opened {state.useCount}<AdminText>{" time"}</AdminText>{state.useCount === 1 ? "" : "s"}
               {state.lastUsedAt ? <> · last on {formatDate(new Date(state.lastUsedAt))}</> : null}.
             </>
           ) : (
@@ -270,7 +271,7 @@ export function PortalLinkControls({ ownerType, ownerId, ownerName, phone, summa
           title={whatsAppNumber ? undefined : "Add a phone number to this client first"}
           iconLeft={<MessageCircle aria-hidden className="size-4" />}
         >
-          Send on WhatsApp
+          <AdminText>{"Send on WhatsApp"}</AdminText>
         </Button>
       </div>
 
@@ -309,8 +310,7 @@ export function PortalLinkControls({ ownerType, ownerId, ownerName, phone, summa
       )}
 
       <p className="text-caption text-fg-subtle">
-        Anyone who opens this link sees this client&apos;s own portal, and that phone stays signed in. Send it only to the client. To try it yourself, open it in a private window — opening it in your normal
-        browser signs you out of Admin there.
+        <AdminText>{"Anyone who opens this link sees this client's own portal, and that phone stays signed in. Send it only to the client. To try it yourself, open it in a private window — opening it in your normal browser signs you out of Admin there."}</AdminText>
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -55,15 +56,15 @@ export default async function AdminMaterialsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Materials"
-        description="Construction material categories and the materials tracked in stock."
-        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Materials" }]}
+        title={<AdminText>{"Materials"}</AdminText>}
+        description={<AdminText>{"Construction material categories and the materials tracked in stock."}</AdminText>}
+        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Materials", localize: true }]}
         primaryAction={
           canManage &&
           categories.length > 0 && (
             <Link href="/admin/procurement/materials/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Material
+              <AdminText>{"New Material"}</AdminText>
             </Link>
           )
         }
@@ -101,7 +102,7 @@ export default async function AdminMaterialsPage() {
                   </div>
                   {category.description && <p className="text-caption text-fg-subtle mb-3">{category.description}</p>}
                   {items.length === 0 ? (
-                    <p className="text-body-sm text-fg-subtle">No materials in this category yet.</p>
+                    <p className="text-body-sm text-fg-subtle"><AdminText>{"No materials in this category yet."}</AdminText></p>
                   ) : (
                     <div className="flex flex-col gap-1">
                       {items.map((material) => (

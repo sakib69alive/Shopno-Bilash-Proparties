@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -30,8 +31,8 @@ export default async function AdminRolesPage() {
   return (
     <>
       <AdminPageHeader
-        title="Roles & Permissions"
-        description="What every role can see and do — read-only. Editing the matrix is a separate, larger step."
+        title={<AdminText>{"Roles & Permissions"}</AdminText>}
+        description={<AdminText>{"What every role can see and do — read-only. Editing the matrix is a separate, larger step."}</AdminText>}
       />
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         <section>
@@ -65,7 +66,7 @@ function RoleCard({ role }: { role: (typeof ROLES)[number] }) {
     >
       <h3 className="text-body-sm text-fg font-semibold">{ROLE_LABELS[role]}</h3>
       <p className="text-caption text-fg-subtle">
-        {grantedCount} of {TOTAL_PERMISSIONS} permissions
+        {grantedCount} of {TOTAL_PERMISSIONS}<AdminText>{" permissions"}</AdminText>
       </p>
     </Link>
   );

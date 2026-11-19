@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -22,7 +23,7 @@ export default async function EditFounderProfilePage() {
 
   return (
     <>
-      <AdminPageHeader title="Edit Founder Profile" breadcrumbs={[{ label: "Founder Profile", href: "/admin/content/founder" }, { label: "Edit" }]} />
+      <AdminPageHeader title={<AdminText>{"Edit Founder Profile"}</AdminText>} breadcrumbs={[{ label: "Founder Profile", href: "/admin/content/founder" }, { label: "Edit", localize: true }]} />
       <div className="p-4 sm:p-6">
         <FounderProfileForm action={updateFounderProfile} profile={profile} />
       </div>

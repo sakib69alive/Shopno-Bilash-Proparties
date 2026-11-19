@@ -135,6 +135,8 @@ export interface GoalInstallment extends AuditFields {
   amountMode: InstallmentAmountMode;
   /** A percentage (0-100) of each owner's payableAmount, or a flat taka figure — meaning depends on amountMode. */
   amountValue: number;
+  /** Custom plans store the combined amount here; obligation rows own the individual amounts. */
+  customAllocation?: boolean;
   dueDate: string;
   notes?: string;
 }
@@ -148,6 +150,8 @@ export interface OwnerInstallmentObligation extends AuditFields {
   ownerType: OwnerType;
   ownerId: ID;
   payableAmount: Money;
+  /** Selected flat references for this installment. The owner remains the payee account. */
+  unitIds?: ID[];
 }
 
 export type AdjustmentType = "discount" | "waiver" | "additional-charge" | "correction" | "refund";

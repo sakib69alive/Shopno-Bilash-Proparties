@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText, useAdminLanguage } from "@/components/admin/AdminLanguage";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, Download, Pause, Play, X } from "lucide-react";
 import type { Tour, TourStep } from "@/content/simba/tours";
@@ -22,7 +23,7 @@ function textOf(el: Element): string {
   return `${h.getAttribute("aria-label") ?? ""} ${h.innerText ?? ""} ${label} ${input.placeholder ?? ""} ${h.getAttribute("name") ?? ""}`.toLowerCase();
 }
 
-function locate(terms: string[] | undefined, href?: string, sel?: string): HTMLElement | null {
+function locate(terms: string[] | undefined, href: string | undefined, sel: string | undefined, copy: (text: string) => string): HTMLElement | null {
   if (sel) {
     const picked = Array.from(document.querySelectorAll(sel)).find(visible) as HTMLElement | undefined;
     if (picked) return picked;
@@ -34,9 +35,9 @@ function locate(terms: string[] | undefined, href?: string, sel?: string): HTMLE
   if (!terms || terms.length === 0) return null;
   const all = Array.from(document.querySelectorAll(FIND_IN)).filter(visible) as HTMLElement[];
   for (const term of terms) {
-    const t = term.toLowerCase();
+    const variants = [term, copy(term)].map((text) => text.toLowerCase());
     // Prefer short, exact-ish matches (a button named "Edit") over long containers that merely mention the word.
-    const hits = all.filter((el) => textOf(el).includes(t)).sort((a, b) => textOf(a).length - textOf(b).length);
+    const hits = all.filter((el) => variants.some((variant) => textOf(el).includes(variant))).sort((a, b) => textOf(a).length - textOf(b).length);
     if (hits[0]) return hits[0];
   }
   return null;
@@ -71,14 +72,14 @@ function setNative(el: Control, value: string) {
   el.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-async function typeInto(el: Control, text: string, alive: () => boolean) {
+async function typeInto(el: Control, text: string, alive: () => boolean, copy: (text: string) => string) {
   el.scrollIntoView({ block: "center", behavior: "smooth" });
   el.focus();
   if (text === "@first" && !(el instanceof HTMLSelectElement)) return; // only a drop-down has a "first option"
   if (el instanceof HTMLSelectElement) {
     const options = Array.from(el.options).filter((o) => o.value !== "" && !o.disabled);
     // No guessing: if the wanted option is not there, nothing is chosen (so a required drop-down stays empty and the form will not submit).
-    const pick = text === "@first" ? options[0] : options.find((o) => o.text.includes(text));
+    const pick = text === "@first" ? options[0] : options.find((o) => o.text.includes(text) || o.text === copy(text));
     if (pick) setNative(el, pick.value);
     return;
   }
@@ -118,7 +119,7 @@ async function uploadInto(near: HTMLElement | null, fileName: string) {
   input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
-const isDelete = (b: HTMLElement) => /delete/i.test((b.getAttribute("aria-label") ?? "") + " " + b.innerText);
+const isDelete = (b: HTMLElement) => /delete|মুছুন/i.test((b.getAttribute("aria-label") ?? "") + " " + b.innerText);
 
 /** The delete button of a record whose name carries the demo marker — and only that. */
 function findDemoDelete(): HTMLElement | null {
@@ -149,7 +150,7 @@ async function deleteDemo(alive: () => boolean): Promise<void> {
   window.setTimeout(() => (window.confirm = original), 2500);
 }
 
-async function perform(step: TourStep, el: HTMLElement | null, alive: () => boolean): Promise<void> {
+async function perform(step: TourStep, el: HTMLElement | null, alive: () => boolean, copy: (text: string) => string): Promise<void> {
   if (step.cleanup) {
     await fetch("/api/admin/simba/cleanup", { method: "POST" }).catch(() => undefined);
     return;
@@ -158,7 +159,7 @@ async function perform(step: TourStep, el: HTMLElement | null, alive: () => bool
   if (step.upload && step.file) return uploadInto(el, step.file.name);
   if (step.value !== undefined) {
     const control = controlFor(el);
-    if (control) await typeInto(control, step.value, alive);
+    if (control) await typeInto(control, step.value, alive, copy);
     return;
   }
   if (step.click && el) {
@@ -199,6 +200,7 @@ export function SimbaTour({
   onIndex: (i: number) => void;
   onStop: (finished: boolean) => void;
 }) {
+  const { t: copy } = useAdminLanguage();
   const step = tour.steps[index];
   const [box, setBox] = useState<{ left: number; top: number; width: number; height: number; inSidebar: boolean } | null>(null);
   const [ready, setReady] = useState(false);
@@ -215,7 +217,7 @@ export function SimbaTour({
     setReady(false);
     if (waiting) return;
     function look() {
-      const el = gaveUp ? null : locate(step.find, step.href, step.sel);
+      const el = gaveUp ? null : locate(step.find, step.href, step.sel, copy);
       if (el) {
         targetRef.current = el;
         el.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -247,7 +249,7 @@ export function SimbaTour({
       window.removeEventListener("scroll", onMove, true);
       window.removeEventListener("resize", onMove);
     };
-  }, [step, pathname, waiting, gaveUp]);
+  }, [step, pathname, waiting, gaveUp, copy]);
 
   // Do it for me + autoplay: act once per step, then stay a few seconds, then move on. Pausing cancels the wait but never undoes a step,
   // and a step's typing is only ever cut short by leaving that step (not by the card re-rendering).
@@ -265,7 +267,7 @@ export function SimbaTour({
     (async () => {
       if (auto) {
         if (actRef.current?.key !== key) {
-          actRef.current = { key, promise: perform(step, targetRef.current, () => keyRef.current === key).catch(() => undefined) };
+          actRef.current = { key, promise: perform(step, targetRef.current, () => keyRef.current === key, copy).catch(() => undefined) };
         }
         await actRef.current.promise;
       }
@@ -301,52 +303,52 @@ export function SimbaTour({
           style={{ left: box.left - 4, top: box.top - 4, width: box.width + 8, height: box.height + 8 }}
         />
       )}
-      <div role="dialog" aria-label={tour.title} style={{ ...cardStyle, width: cardWidth }} className="border-border bg-surface-raised fixed z-[85] rounded-2xl border p-4 shadow-2xl transition-[left,top] duration-200">
+      <div role="dialog" aria-label={copy(tour.title)} style={{ ...cardStyle, width: cardWidth }} className="border-border bg-surface-raised fixed z-[85] rounded-2xl border p-4 shadow-2xl transition-[left,top] duration-200">
         <div className="flex items-start justify-between gap-3">
           <p className="text-caption text-fg-subtle tracking-wide uppercase">
-            {tour.title} · {index + 1}/{tour.steps.length}
-            {auto && <span className="text-accent ml-1.5 font-semibold">· Simba is doing it</span>}
+            {copy(tour.title)} · {index + 1}/{tour.steps.length}
+            {auto && <span className="text-accent ml-1.5 font-semibold">· {copy("Simba is doing it")}</span>}
           </p>
-          <button type="button" onClick={() => onStop(false)} aria-label="Stop the tour" className="text-fg-muted hover:bg-surface -mt-1 -mr-1 flex size-7 items-center justify-center rounded-full">
+          <button type="button" onClick={() => onStop(false)} aria-label={copy("Stop the tour")} className="text-fg-muted hover:bg-surface -mt-1 -mr-1 flex size-7 items-center justify-center rounded-full">
             <X aria-hidden className="size-4" />
           </button>
         </div>
-        <p className="text-body-sm text-fg mt-2">{step.say}</p>
-        {note && <p className="text-caption bg-error-soft text-error mt-2 rounded-lg px-3 py-2">{note}</p>}
+        <p className="text-body-sm text-fg mt-2">{copy(step.say)}</p>
+        {note && <p className="text-caption bg-error-soft text-error mt-2 rounded-lg px-3 py-2">{copy(note)}</p>}
         {step.example && (
           <p className="text-body-sm bg-accent-soft text-accent-strong mt-2 rounded-lg px-3 py-2">
-            <span className="font-semibold">Try: </span>
-            {step.example}
+            <span className="font-semibold">{copy("Try: ")}</span>
+            {copy(step.example)}
           </p>
         )}
         {step.file && (
           <a href={"/simba-demo/" + step.file.name} download className="text-body-sm text-accent mt-2 inline-flex items-center gap-1.5 font-semibold">
             <Download aria-hidden className="size-4" />
-            Practice file: {step.file.label}
+            <AdminText values={{ file: copy(step.file.label) }}>{"Practice file: {file}"}</AdminText>
           </a>
         )}
         {step.careful && (
           <p role="note" className="text-caption bg-error-soft text-error mt-2 flex gap-2 rounded-lg px-3 py-2">
             <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0" />
-            {step.careful}
+            {copy(step.careful)}
           </p>
         )}
         <div className="mt-4 flex items-center justify-between gap-2">
           <button type="button" disabled={index === 0} onClick={() => onIndex(index - 1)} className="text-body-sm text-fg-muted inline-flex items-center gap-1 font-medium disabled:opacity-40">
             <ArrowLeft aria-hidden className="size-4" />
-            Back
+            <AdminText>{"Back"}</AdminText>
           </button>
           <button
             type="button"
             onClick={onTogglePlay}
-            aria-label={playing ? "Pause" : "Play automatically"}
+            aria-label={copy(playing ? "Pause" : "Play automatically")}
             className="text-body-sm border-border text-fg inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-semibold"
           >
             {playing ? <Pause aria-hidden className="size-3.5" /> : <Play aria-hidden className="size-3.5" />}
-            {playing ? "Pause" : "Play"}
+            {copy(playing ? "Pause" : "Play")}
           </button>
           <button type="button" onClick={() => (last ? onStop(true) : onIndex(index + 1))} className="text-body-sm bg-accent text-accent-foreground inline-flex items-center gap-1.5 rounded-full px-4 py-2 font-semibold">
-            {last ? "Done" : "Next"}
+            {copy(last ? "Done" : "Next")}
             {!last && <ArrowRight aria-hidden className="size-4" />}
           </button>
         </div>

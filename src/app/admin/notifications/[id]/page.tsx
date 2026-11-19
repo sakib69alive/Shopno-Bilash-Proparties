@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -91,7 +92,7 @@ export default async function AdminNotificationDetailPage({ params }: PageProps)
             <div className="flex items-center gap-2">
               <Link href={`/admin/notifications/${notification.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeleteNotificationButton id={notification.id} title={notification.title} />
             </div>
@@ -101,7 +102,7 @@ export default async function AdminNotificationDetailPage({ params }: PageProps)
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Recipient</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Recipient"}</AdminText></h2>
           {recipient ? (
             <>
               <Fact label="Name" value={recipient.name} />
@@ -109,16 +110,16 @@ export default async function AdminNotificationDetailPage({ params }: PageProps)
                 href={`/admin/users/${recipient.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View user →
+                <AdminText>{"View user →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">This user no longer exists.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"This user no longer exists."}</AdminText></p>
           )}
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Delivery</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Delivery"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Event" value={EVENT_LABEL[notification.event]} />
             <Fact label="Channel" value={CHANNEL_LABEL[notification.channel]} />
@@ -128,7 +129,7 @@ export default async function AdminNotificationDetailPage({ params }: PageProps)
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Message</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Message"}</AdminText></h2>
           <p className="text-body text-fg-muted whitespace-pre-line">{notification.body}</p>
           {notification.imageUrl && (
             <div className="mt-3 max-w-sm">
@@ -138,7 +139,7 @@ export default async function AdminNotificationDetailPage({ params }: PageProps)
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <Fact label="Created" value={formatDate(new Date(notification.createdAt))} />
         </section>
       </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -46,6 +48,7 @@ const PATHS = [
  * directly.
  */
 export function AssignOwnerDrawer({ open, onClose, unitId, shareholderOptions, landownerOptions }: AssignOwnerDrawerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [path, setPath] = useState<string>("sale");
   const [selectedShareholding, setSelectedShareholding] = useState("");
   const [selectedAgreement, setSelectedAgreement] = useState("");
@@ -84,7 +87,7 @@ export function AssignOwnerDrawer({ open, onClose, unitId, shareholderOptions, l
   }
 
   return (
-    <Drawer open={open} onClose={onClose} side="right" title="Assign Owner">
+    <Drawer open={open} onClose={onClose} side="right" title={adminCopy("Assign Owner")}>
       <div className="flex flex-col gap-5 p-5">
         <Tabs items={PATHS} value={path} onChange={setPath} />
 
@@ -96,7 +99,7 @@ export function AssignOwnerDrawer({ open, onClose, unitId, shareholderOptions, l
               A customer sale is a real financial transaction (price, date) — record it through the Sales module.
             </p>
             <Link href={`/admin/sales/new?unitId=${unitId}`} className={buttonVariants({ size: "md" })}>
-              Record a Sale
+              <AdminText>{"Record a Sale"}</AdminText>
             </Link>
           </div>
         )}
@@ -115,7 +118,7 @@ export function AssignOwnerDrawer({ open, onClose, unitId, shareholderOptions, l
                   placeholder="Choose a shareholder"
                 />
                 <Button onClick={handleAssignShareholder} loading={isPending} disabled={!selectedShareholding}>
-                  Assign
+                  <AdminText>{"Assign"}</AdminText>
                 </Button>
               </>
             )}
@@ -136,7 +139,7 @@ export function AssignOwnerDrawer({ open, onClose, unitId, shareholderOptions, l
                   placeholder="Choose a landowner"
                 />
                 <Button onClick={handleAssignLandowner} loading={isPending} disabled={!selectedAgreement}>
-                  Assign
+                  <AdminText>{"Assign"}</AdminText>
                 </Button>
               </>
             )}

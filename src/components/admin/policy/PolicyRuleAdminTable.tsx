@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useTransition } from "react";
 import { Pencil, Trash2 } from "lucide-react";
@@ -77,7 +78,7 @@ export function PolicyRuleAdminTable({ rules, canDelete }: PolicyRuleAdminTableP
       emptyDescription="Add your first rule to publish the public Company Policy page — it stays hidden from visitors until then."
       emptyAction={
         <Link href="/admin/content/policy/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
-          New Rule
+          <AdminText>{"New Rule"}</AdminText>
         </Link>
       }
     />

@@ -1,3 +1,4 @@
+import { AdminText } from "../AdminLanguage";
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 
@@ -9,7 +10,7 @@ export function DashboardSection({ title, children, collapsed = false }: { title
   return (
     <details open={!collapsed} className="group">
       <summary className="text-fg mb-4 flex cursor-pointer list-none items-center gap-3 select-none [&::-webkit-details-marker]:hidden">
-        <span className="text-h5 font-semibold tracking-tight">{title}</span>
+        <span className="text-h5 font-semibold tracking-tight"><AdminText>{title}</AdminText></span>
         <span aria-hidden className="bg-border h-px flex-1" />
         <ChevronDown aria-hidden className="text-fg-subtle size-4 transition-transform group-open:rotate-180" />
       </summary>

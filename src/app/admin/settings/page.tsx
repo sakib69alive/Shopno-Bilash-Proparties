@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,20 +54,20 @@ export default async function AdminSettingsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Settings"
-        description="Company profile, regional defaults, and system-wide configuration."
+        title={<AdminText>{"Settings"}</AdminText>}
+        description={<AdminText>{"Company profile, regional defaults, and system-wide configuration."}</AdminText>}
         secondaryActions={
           canManage && (
             <Link href="/admin/settings/edit" className={buttonVariants({ variant: "outline", size: "sm" })}>
               <Pencil aria-hidden className="size-3.5" />
-              Edit
+              <AdminText>{"Edit"}</AdminText>
             </Link>
           )
         }
       />
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Logo</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Logo"}</AdminText></h2>
           <div className="flex items-center gap-4">
             {settings.logoMode === "name" ? (
               <div className="border-border bg-surface text-fg flex h-16 items-center rounded-lg border px-4 text-h4 font-semibold">
@@ -82,7 +83,7 @@ export default async function AdminSettingsPage() {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Company</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Company"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Legal Name" value={settings.legalName} />
             <Fact label="Display Name" value={settings.displayName} />
@@ -90,7 +91,7 @@ export default async function AdminSettingsPage() {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Contact</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Contact"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Address" value={settings.address ?? "—"} />
             <Fact label="Phone" value={settings.phone ?? "—"} />
@@ -102,7 +103,7 @@ export default async function AdminSettingsPage() {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Social Media</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Social Media"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Instagram" value={settings.socialInstagram ?? "—"} />
             <Fact label="Facebook" value={settings.socialFacebook ?? "—"} />
@@ -116,7 +117,7 @@ export default async function AdminSettingsPage() {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Regional & Defaults</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Regional & Defaults"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Date Format" value={settings.dateFormat ?? "—"} />
             <Fact label="Time Zone" value={settings.timeZone ?? "—"} />
@@ -129,25 +130,25 @@ export default async function AdminSettingsPage() {
           href="/admin/settings/notifications"
           className="border-border hover:border-fg-subtle group flex items-center justify-between rounded-lg border p-4 transition-colors lg:col-span-2"
         >
-          <span className="text-body-sm text-fg">Notification Preferences — control which alerts reach you</span>
+          <span className="text-body-sm text-fg"><AdminText>{"Notification Preferences — control which alerts reach you"}</AdminText></span>
         </Link>
 
         <Link
           href="/admin/settings/backup"
           className="border-border hover:border-fg-subtle group flex items-center justify-between rounded-lg border p-4 transition-colors lg:col-span-2"
         >
-          <span className="text-body-sm text-fg">Backup & Restore — download or restore all system data</span>
+          <span className="text-body-sm text-fg"><AdminText>{"Backup & Restore — download or restore all system data"}</AdminText></span>
         </Link>
 
         <Link
           href="/admin/settings/blueprint-ai"
           className="border-border hover:border-fg-subtle group flex items-center justify-between rounded-lg border p-4 transition-colors lg:col-span-2"
         >
-          <span className="text-body-sm text-fg">Blueprint AI — master prompts to draw or edit floor plans with an AI, and a plan checker</span>
+          <span className="text-body-sm text-fg"><AdminText>{"Blueprint AI — master prompts to draw or edit floor plans with an AI, and a plan checker"}</AdminText></span>
         </Link>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(settings.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(settings.updatedAt))} />

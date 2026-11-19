@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState } from "react";
 import { Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,7 @@ export function CustomerPicker({
   done?: Set<string>;
   showPhone?: boolean;
 }) {
+  const { t: adminCopy } = useUiLanguage();
   const [query, setQuery] = useState("");
   const [projectId, setProjectId] = useState("");
   const q = query.trim().toLowerCase();
@@ -49,13 +52,13 @@ export function CustomerPicker({
     <>
       {projects.length > 0 && (
         <label className="flex flex-col gap-1">
-          <span className="text-caption text-fg-subtle">Customers of which project?</span>
+          <span className="text-caption text-fg-subtle"><AdminText>{"Customers of which project?"}</AdminText></span>
           <select
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             className="text-body-sm border-border-strong bg-surface text-fg focus:border-accent h-10 w-full rounded-md border px-3 outline-none"
           >
-            <option value="">All projects</option>
+            <option value=""><AdminText>{"All projects"}</AdminText></option>
             {projects.map((p) => (
               <option key={p.value} value={p.value}>
                 {p.label}
@@ -71,26 +74,26 @@ export function CustomerPicker({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={showPhone ? "Search a name or phone" : "Search a name"}
-          aria-label="Search customers"
+          placeholder={adminCopy(showPhone ? "Search a name or phone" : "Search a name")}
+          aria-label={adminCopy("Search customers")}
           className="text-body-sm border-border-strong bg-surface text-fg focus:border-accent h-10 w-full rounded-md border pr-3 pl-9 outline-none"
         />
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-caption text-fg-subtle">{count} chosen</p>
+        <p className="text-caption text-fg-subtle"><AdminText values={{ count }}>{"{count} chosen"}</AdminText></p>
         <div className="flex gap-3">
           <button type="button" className="text-caption text-accent font-medium" onClick={() => onPicked(new Set([...picked, ...shown.map((r) => r.id)]))}>
-            Select all{q || projectId ? " shown" : ""}
+            <AdminText>{q || projectId ? "Select all shown" : "Select all"}</AdminText>
           </button>
           <button type="button" className="text-caption text-fg-subtle" onClick={() => onPicked(new Set())}>
-            Clear
+            <AdminText>{"Clear"}</AdminText>
           </button>
         </div>
       </div>
 
       <ul className="thin-scrollbar border-border divide-border max-h-60 divide-y overflow-y-auto rounded-lg border">
-        {shown.length === 0 && <li className="text-body-sm text-fg-subtle p-3">{projectId ? "No customer has a flat in this project yet." : "No customer matches."}</li>}
+        {shown.length === 0 && <li className="text-body-sm text-fg-subtle p-3">{adminCopy(projectId ? "No customer has a flat in this project yet." : "No customer matches.")}</li>}
         {shown.map((r) => {
           const on = picked.has(r.id);
           return (
@@ -99,9 +102,9 @@ export function CustomerPicker({
                 <input type="checkbox" checked={on} onChange={() => toggle(r.id)} className="accent-accent size-4" />
                 <span className="min-w-0 flex-1">
                   <span className="text-body-sm text-fg block truncate font-medium">{r.name}</span>
-                  {showPhone && <span className="text-caption text-fg-subtle block">{bdWhatsAppNumber(r.phone) ? r.phone : "No phone number"}</span>}
+                  {showPhone && <span className="text-caption text-fg-subtle block">{bdWhatsAppNumber(r.phone) ? r.phone : adminCopy("No phone number")}</span>}
                 </span>
-                {done?.has(r.id) && <Check aria-label="Done" className="text-success size-4" />}
+                {done?.has(r.id) && <Check aria-label={adminCopy("Done")} className="text-success size-4" />}
               </label>
             </li>
           );

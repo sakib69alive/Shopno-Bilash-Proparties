@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -43,8 +44,8 @@ export default async function ContractorPaymentReportPage({ searchParams }: Page
   return (
     <>
       <AdminPageHeader
-        title="Contractor Payment Report"
-        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Contractor Payments" }]}
+        title={<AdminText>{"Contractor Payment Report"}</AdminText>}
+        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Contractor Payments", localize: true }]}
       />
       <div className="flex flex-col gap-6 p-4 sm:p-6">
         <DashboardSection title="Summary">
@@ -59,11 +60,11 @@ export default async function ContractorPaymentReportPage({ searchParams }: Page
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-3 font-normal">Contractor</th>
-                  <th className="px-4 py-3 font-normal">Project</th>
-                  <th className="px-4 py-3 text-right font-normal">Amount</th>
-                  <th className="px-4 py-3 font-normal">Date</th>
-                  <th className="px-4 py-3 font-normal">Reference</th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Contractor"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Project"}</AdminText></th>
+                  <th className="px-4 py-3 text-right font-normal"><AdminText>{"Amount"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Date"}</AdminText></th>
+                  <th className="px-4 py-3 font-normal"><AdminText>{"Reference"}</AdminText></th>
                 </tr>
               </thead>
               <tbody>

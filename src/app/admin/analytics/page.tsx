@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -39,8 +40,8 @@ export default async function AdminAnalyticsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Analytics"
-        description="Real distributions across units, leads and customers — no web traffic tracking exists yet."
+        title={<AdminText>{"Analytics"}</AdminText>}
+        description={<AdminText>{"Real distributions across units, leads and customers — no web traffic tracking exists yet."}</AdminText>}
       />
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
         <DistributionBar title="Units by Status" entries={breakdown.unitsByStatus} />

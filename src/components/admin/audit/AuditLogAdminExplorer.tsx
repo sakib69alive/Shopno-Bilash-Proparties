@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
@@ -23,6 +25,7 @@ export interface AuditLogAdminExplorerProps {
  * which it wasn't before (only the Dashboard's last-few-events widget was).
  */
 export function AuditLogAdminExplorer({ entries, users, projects = [] }: AuditLogAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [entityType, setEntityType] = useState<string | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">("all");
@@ -117,7 +120,7 @@ export function AuditLogAdminExplorer({ entries, users, projects = [] }: AuditLo
           aria-label="Filter by entity type"
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All entities</option>
+          <option value="all"><AdminText>{"All entities"}</AdminText></option>
           {entityTypes.map((type) => (
             <option key={type} value={type}>
               {type}
@@ -128,10 +131,10 @@ export function AuditLogAdminExplorer({ entries, users, projects = [] }: AuditLo
           <select
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
-            aria-label="Filter by project"
+            aria-label={adminCopy("Filter by project")}
             className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           >
-            <option value="all">All projects</option>
+            <option value="all"><AdminText>{"All projects"}</AdminText></option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}

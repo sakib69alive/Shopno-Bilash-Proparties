@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Check, MousePointerClick, Plus, Square, Waypoints, RotateCcw, RotateCw, Sparkles, Trash2, Undo2, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -343,7 +344,7 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
 
   return (
     <fieldset className="border-border bg-surface flex flex-col gap-4 rounded-xl border p-4">
-      <legend className="text-caption text-fg-subtle px-1 uppercase">Floor plan</legend>
+      <legend className="text-caption text-fg-subtle px-1 uppercase"><AdminText>{"Floor plan"}</AdminText></legend>
 
       <div className="grid gap-4 sm:grid-cols-[1fr_16rem]">
         <Input label="Name" value={plan.name} onChange={(e) => update({ name: e.target.value })} placeholder="e.g. Typical floor, Ground floor, Penthouse" />
@@ -387,27 +388,27 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
               prompt adds them) is filled in automatically when you upload it.
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-caption text-fg-muted">Not the right way up?</span>
+              <span className="text-caption text-fg-muted"><AdminText>{"Not the right way up?"}</AdminText></span>
               <Button type="button" variant="ghost" size="sm" disabled={uploading || !/\.svg$/i.test(plan.image)} onClick={() => turn(-90)}>
                 <RotateCcw aria-hidden className="size-4" />
-                Turn left
+                <AdminText>{"Turn left"}</AdminText>
               </Button>
               <Button type="button" variant="ghost" size="sm" disabled={uploading || !/\.svg$/i.test(plan.image)} onClick={() => turn(90)}>
                 <RotateCw aria-hidden className="size-4" />
-                Turn right
+                <AdminText>{"Turn right"}</AdminText>
               </Button>
               <Button type="button" variant="ghost" size="sm" disabled={uploading || !/\.svg$/i.test(plan.image)} onClick={() => turn(180)}>
-                Flip over
+                <AdminText>{"Flip over"}</AdminText>
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button type="button" disabled={marking} onClick={startFlat} className="border-border-strong bg-surface-raised text-body-sm hover:border-accent hover:text-accent inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-semibold transition-colors disabled:opacity-50">
                 <Plus aria-hidden className="size-3.5" />
-                Flat
+                <AdminText>{"Flat"}</AdminText>
               </button>
               <button type="button" disabled={marking} onClick={startParking} className="border-border-strong bg-surface-raised text-body-sm hover:border-accent hover:text-accent inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-semibold transition-colors disabled:opacity-50">
                 <Plus aria-hidden className="size-3.5" />
-                Parking bay
+                <AdminText>{"Parking bay"}</AdminText>
               </button>
               <span aria-hidden className="bg-border mx-1 h-5 w-px" />
               {FLAT_PRESETS.map((p) => (
@@ -422,10 +423,10 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
             </div>
             {/* Doors: two clicks, one at each end of the door. */}
             <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-md border p-3">
-              <p className="text-body-sm text-fg font-semibold">Doors — just two clicks each</p>
+              <p className="text-body-sm text-fg font-semibold"><AdminText>{"Doors — just two clicks each"}</AdminText></p>
               <p className="text-caption text-fg-muted">
-                Press a button, then click <b>one end of the door</b> and <b>the other end</b> on the drawing. That is all. The <b>main door</b> shows in green on the flat at all times;
-                a <b>room door</b> shows in pink while that room is pressed (it belongs to the room whose wall it sits on).
+                <AdminText>{"Press a button, then click "}</AdminText><b><AdminText>{"one end of the door"}</AdminText></b> and <b><AdminText>{"the other end"}</AdminText></b> on the drawing. That is all. The <b><AdminText>{"main door"}</AdminText></b> shows in green on the flat at all times;
+                a <b><AdminText>{"room door"}</AdminText></b> shows in pink while that room is pressed (it belongs to the room whose wall it sits on).
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <button type="button" disabled={marking} onClick={() => startDoor("maindoor")} className="inline-flex items-center gap-2 rounded-full border-2 border-[#16a34a] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#15803d] transition-colors hover:bg-[#16a34a]/10 disabled:opacity-50">
@@ -434,7 +435,7 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
                 </button>
                 <button type="button" disabled={marking} onClick={() => startDoor("door")} className="inline-flex items-center gap-2 rounded-full border-2 border-[#e11d48] bg-surface-raised px-3.5 py-1.5 text-body-sm font-semibold text-[#be123c] transition-colors hover:bg-[#e11d48]/10 disabled:opacity-50">
                   <span aria-hidden className="size-2.5 rounded-full bg-[#e11d48]" />
-                  Door of a room
+                  <AdminText>{"Door of a room"}</AdminText>
                 </button>
               </div>
             </div>
@@ -446,11 +447,11 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
                 </p>
                 <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft([])}>
                   <Undo2 aria-hidden className="size-4" />
-                  Redo first point
+                  <AdminText>{"Redo first point"}</AdminText>
                 </Button>
                 <Button type="button" variant="ghost" onClick={cancelMarking}>
                   <X aria-hidden className="size-4" />
-                  Cancel
+                  <AdminText>{"Cancel"}</AdminText>
                 </Button>
               </div>
             )}
@@ -467,15 +468,15 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-label text-fg-muted">Draw as</span>
+                    <span className="text-label text-fg-muted"><AdminText>{"Draw as"}</AdminText></span>
                     <div className="border-border-strong bg-surface-raised inline-flex overflow-hidden rounded-md border">
                       <button type="button" onClick={() => { setDrawMode("box"); setDraft([]); }} className={cn("inline-flex h-11 items-center gap-1.5 px-3 text-sm font-semibold", drawMode === "box" ? "bg-accent text-accent-foreground" : "text-fg-muted")}>
                         <Square aria-hidden className="size-4" />
-                        Box (2 clicks)
+                        <AdminText>{"Box (2 clicks)"}</AdminText>
                       </button>
                       <button type="button" onClick={() => { setDrawMode("shape"); setDraft([]); }} className={cn("inline-flex h-11 items-center gap-1.5 px-3 text-sm font-semibold", drawMode === "shape" ? "bg-accent text-accent-foreground" : "text-fg-muted")}>
                         <Waypoints aria-hidden className="size-4" />
-                        Shape (many corners)
+                        <AdminText>{"Shape (many corners)"}</AdminText>
                       </button>
                     </div>
                   </div>
@@ -489,15 +490,15 @@ function PlanCard({ plan, projectId, update, remove }: { plan: EditorPlan; proje
                   )}
                   <Button type="button" variant="ghost" disabled={draft.length === 0} onClick={() => setDraft((d) => d.slice(0, -1))}>
                     <Undo2 aria-hidden className="size-4" />
-                    Undo
+                    <AdminText>{"Undo"}</AdminText>
                   </Button>
                   <Button type="button" variant="ghost" onClick={cancelMarking}>
                     <X aria-hidden className="size-4" />
-                    Cancel
+                    <AdminText>{"Cancel"}</AdminText>
                   </Button>
                 </div>
                 <p className="text-caption text-accent">
-                  {drawMode === "box" ? "Click one corner, then the opposite corner — it is added at once." : "Click the corners one after another around the edge, then press Finish."} Click a corner to remove it · Ctrl+Z undoes the last · Esc cancels.
+                  {drawMode === "box" ? "Click one corner, then the opposite corner — it is added at once." : "Click the corners one after another around the edge, then press Finish."}<AdminText>{" Click a corner to remove it · Ctrl+Z undoes the last · Esc cancels."}</AdminText>
                 </p>
               </div>
             )}
@@ -627,7 +628,7 @@ export function FloorPlansEditor({ projectId, initial, floors = [] }: { projectI
                 <li key={f.number} className="bg-surface flex items-center justify-between gap-3 rounded-lg px-3 py-2">
                   <span className="min-w-0">
                     <span className="text-body-sm block font-semibold">{f.label}</span>
-                    <span className="text-caption text-fg-subtle">{f.flats} flat{f.flats === 1 ? "" : "s"}</span>
+                    <span className="text-caption text-fg-subtle">{f.flats}<AdminText>{" flat"}</AdminText>{f.flats === 1 ? "" : "s"}</span>
                   </span>
                   <select
                     value={current?.key ?? ""}
@@ -648,7 +649,7 @@ export function FloorPlansEditor({ projectId, initial, floors = [] }: { projectI
           </ul>
         </section>
       )}
-      {plans.length === 0 && <p className="text-body-sm text-fg-subtle">No floor plans yet.</p>}
+      {plans.length === 0 && <p className="text-body-sm text-fg-subtle"><AdminText>{"No floor plans yet."}</AdminText></p>}
       {plans.map((plan) => (
         <PlanCard key={plan.key} plan={plan} projectId={projectId} update={(p) => patch(plan.key, p)} remove={() => setPlans((all) => all.filter((x) => x.key !== plan.key))} />
       ))}
@@ -656,7 +657,7 @@ export function FloorPlansEditor({ projectId, initial, floors = [] }: { projectI
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" variant="secondary" onClick={() => setPlans((all) => [...all, { key: newKey(), id: "", name: all.length === 0 ? "Typical floor" : "", image: "", aspect: 1, floorsText: "", areas: [], rooms: [], view: { ...NEUTRAL_VIEW } }])}>
           <Plus aria-hidden className="size-4" />
-          Add a floor plan
+          <AdminText>{"Add a floor plan"}</AdminText>
         </Button>
         <Button type="button" loading={saving} onClick={save}>
           Save floor plans

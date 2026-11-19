@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -66,9 +67,9 @@ export default async function OwnerContributionsReportPage() {
   return (
     <>
       <AdminPageHeader
-        title="Owner Contributions"
-        description="Who owes what, across every Cost Allocation — live, never a snapshot."
-        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Owner Contributions" }]}
+        title={<AdminText>{"Owner Contributions"}</AdminText>}
+        description={<AdminText>{"Who owes what, across every Cost Allocation — live, never a snapshot."}</AdminText>}
+        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Owner Contributions", localize: true }]}
         secondaryActions={hasPermission(user.role, "notifications.manage") && report.overdueCount > 0 && <SendOverdueNoticesButton />}
       />
       <div className="flex flex-col gap-6 p-4 sm:p-6">
@@ -81,7 +82,7 @@ export default async function OwnerContributionsReportPage() {
 
         <section>
           <h2 className="text-label text-fg-subtle mb-3 uppercase">
-            Outstanding Contributions {report.overdueCount > 0 && `(${report.overdueCount} overdue)`}
+            <AdminText>{"Outstanding Contributions "}</AdminText>{report.overdueCount > 0 && `(${report.overdueCount} overdue)`}
           </h2>
           {report.outstandingRows.length === 0 ? (
             <EmptyState title="Nothing outstanding" description="Every generated contribution across every allocation has been fully paid." />
@@ -90,14 +91,14 @@ export default async function OwnerContributionsReportPage() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-3 font-normal">Owner</th>
-                    <th className="px-4 py-3 font-normal">Project</th>
-                    <th className="px-4 py-3 font-normal">Allocation</th>
-                    <th className="px-4 py-3 text-right font-normal">Outstanding</th>
-                    <th className="px-4 py-3 text-right font-normal">Fine</th>
-                    <th className="px-4 py-3 text-right font-normal">Total Due</th>
-                    <th className="px-4 py-3 font-normal">Due Date</th>
-                    <th className="px-4 py-3 font-normal">Status</th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Owner"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Project"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Allocation"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Outstanding"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Fine"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Total Due"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Due Date"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Status"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>

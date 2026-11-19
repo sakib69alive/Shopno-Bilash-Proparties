@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, Plus } from "lucide-react";
@@ -11,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { formatBDT, formatDate } from "@/lib/format";
 import type { CostAllocation } from "@/types/finance/costAllocation";
 import type { Project } from "@/types/project";
+import { ExplainFinanceButton } from "./FinanceAssistant";
 
 export interface CostAllocationExplorerProps {
   allocations: CostAllocation[];
@@ -57,6 +59,7 @@ export function CostAllocationExplorer({ allocations, projects, canCreate }: Cos
     { key: "totalAmount", header: "Total Amount", align: "right", render: (a) => formatBDT(a.totalAmount.amount) },
     { key: "dueDate", header: "Due Date", render: (a) => formatDate(new Date(a.dueDate)) },
     { key: "status", header: "Status", render: (a) => <StatusBadge status={a.status} /> },
+    { key: "explain", header: "", align: "right", render: (a) => <ExplainFinanceButton selection={{ kind: "goal", id: a.id }} /> },
   ];
 
   if (allocations.length === 0) {
@@ -68,7 +71,7 @@ export function CostAllocationExplorer({ allocations, projects, canCreate }: Cos
           canCreate && (
             <Link href="/admin/finance/cost-allocations/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Allocation
+              <AdminText>{"New Allocation"}</AdminText>
             </Link>
           )
         }

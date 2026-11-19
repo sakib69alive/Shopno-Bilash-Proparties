@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -40,7 +41,7 @@ export function ContractorAssignmentPanel({ phaseId, currentContractorId, contra
         disabled={isPending}
         className="text-body-sm h-10 w-full max-w-xs rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none focus:border-accent"
       >
-        <option value="">Not assigned</option>
+        <option value=""><AdminText>{"Not assigned"}</AdminText></option>
         {contractors.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -50,13 +51,13 @@ export function ContractorAssignmentPanel({ phaseId, currentContractorId, contra
 
       {sortedHistory.length > 0 && (
         <div className="flex flex-col gap-1">
-          <p className="text-caption text-fg-subtle uppercase">History</p>
+          <p className="text-caption text-fg-subtle uppercase"><AdminText>{"History"}</AdminText></p>
           {sortedHistory.map((a) => (
             <p key={a.id} className="text-caption text-fg-subtle">
               <Link href={`/admin/construction/contractors/${a.contractorId}`} className="text-fg hover:text-accent transition-colors">
                 {contractorsById.get(a.contractorId)?.name ?? "Unknown contractor"}
               </Link>{" "}
-              — {formatDate(new Date(a.assignedDate))} to {a.unassignedDate ? formatDate(new Date(a.unassignedDate)) : "present"}
+              — {formatDate(new Date(a.assignedDate))} <AdminText>{"to"}</AdminText> {a.unassignedDate ? formatDate(new Date(a.unassignedDate)) : "present"}
             </p>
           ))}
         </div>

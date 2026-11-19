@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLanguage } from "./UiLanguage";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
@@ -27,6 +28,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [ta
  * any future detail/edit drawer) doesn't reimplement it.
  */
 export function Drawer({ open, onClose, children, title, side = "left", widthClassName = "sm:w-80", id }: DrawerProps) {
+  const { t } = useUiLanguage();
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<Element | null>(null);
 
@@ -85,7 +87,7 @@ export function Drawer({ open, onClose, children, title, side = "left", widthCla
         id={id}
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={title ? t(title) : undefined}
         className={cn(
           "bg-bg absolute inset-y-0 flex w-[85%] max-w-sm flex-col shadow-float transition-transform duration-250 ease-[var(--ease-standard)]",
           widthClassName,
@@ -95,7 +97,7 @@ export function Drawer({ open, onClose, children, title, side = "left", widthCla
       >
         {title && (
           <div className="border-border flex items-center justify-between border-b px-5 py-4">
-            <p className="text-h4">{title}</p>
+            <p className="text-h4">{t(title)}</p>
             <IconButton icon={X} label="Close" onClick={onClose} />
           </div>
         )}

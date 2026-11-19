@@ -1,0 +1,15 @@
+{
+  "id": "/portal/",
+  "name": "Shopno Bilash Client Portal",
+  "short_name": "Shopno Bilash",
+  "description": "View your property, payments, construction updates and documents.",
+  "start_url": "/portal/launch",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#faf8f4",
+  "theme_color": "#2b2622",
+  "icons": [
+    { "src": "/client-app-icon/192", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/client-app-icon/512", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

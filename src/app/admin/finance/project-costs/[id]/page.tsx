@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -78,7 +79,7 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
             <div className="flex items-center gap-2">
               <Link href={`/admin/finance/project-costs/${budget.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeleteProjectBudgetButton id={budget.id} category={budget.category} />
             </div>
@@ -88,7 +89,7 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Project</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Project"}</AdminText></h2>
           {project ? (
             <>
               <Fact label="Project" value={project.name} />
@@ -96,16 +97,16 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
                 href={`/admin/projects/${project.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View project →
+                <AdminText>{"View project →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">This project no longer exists.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"This project no longer exists."}</AdminText></p>
           )}
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Budget</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Budget"}</AdminText></h2>
           <div className="grid grid-cols-3 gap-4">
             <Fact label="Budgeted" value={formatBDT(budget.budgeted.amount)} />
             <Fact label="Actual (Manual)" value={formatBDT(budget.actual.amount)} />
@@ -120,7 +121,7 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
               &quot;Actual&quot; here is typed by hand, not calculated — for the live number from real Purchases, Expenses, and
               Contractor Payments, see{" "}
               <Link href={`/admin/projects/${project.id}/reports`} className="text-accent hover:text-accent-strong transition-colors">
-                this project&apos;s Reports
+                <AdminText>{"this project's Reports"}</AdminText>
               </Link>
               .
             </p>
@@ -128,7 +129,7 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Details</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Details"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Date" value={formatDate(new Date(budget.date))} />
             <Fact label="Reference" value={budget.reference ?? "—"} />
@@ -136,7 +137,7 @@ export default async function AdminProjectBudgetDetailPage({ params }: PageProps
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(budget.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(budget.updatedAt))} />

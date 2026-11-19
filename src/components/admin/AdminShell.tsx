@@ -4,6 +4,8 @@
 // components) straight to `AdminSidebarNav`, and that only works when both sit on the client side.
 import type { ReactNode } from "react";
 import type { User } from "@/types/user";
+import type { Locale } from "@/lib/i18n";
+import { AdminLanguageProvider, useAdminLanguage } from "./AdminLanguage";
 import type { CompanySettings } from "@/types/settings";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminHeader } from "./AdminHeader";
@@ -16,6 +18,7 @@ export interface AdminShellProps {
   /** Hrefs of nav items missing data worth flagging — see `src/lib/adminCompleteness.ts`. */
   incompleteHrefs: string[];
   settings: CompanySettings | null;
+  initialLocale: Locale;
 }
 
 /**
@@ -35,9 +38,14 @@ export interface AdminShellProps {
  * the sidebar and `<main>` gets top padding for whichever bar is showing,
  * plus bottom padding on phones so the tab capsule never covers content.
  */
-export function AdminShell({ user, children, incompleteHrefs, settings }: AdminShellProps) {
+export function AdminShell({ initialLocale, ...props }: AdminShellProps) {
+  return <AdminLanguageProvider initialLocale={initialLocale}><AdminFrame {...props} /></AdminLanguageProvider>;
+}
+
+function AdminFrame({ user, children, incompleteHrefs, settings }: Omit<AdminShellProps, "initialLocale">) {
+  const { locale } = useAdminLanguage();
   return (
-    <div data-admin-shell className="bg-bg flex min-h-screen">
+    <div data-admin-shell lang={locale} className="bg-bg flex min-h-screen">
       <AdminSidebar role={user.role} incompleteHrefs={incompleteHrefs} settings={settings} />
       <AdminPhoneChrome user={user} incompleteHrefs={incompleteHrefs} settings={settings} />
 

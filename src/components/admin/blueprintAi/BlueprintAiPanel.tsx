@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "../AdminLanguage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Check, CheckCircle2, ClipboardCopy, XCircle } from "lucide-react";
@@ -47,7 +48,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
   return (
     <Button type="button" size="sm" onClick={copy}>
       {copied ? <Check aria-hidden className="size-4" /> : <ClipboardCopy aria-hidden className="size-4" />}
-      {copied ? "Copied" : label}
+      <AdminText>{copied ? "Copied" : label}</AdminText>
     </Button>
   );
 }
@@ -92,16 +93,16 @@ function Checker() {
 
             {report.fixes.length > 0 && (
               <p className="text-body-sm text-fg-muted">
-                <strong>Fixed automatically on upload:</strong> {report.fixes.join(" ")}
+                <strong><AdminText>{"Fixed automatically on upload:"}</AdminText></strong> {report.fixes.join(" ")}
               </p>
             )}
 
             {report.errors.length > 0 && (
               <div>
-                <h3 className="text-label text-error mb-1.5 uppercase">Must fix</h3>
+                <h3 className="text-label text-error mb-1.5 uppercase"><AdminText>{"Must fix"}</AdminText></h3>
                 <ul className="text-body-sm text-fg flex list-disc flex-col gap-1.5 pl-5">
                   {report.errors.map((e) => (
-                    <li key={e}>{e}</li>
+                    <li key={e}><AdminText>{e}</AdminText></li>
                   ))}
                 </ul>
               </div>
@@ -109,17 +110,17 @@ function Checker() {
             {report.warnings.length > 0 && (
               <div>
                 <h3 className="text-label text-warning mb-1.5 flex items-center gap-1.5 uppercase">
-                  <AlertTriangle aria-hidden className="size-3.5" /> Better to fix
+                  <AlertTriangle aria-hidden className="size-3.5" /><AdminText>{" Better to fix"}</AdminText>
                 </h3>
                 <ul className="text-body-sm text-fg flex list-disc flex-col gap-1.5 pl-5">
                   {report.warnings.map((w) => (
-                    <li key={w}>{w}</li>
+                    <li key={w}><AdminText>{w}</AdminText></li>
                   ))}
                 </ul>
               </div>
             )}
             {(report.errors.length > 0 || report.warnings.length > 0) && (
-              <p className="text-body-sm text-fg-muted">Copy the lines above back to the AI and ask it to fix them, then check the new file again.</p>
+              <p className="text-body-sm text-fg-muted"><AdminText>{"Copy the lines above back to the AI and ask it to fix them, then check the new file again."}</AdminText></p>
             )}
           </div>
 
@@ -140,7 +141,7 @@ function PromptNote({ title, forWhat, canChange, canAdd, cannot }: { title: stri
   const list = (items: string[]) => (
     <ul className="text-body-sm text-fg-muted mt-1.5 flex list-disc flex-col gap-1 pl-5">
       {items.map((item) => (
-        <li key={item}>{item}</li>
+        <li key={item}><AdminText>{item}</AdminText></li>
       ))}
     </ul>
   );
@@ -184,19 +185,19 @@ function PromptNote({ title, forWhat, canChange, canAdd, cannot }: { title: stri
     <div ref={cellRef} className="min-w-0">
     <aside ref={cardRef} className="border-border bg-surface flex flex-col gap-4 rounded-2xl border p-4 will-change-transform">
       <div>
-        <p className="text-label text-accent uppercase">{title}</p>
-        <p className="text-body-sm text-fg-muted mt-1.5">{forWhat}</p>
+        <p className="text-label text-accent uppercase"><AdminText>{title}</AdminText></p>
+        <p className="text-body-sm text-fg-muted mt-1.5"><AdminText>{forWhat}</AdminText></p>
       </div>
       <div>
-        <p className="text-body-sm text-fg font-medium">Custom: what you can change</p>
+        <p className="text-body-sm text-fg font-medium"><AdminText>{"Custom: what you can change"}</AdminText></p>
         {list(canChange)}
       </div>
       <div>
-        <p className="text-body-sm text-fg font-medium">Custom: what you can add</p>
+        <p className="text-body-sm text-fg font-medium"><AdminText>{"Custom: what you can add"}</AdminText></p>
         {list(canAdd)}
       </div>
       <p className="text-body-sm text-fg-muted border-border border-t pt-3">
-        <strong className="text-fg">Not possible:</strong> {cannot}
+        <strong className="text-fg"><AdminText>{"Not possible:"}</AdminText></strong> <AdminText>{cannot}</AdminText>
       </p>
     </aside>
     </div>
@@ -214,10 +215,9 @@ export function BlueprintAiPanel() {
   return (
     <div className="flex max-w-6xl flex-col gap-10">
       <section>
-        <h2 className="text-h3">The whole job, in order</h2>
+        <h2 className="text-h3"><AdminText>{"The whole job, in order"}</AdminText></h2>
         <p className="text-body-sm text-fg-muted mt-1 max-w-3xl">
-          From the architect&rsquo;s drawing to what a client sees in their app: do the steps top to bottom. Steps 1–4 are on this page, in the same order as below; steps 5 and 6 are in the other two tabs.
-          The AI never redesigns anything — it copies the drawing exactly, and what it gets wrong you fix by hand.
+          <AdminText>{"From the architect’s drawing to what a client sees in their app: do the steps top to bottom. Steps 1–4 are on this page, in the same order as below; steps 5 and 6 are in the other two tabs. The AI never redesigns anything — it copies the drawing exactly, and what it gets wrong you fix by hand."}</AdminText>
         </p>
         <ol className="mt-4 flex max-w-4xl flex-col gap-3">
           {WORKFLOW_STEPS.map((step, i) => (
@@ -225,16 +225,16 @@ export function BlueprintAiPanel() {
               <span className="bg-accent text-accent-foreground text-label flex size-7 shrink-0 items-center justify-center rounded-full">{i + 1}</span>
               <div className="text-body-sm text-fg-muted">
                 <p>
-                  <strong className="text-fg">{step.title}.</strong> {step.body}
+                  <strong className="text-fg"><AdminText>{step.title}</AdminText>.</strong> <AdminText>{step.body}</AdminText>
                 </p>
                 {step.anchor && (
                   <a href={`#${step.anchor}`} className="text-accent mt-1 inline-block font-semibold underline">
-                    Go to step {i + 1} ↓
+                    <AdminText values={{ step: i + 1 }}>{"Go to step {step} ↓"}</AdminText>
                   </a>
                 )}
                 {step.link && (
                   <Link href={step.link.href} className="text-accent mt-1 inline-block font-semibold underline">
-                    {step.link.label} →
+                    <AdminText>{step.link.label}</AdminText> →
                   </Link>
                 )}
               </div>
@@ -246,8 +246,8 @@ export function BlueprintAiPanel() {
       <div id="step-1" className="border-border grid scroll-mt-24 gap-8 border-t pt-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <section className="flex min-w-0 flex-col gap-4">
         <div>
-          <h2 className="text-h3">Step 1 · Make the SVG — copy an architect&rsquo;s drawing exactly</h2>
-          <p className="text-body-sm text-fg-muted mt-1">Optional: fill in the flat so the AI can double-check the picture. Leave blank to use the prompt as it is.</p>
+          <h2 className="text-h3"><AdminText>{"Step 1 · Make the SVG — copy an architect’s drawing exactly"}</AdminText></h2>
+          <p className="text-body-sm text-fg-muted mt-1"><AdminText>{"Optional: fill in the flat so the AI can double-check the picture. Leave blank to use the prompt as it is."}</AdminText></p>
         </div>
         <div className="grid gap-4 sm:grid-cols-5">
           <Input label="Flat" name="name" value={details.name} onChange={set("name")} placeholder="A-502" />
@@ -261,7 +261,7 @@ export function BlueprintAiPanel() {
           <CopyButton text={create} label="Copy prompt" />
         </div>
         <details className="text-body-sm">
-          <summary className="text-accent cursor-pointer font-semibold">Show the prompt text</summary>
+          <summary className="text-accent cursor-pointer font-semibold"><AdminText>{"Show the prompt text"}</AdminText></summary>
           <PromptBox label="Prompt (select all to copy by hand)" name="create" value={create} />
         </details>
       </section>
@@ -285,8 +285,8 @@ export function BlueprintAiPanel() {
 
       <section id="step-3" className="border-border flex scroll-mt-24 flex-col gap-4 border-t pt-8">
         <div>
-          <h2 className="text-h3">Step 3 · Check the file before uploading</h2>
-          <p className="text-body-sm text-fg-muted mt-1">Drop the finished .svg file here. Nothing is uploaded or saved — it is checked right in your browser.</p>
+          <h2 className="text-h3"><AdminText>{"Step 3 · Check the file before uploading"}</AdminText></h2>
+          <p className="text-body-sm text-fg-muted mt-1"><AdminText>{"Drop the finished .svg file here. Nothing is uploaded or saved — it is checked right in your browser."}</AdminText></p>
         </div>
         <Checker />
       </section>
@@ -294,9 +294,9 @@ export function BlueprintAiPanel() {
       <div id="step-4" className="border-border grid scroll-mt-24 gap-8 border-t pt-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <section className="flex min-w-0 flex-col gap-4">
         <div>
-          <h2 className="text-h3">Step 4 · Fix something (only if needed) — change an existing plan</h2>
+          <h2 className="text-h3"><AdminText>{"Step 4 · Fix something (only if needed) — change an existing plan"}</AdminText></h2>
           <p className="text-body-sm text-fg-muted mt-1">
-            Describe the change, copy the prompt, then paste the plan&rsquo;s current SVG where it says so. The AI returns the whole updated plan.
+            <AdminText>{"Describe the change, copy the prompt, then paste the plan’s current SVG where it says so. The AI returns the whole updated plan."}</AdminText>
           </p>
         </div>
         <Textarea label="What should change?" name="change" value={change} onChange={(e) => setChange(e.target.value)} rows={3} placeholder="Move the kitchen door to the other wall; make the Bed 2 bed a pair of single beds…" />
@@ -304,7 +304,7 @@ export function BlueprintAiPanel() {
           <CopyButton text={edit} label="Copy prompt" />
         </div>
         <details className="text-body-sm">
-          <summary className="text-accent cursor-pointer font-semibold">Show the prompt text</summary>
+          <summary className="text-accent cursor-pointer font-semibold"><AdminText>{"Show the prompt text"}</AdminText></summary>
           <PromptBox label="Prompt (select all to copy by hand)" name="edit" value={edit} />
         </details>
       </section>
@@ -328,17 +328,17 @@ export function BlueprintAiPanel() {
 
       <section className="border-border flex flex-col gap-4 border-t pt-8">
         <div>
-          <h2 className="text-h3">Steps 5 &amp; 6 · Upload it, then give it to the right people</h2>
-          <p className="text-body-sm text-fg-muted mt-1">Both happen in the other two tabs.</p>
+          <h2 className="text-h3"><AdminText>{"Steps 5 & 6 · Upload it, then give it to the right people"}</AdminText></h2>
+          <p className="text-body-sm text-fg-muted mt-1"><AdminText>{"Both happen in the other two tabs."}</AdminText></p>
         </div>
         <div className="grid max-w-4xl gap-4 md:grid-cols-2">
           {WORKFLOW_STEPS.filter((s) => s.link).map((s) => (
             <Link key={s.title} href={s.link!.href} className="border-border bg-surface-raised hover:border-accent flex flex-col gap-1.5 rounded-xl border-2 p-5 shadow-sm transition-colors">
               <span className="text-h4">
-                {WORKFLOW_STEPS.indexOf(s) + 1} · {s.title}
+                {WORKFLOW_STEPS.indexOf(s) + 1} · <AdminText>{s.title}</AdminText>
               </span>
-              <span className="text-body-sm text-fg-muted">{s.body}</span>
-              <span className="text-accent text-body-sm mt-1 font-semibold">{s.link!.label} →</span>
+              <span className="text-body-sm text-fg-muted"><AdminText>{s.body}</AdminText></span>
+              <span className="text-accent text-body-sm mt-1 font-semibold"><AdminText>{s.link!.label}</AdminText> →</span>
             </Link>
           ))}
         </div>
@@ -346,21 +346,21 @@ export function BlueprintAiPanel() {
 
       <section className="border-border grid gap-6 border-t pt-8 md:grid-cols-2">
         <div>
-          <h2 className="text-h4">What the AI can do</h2>
+          <h2 className="text-h4"><AdminText>{"What the AI can do"}</AdminText></h2>
           <ul className="text-body-sm text-fg-muted mt-3 flex list-disc flex-col gap-2 pl-5">
             {AI_CAN_DO.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}><AdminText>{item}</AdminText></li>
             ))}
           </ul>
         </div>
         <div>
-          <h2 className="text-h4">What must never change</h2>
+          <h2 className="text-h4"><AdminText>{"What must never change"}</AdminText></h2>
           <ul className="text-body-sm text-fg-muted mt-3 flex list-disc flex-col gap-2 pl-5">
             {AI_MUST_KEEP.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item}><AdminText>{item}</AdminText></li>
             ))}
           </ul>
-          <p className="text-body-sm text-fg-muted mt-3">The prompts above already tell the AI all of this, and the upload checks it again.</p>
+          <p className="text-body-sm text-fg-muted mt-3"><AdminText>{"The prompts above already tell the AI all of this, and the upload checks it again."}</AdminText></p>
         </div>
       </section>
 
@@ -378,8 +378,8 @@ function MarkerPromptCard({ kind, step }: { kind: MarkerKind; step: string }) {
       <div className="flex items-start gap-3">
         <span className="bg-accent text-accent-foreground text-label flex size-7 shrink-0 items-center justify-center rounded-full">{step}</span>
         <div>
-          <h3 className="text-h4">{info.title}</h3>
-          <p className="text-caption text-fg-subtle">{info.when}</p>
+          <h3 className="text-h4"><AdminText>{info.title}</AdminText></h3>
+          <p className="text-caption text-fg-subtle"><AdminText>{info.when}</AdminText></p>
         </div>
       </div>
       <Input label="Anything the AI should know (optional)" name={`markerNotes-${kind}`} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={info.notesHint} />
@@ -387,7 +387,7 @@ function MarkerPromptCard({ kind, step }: { kind: MarkerKind; step: string }) {
         <CopyButton text={text} label={`Copy ${info.title.toLowerCase()} prompt`} />
       </div>
       <details className="text-body-sm">
-        <summary className="text-accent cursor-pointer font-semibold">Show the prompt text</summary>
+        <summary className="text-accent cursor-pointer font-semibold"><AdminText>{"Show the prompt text"}</AdminText></summary>
         <PromptBox label="Prompt (select all to copy by hand)" name={`markers-${kind}`} value={text} />
       </details>
     </div>
@@ -436,17 +436,17 @@ function MarkerSection() {
   return (
     <div id="step-2" className="border-border flex scroll-mt-24 flex-col gap-6 border-t pt-8">
       <div>
-        <h2 className="text-h3">Step 2 · Add the markers — rooms, flats and parking bays</h2>
+        <h2 className="text-h3"><AdminText>{"Step 2 · Add the markers — rooms, flats and parking bays"}</AdminText></h2>
         <p className="text-body-sm text-fg-muted mt-1 max-w-3xl">
-          For a plan that is already finished. The AI never touches the drawing: it only writes the invisible markers, so the app finds the rooms, flats and parking bays by itself on upload. It is split into three short prompts, one at a time, so the AI never runs out of room.
+          <AdminText>{"For a plan that is already finished. The AI never touches the drawing: it only writes the invisible markers, so the app finds the rooms, flats and parking bays by itself on upload. It is split into three short prompts, one at a time, so the AI never runs out of room."}</AdminText>
         </p>
         <ol className="text-body-sm text-fg-muted mt-3 flex max-w-3xl list-decimal flex-col gap-1 pl-5">
           <li>
-            Give the AI your SVG and press <strong className="text-fg">Copy</strong> on the <strong className="text-fg">Rooms</strong> card (a). Paste it. Save the block it returns.
+            Give the AI your SVG and press <strong className="text-fg"><AdminText>{"Copy"}</AdminText></strong> on the <strong className="text-fg"><AdminText>{"Rooms"}</AdminText></strong> card (a). Paste it. Save the block it returns.
           </li>
-          <li>Do the same in a new message with the <strong className="text-fg">Flats</strong> card (b), then the <strong className="text-fg">Parking bays</strong> card (c). Skip any that the drawing does not need (a flat plan has no parking).</li>
-          <li>Paste the blocks into the tool below. It puts them into the SVG and gives you the finished file.</li>
-          <li>Upload that file. A marker in the wrong place is fixed by hand in the plan editor — you never redo the file.</li>
+          <li>Do the same in a new message with the <strong className="text-fg"><AdminText>{"Flats"}</AdminText></strong> card (b), then the <strong className="text-fg"><AdminText>{"Parking bays"}</AdminText></strong> card (c). Skip any that the drawing does not need (a flat plan has no parking).</li>
+          <li><AdminText>{"Paste the blocks into the tool below. It puts them into the SVG and gives you the finished file."}</AdminText></li>
+          <li><AdminText>{"Upload that file. A marker in the wrong place is fixed by hand in the plan editor — you never redo the file."}</AdminText></li>
         </ol>
       </div>
 
@@ -458,12 +458,12 @@ function MarkerSection() {
 
       <div className="bg-surface border-border flex flex-col gap-4 rounded-xl border p-5">
         <div>
-          <h3 className="text-h4">Put the pieces together</h3>
-          <p className="text-body-sm text-fg-muted mt-1">Nothing is uploaded or saved — this runs in your browser. Your original drawing is copied as it is; the blocks are added just before its closing tag.</p>
+          <h3 className="text-h4"><AdminText>{"Put the pieces together"}</AdminText></h3>
+          <p className="text-body-sm text-fg-muted mt-1"><AdminText>{"Nothing is uploaded or saved — this runs in your browser. Your original drawing is copied as it is; the blocks are added just before its closing tag."}</AdminText></p>
         </div>
         <div>
           <label className="text-body-sm mb-1 block font-semibold" htmlFor="merge-svg">
-            1 · The finished SVG
+            <AdminText>{"1 · The finished SVG"}</AdminText>
           </label>
           <input id="merge-svg" type="file" accept=".svg,image/svg+xml" onChange={onFile} className="text-body-sm border-border-strong bg-surface-raised w-full max-w-xl rounded-md border px-3 py-2" />
         </div>
@@ -485,28 +485,28 @@ function MarkerSection() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" onClick={build}>
-            Build the finished SVG
+            <AdminText>{"Build the finished SVG"}</AdminText>
           </Button>
           {result && (
             <Button type="button" variant="secondary" onClick={download}>
-              Download the SVG
+              <AdminText>{"Download the SVG"}</AdminText>
             </Button>
           )}
         </div>
         {error && (
           <p role="alert" className="bg-error-soft text-error text-body-sm flex items-start gap-2 rounded-md px-3.5 py-3">
             <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-            {error}
+            <AdminText>{error}</AdminText>
           </p>
         )}
         {result && (
           <div role="status" className="text-body-sm flex flex-col gap-1.5">
             <p className="text-success flex items-center gap-1.5 font-semibold">
               <CheckCircle2 aria-hidden className="size-4" />
-              Done — added: {result.added.join(", ")}.
+              <AdminText>{"Done — added:"}</AdminText> {result.added.join(", ")}.
             </p>
             <p className="text-fg-muted">
-              Found in the file now: {result.report.rooms.length} {result.report.rooms.length === 1 ? "room" : "rooms"}, {result.report.areas.filter((a) => a.kind === "flat").length} flats, {result.report.areas.filter((a) => a.kind === "parking").length} parking bays.
+              <AdminText>{"Found in the file now:"}</AdminText> {result.report.rooms.length} {result.report.rooms.length === 1 ? "room" : "rooms"}, {result.report.areas.filter((a) => a.kind === "flat").length} flats, {result.report.areas.filter((a) => a.kind === "parking").length}<AdminText>{" parking bays."}</AdminText>
             </p>
             {!result.report.ok &&
               result.report.errors.map((m) => (

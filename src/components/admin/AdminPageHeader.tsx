@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/Breadcrumb";
+import { AdminText } from "./AdminLanguage";
 import { cn } from "@/lib/utils";
 
 export interface AdminPageHeaderProps {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   breadcrumbs?: BreadcrumbItem[];
   primaryAction?: ReactNode;
   secondaryActions?: ReactNode;
@@ -45,7 +46,7 @@ export function AdminPageHeader({
           className="text-fg-muted active:text-fg -ml-1 mb-2 inline-flex min-h-9 items-center gap-0.5 pr-3 text-sm font-medium sm:hidden"
         >
           <ChevronLeft aria-hidden className="size-4" />
-          {parent.label}
+          <AdminText>{parent.label}</AdminText>
         </Link>
       )}
       <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">

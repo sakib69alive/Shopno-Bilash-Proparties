@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -84,7 +85,7 @@ export default async function StockLedgerPage({ searchParams }: PageProps) {
           canManage && (
             <Link href={`/admin/procurement/stock/new?projectId=${projectId}`} className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Record Movement
+              <AdminText>{"Record Movement"}</AdminText>
             </Link>
           )
         }
@@ -100,7 +101,7 @@ export default async function StockLedgerPage({ searchParams }: PageProps) {
             </div>
           ))}
           <div className="border-border bg-accent-soft rounded-lg border p-3">
-            <p className="text-caption text-fg-subtle uppercase">Current Stock</p>
+            <p className="text-caption text-fg-subtle uppercase"><AdminText>{"Current Stock"}</AdminText></p>
             <p className="text-body-sm text-fg mt-1 font-semibold tabular-nums">
               {formatNumber(summary.currentStock)} {material.unit}
             </p>
@@ -114,12 +115,12 @@ export default async function StockLedgerPage({ searchParams }: PageProps) {
             <table className="w-full text-left">
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-2.5 font-normal">Date</th>
-                  <th className="px-4 py-2.5 font-normal">Type</th>
-                  <th className="px-4 py-2.5 text-right font-normal">Before</th>
-                  <th className="px-4 py-2.5 text-right font-normal">Movement</th>
-                  <th className="px-4 py-2.5 text-right font-normal">After</th>
-                  <th className="px-4 py-2.5 font-normal">Context / Reference</th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Date"}</AdminText></th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Type"}</AdminText></th>
+                  <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Before"}</AdminText></th>
+                  <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Movement"}</AdminText></th>
+                  <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"After"}</AdminText></th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Context / Reference"}</AdminText></th>
                   <th className="px-4 py-2.5" />
                 </tr>
               </thead>

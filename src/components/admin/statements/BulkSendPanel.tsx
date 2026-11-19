@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState } from "react";
 import { MessageCircle, Users } from "lucide-react";
 import { bdWhatsAppNumber, whatsappHref } from "@/lib/contactLinks";
@@ -42,9 +43,9 @@ export function BulkSendPanel({
       <div>
         <p className="text-body-sm text-fg flex items-center gap-2 font-semibold">
           <Users aria-hidden className="text-accent size-4" />
-          Send this notice to many customers
+          <AdminText>{"Send this notice to many customers"}</AdminText>
         </p>
-        <p className="text-caption text-fg-subtle mt-0.5 leading-snug">Tick the names. Each person gets the text above with their own name in it, on WhatsApp.</p>
+        <p className="text-caption text-fg-subtle mt-0.5 leading-snug"><AdminText>{"Tick the names. Each person gets the text above with their own name in it, on WhatsApp."}</AdminText></p>
       </div>
 
       <CustomerPicker
@@ -58,8 +59,8 @@ export function BulkSendPanel({
         done={sent}
       />
 
-      {blockedReason && <p className="text-caption text-warning">{blockedReason}</p>}
-      {noPhone.length > 0 && <p className="text-caption text-fg-subtle">No phone number for: {noPhone.map((r) => r.name).join(", ")} — they are skipped.</p>}
+      {blockedReason && <p className="text-caption text-warning"><AdminText>{blockedReason}</AdminText></p>}
+      {noPhone.length > 0 && <p className="text-caption text-fg-subtle"><AdminText values={{ names: noPhone.map((r) => r.name).join(", ") }}>{"No phone number for {names}. These customers are skipped."}</AdminText></p>}
 
       <button
         type="button"
@@ -68,16 +69,16 @@ export function BulkSendPanel({
         className="bg-accent text-accent-foreground text-body-sm inline-flex h-11 items-center justify-center gap-2 rounded-full font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
       >
         <MessageCircle aria-hidden className="size-4" />
-        {chosen.length === 0
+        <AdminText values={{ count: waiting.length, name: waiting[0]?.name ?? "" }}>{chosen.length === 0
           ? "Choose customers first"
           : waiting.length === 0
             ? "All opened"
             : sent.size === 0
-              ? `Send to ${waiting.length} on WhatsApp`
-              : `Open next (${waiting.length} left) — ${waiting[0].name}`}
+              ? "Send to {count} on WhatsApp"
+              : "Open next ({count} left) — {name}"}</AdminText>
       </button>
       {waiting.length > 0 && chosen.length > 1 && (
-        <p className="text-caption text-fg-subtle">WhatsApp opens one chat at a time with the message ready. Tap Send there, come back and press this again for the next person.</p>
+        <p className="text-caption text-fg-subtle"><AdminText>{"WhatsApp opens one chat at a time with the message ready. Tap Send there, come back and press this again for the next person."}</AdminText></p>
       )}
     </div>
   );

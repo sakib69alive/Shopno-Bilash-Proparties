@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -34,7 +35,7 @@ export default async function SalesDashboardPage() {
 
   return (
     <>
-      <AdminPageHeader title="Sales Dashboard" description="Leads, bookings, and sales — live, never a snapshot." />
+      <AdminPageHeader title={<AdminText>{"Sales Dashboard"}</AdminText>} description={<AdminText>{"Leads, bookings, and sales — live, never a snapshot."}</AdminText>} />
       <div className="flex flex-col gap-8 p-4 sm:p-6">
         <DashboardSection title="Pipeline">
           <KpiCard label="Active Leads" value={data.activeLeads} emptyLabel="No active leads" />
@@ -82,7 +83,7 @@ export default async function SalesDashboardPage() {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Activity</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Recent Activity"}</AdminText></h2>
           {data.recentActivity.length === 0 ? (
             <EmptyState title="No recent activity" description="Recent sales and bookings will appear here." />
           ) : (

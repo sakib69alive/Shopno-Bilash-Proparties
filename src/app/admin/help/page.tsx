@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -25,8 +26,8 @@ export default async function AdminHelpPage() {
   return (
     <>
       <AdminPageHeader
-        title="Help & Documentation"
-        description="What every section of this Admin Panel does, and how to use it — your reference for running the whole platform."
+        title={<AdminText>{"Help & Documentation"}</AdminText>}
+        description={<AdminText>{"What every section of this Admin Panel does, and how to use it — your reference for running the whole platform."}</AdminText>}
       />
       <div className="p-4 sm:p-6">
         <AdminGuideExplorer groups={visibleGuide} />

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -112,7 +113,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
                 <SetLifecycleStatusButton status={material.status} label={material.name} onSetStatus={setMaterialStatus.bind(null, material.id)} />
                 <Link href={`/admin/procurement/materials/${material.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
               </>
             )}
@@ -144,7 +145,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         </DashboardSection>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Project Breakdown</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Project Breakdown"}</AdminText></h2>
           {projects.length === 0 ? (
             <EmptyState title="No activity yet" description="No purchases or stock movements recorded for this material in any visible project." />
           ) : (
@@ -152,11 +153,11 @@ export default async function MaterialDetailPage({ params }: PageProps) {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-2.5 font-normal">Project</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Current Stock</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Purchased</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Used</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Purchase Cost</th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Project"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Current Stock"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Purchased"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Used"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Purchase Cost"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -190,7 +191,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Suppliers</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Suppliers"}</AdminText></h2>
           {suppliers.length === 0 ? (
             <EmptyState title="No suppliers yet" description="Suppliers this material has been purchased from will appear here." />
           ) : (
@@ -209,7 +210,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Purchase &amp; Price History</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Purchase & Price History"}</AdminText></h2>
           {priceHistory.length === 0 ? (
             <EmptyState title="No purchases yet" description="Every purchase of this material preserves the price actually paid at the time." />
           ) : (
@@ -217,12 +218,12 @@ export default async function MaterialDetailPage({ params }: PageProps) {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-2.5 font-normal">Date</th>
-                    <th className="px-4 py-2.5 font-normal">Project</th>
-                    <th className="px-4 py-2.5 font-normal">Supplier</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Quantity</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Unit Price</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Total</th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Date"}</AdminText></th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Project"}</AdminText></th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Supplier"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Quantity"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Unit Price"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Total"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -253,7 +254,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Usage History</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Usage History"}</AdminText></h2>
           {usageHistory.length === 0 ? (
             <EmptyState title="No usage recorded yet" description="Material consumption recorded on a project's Stock page will appear here." />
           ) : (
@@ -276,7 +277,7 @@ export default async function MaterialDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-3 uppercase">Stock Ledger</h2>
+          <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Stock Ledger"}</AdminText></h2>
           {ledger.length === 0 ? (
             <EmptyState title="No movements yet" description="Every stock movement across every visible project will appear here." />
           ) : (
@@ -284,11 +285,11 @@ export default async function MaterialDetailPage({ params }: PageProps) {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-2.5 font-normal">Date</th>
-                    <th className="px-4 py-2.5 font-normal">Project</th>
-                    <th className="px-4 py-2.5 font-normal">Type</th>
-                    <th className="px-4 py-2.5 text-right font-normal">Movement</th>
-                    <th className="px-4 py-2.5 text-right font-normal">After</th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Date"}</AdminText></th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Project"}</AdminText></th>
+                    <th className="px-4 py-2.5 font-normal"><AdminText>{"Type"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Movement"}</AdminText></th>
+                    <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"After"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>

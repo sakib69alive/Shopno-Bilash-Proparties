@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import Image from "next/image";
 import { useActionState } from "react";
@@ -26,7 +27,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" loading={pending}>
-      Save Changes
+      <AdminText>{"Save Changes"}</AdminText>
     </Button>
   );
 }
@@ -39,11 +40,11 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
-      <h2 id="logo" className="text-label text-fg-subtle scroll-mt-24 uppercase">Logo</h2>
+      <h2 id="logo" className="text-label text-fg-subtle scroll-mt-24 uppercase"><AdminText>{"Logo"}</AdminText></h2>
       <p className="text-caption text-fg-subtle -mt-3">
         Shown everywhere the site has a logo — header, footer, login page, Admin sidebar, Owner Portal.
       </p>
@@ -75,13 +76,13 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       </div>
 
-      <h2 id="company" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Company</h2>
+      <h2 id="company" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase"><AdminText>{"Company"}</AdminText></h2>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Legal Name" name="legalName" required defaultValue={settings.legalName} />
         <Input label="Display Name" name="displayName" required defaultValue={settings.displayName} />
       </div>
 
-      <h2 id="contact" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Contact</h2>
+      <h2 id="contact" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase"><AdminText>{"Contact"}</AdminText></h2>
       <p className="text-caption text-fg-subtle -mt-3">Shown in the public site&rsquo;s footer, under &ldquo;Contact&rdquo; — each field is hidden there individually while empty, nothing is ever shown as a placeholder.</p>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Address (optional)" name="address" defaultValue={settings.address} />
@@ -105,7 +106,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       </div>
 
-      <h2 id="social" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase">Social Media</h2>
+      <h2 id="social" className="text-label text-fg-subtle mt-2 scroll-mt-24 uppercase"><AdminText>{"Social Media"}</AdminText></h2>
       <p className="text-caption text-fg-subtle -mt-3">
         Full profile URLs (e.g. https://instagram.com/yourpage). Shown as an icon in the public footer&rsquo;s &ldquo;Follow&rdquo;
         column — only for the platforms you fill in here, never an invented or dead link.
@@ -121,7 +122,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         <Input label="LinkedIn (optional)" name="socialLinkedin" type="url" defaultValue={settings.socialLinkedin} placeholder="https://linkedin.com/company/…" />
       </div>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Regional & Defaults</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Regional & Defaults"}</AdminText></h2>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Date Format (optional)" name="dateFormat" defaultValue={settings.dateFormat} placeholder="e.g. DD MMM YYYY" />
         <Input label="Time Zone (optional)" name="timeZone" defaultValue={settings.timeZone} placeholder="e.g. Asia/Dhaka" />
@@ -182,7 +183,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         </div>
       </fieldset>
 
-      <h2 className="text-label text-fg-subtle mt-2 uppercase">Security</h2>
+      <h2 className="text-label text-fg-subtle mt-2 uppercase"><AdminText>{"Security"}</AdminText></h2>
       <Switch
         name="requireOwnerPin"
         label="Require PIN for Property Owner login"

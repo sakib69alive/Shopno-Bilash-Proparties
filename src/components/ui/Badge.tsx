@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import { STATUS_CONFIG, STATUS_TONE_CLASSES, type StatusKey } from "@/lib/status";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
       )}
     >
       <Icon className="size-3.5" aria-hidden />
-      {config.label}
+      <UiText>{config.label}</UiText>
     </span>
   );
 }

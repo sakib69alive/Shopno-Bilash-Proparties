@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -26,14 +27,14 @@ export default async function AdminNewsListPage() {
   return (
     <>
       <AdminPageHeader
-        title="News"
-        description="Articles shown on the public News page, newest first."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "News" }]}
+        title={<AdminText>{"News"}</AdminText>}
+        description={<AdminText>{"Articles shown on the public News page, newest first."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "News", localize: true }]}
         primaryAction={
           canCreate && (
             <Link href="/admin/content/news/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Article
+              <AdminText>{"New Article"}</AdminText>
             </Link>
           )
         }

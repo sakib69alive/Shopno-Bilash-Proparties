@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { NotificationPreferencesForm } from "@/components/admin/settings/NotificationPreferencesForm";
@@ -14,9 +15,9 @@ export default async function NotificationPreferencesPage() {
   return (
     <>
       <AdminPageHeader
-        title="Notification Preferences"
-        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Notifications" }]}
-        description="Control which alerts and reminders reach you, and how."
+        title={<AdminText>{"Notification Preferences"}</AdminText>}
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Notifications", localize: true }]}
+        description={<AdminText>{"Control which alerts and reminders reach you, and how."}</AdminText>}
       />
       <div className="p-4 sm:p-6">
         <NotificationPreferencesForm preference={preference} />

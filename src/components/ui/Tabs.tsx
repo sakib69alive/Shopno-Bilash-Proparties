@@ -1,5 +1,6 @@
 "use client";
 
+import { UiText } from "./UiLanguage";
 import { cn } from "@/lib/utils";
 
 export interface TabItem {
@@ -39,7 +40,7 @@ export function Tabs({ items, value, onChange, className }: TabsProps) {
               isActive ? "border-accent text-fg font-medium" : "border-transparent text-fg-subtle hover:text-fg",
             )}
           >
-            {item.label}
+            <UiText>{item.label}</UiText>
           </button>
         );
       })}

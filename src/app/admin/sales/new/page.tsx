@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -36,7 +37,7 @@ export default async function NewSalePage({ searchParams }: PageProps) {
 
   return (
     <>
-      <AdminPageHeader title="Record Sale" breadcrumbs={[{ label: "Sales", href: "/admin/sales" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"Record Sale"}</AdminText>} breadcrumbs={[{ label: "Sales", href: "/admin/sales" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <SaleForm
           action={createSale}

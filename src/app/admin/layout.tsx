@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { ADMIN_LOCALE_COOKIE, parseAdminLocale } from "@/lib/adminLocale";
 import { getCurrentUser } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -27,13 +29,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     );
   }
 
-  const [incompleteHrefs, settings] = await Promise.all([
+  const [incompleteHrefs, settings, cookieStore] = await Promise.all([
     getIncompleteNavHrefs(),
     companySettingsRepository.findById(COMPANY_SETTINGS_ID),
+    cookies(),
   ]);
 
   return (
-    <AdminShell user={user} incompleteHrefs={incompleteHrefs} settings={settings}>
+    <AdminShell user={user} incompleteHrefs={incompleteHrefs} settings={settings} initialLocale={parseAdminLocale(cookieStore.get(ADMIN_LOCALE_COOKIE)?.value)}>
       {children}
     </AdminShell>
   );

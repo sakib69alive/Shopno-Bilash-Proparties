@@ -1,4 +1,4 @@
-import { customerPaymentRepository, projectExpenseRepository } from "@/features/finance/repository";
+import { customerPaymentRepository, financialAdjustmentRepository, projectExpenseRepository } from "@/features/finance/repository";
 import { contractorPaymentRepository, contractorRepository } from "@/features/contractors/repository";
 import { contributionPaymentRepository, ownerContributionRepository } from "@/features/costAllocations/repository";
 import { projectRepository } from "@/features/projects/repository";
@@ -6,6 +6,8 @@ import { filterToVisibleProjects, canAccessProjectOptional } from "@/lib/project
 import type { User } from "@/types/user";
 import type { ProjectExpense } from "@/types/finance/project";
 import type { ContractorPayment } from "@/types/contractor";
+import { countsTowardActualCost } from "@/lib/transactionStatus";
+import { indexCostAdjustments } from "@/lib/projectFinance";
 
 export interface CategoryReportRow {
   category: string;
@@ -16,8 +18,9 @@ export interface CategoryReportRow {
 
 /** Prompt 6 §11 — Category Report, live-grouped from `ProjectExpense`, never a stored aggregate. */
 export async function getExpenseCategoryReport(user: User, projectId?: string): Promise<CategoryReportRow[]> {
-  const all = await projectExpenseRepository.list();
+  const [all, adjustments] = await Promise.all([projectExpenseRepository.list(), financialAdjustmentRepository.list()]);
   const visible = filterToVisibleProjects(user, all).filter((e) => !projectId || e.projectId === projectId);
+  const changes = indexCostAdjustments(filterToVisibleProjects(user, adjustments));
 
   const byCategory = new Map<string, ProjectExpense[]>();
   for (const expense of visible) {
@@ -29,7 +32,7 @@ export async function getExpenseCategoryReport(user: User, projectId?: string): 
   return [...byCategory.entries()]
     .map(([category, expenses]) => ({
       category,
-      total: expenses.reduce((s, e) => s + e.amount.amount, 0),
+      total: expenses.reduce((s, e) => s + (countsTowardActualCost(e.status) ? e.amount.amount + (changes.get(`expense:${e.id}`) ?? 0) : 0), 0),
       count: expenses.length,
       expenses: expenses.sort((a, b) => b.date.localeCompare(a.date)),
     }))
@@ -103,10 +106,11 @@ export async function getMonthlyCashFlow(user: User, projectId?: string, monthsB
     .filter((p) => canAccessProjectOptional(user, p.projectId))
     .filter((p) => !projectId || p.projectId === projectId);
   const contributionPayments = allContributionPayments.filter((p) => visibleContributionIds.has(p.contributionId));
-  const expenses = filterToVisibleProjects(user, allExpenses).filter((e) => !projectId || e.projectId === projectId);
+  const expenses = filterToVisibleProjects(user, allExpenses)
+    .filter((e) => (!projectId || e.projectId === projectId) && countsTowardActualCost(e.status));
   const contractorPayments = allContractorPayments
     .filter((p) => canAccessProjectOptional(user, p.projectId))
-    .filter((p) => !projectId || p.projectId === projectId);
+    .filter((p) => (!projectId || p.projectId === projectId) && countsTowardActualCost(p.status));
 
   const months: string[] = [];
   const now = new Date();
@@ -124,8 +128,8 @@ export async function getMonthlyCashFlow(user: User, projectId?: string, monthsB
   for (const p of contractorPayments) spentByMonth.set(monthKey(p.date), (spentByMonth.get(monthKey(p.date)) ?? 0) + p.amount.amount);
 
   return months.map((month) => {
-    const received = Math.round(receivedByMonth.get(month) ?? 0);
-    const spent = Math.round(spentByMonth.get(month) ?? 0);
-    return { month, received, spent, net: received - spent };
+    const received = Math.round((receivedByMonth.get(month) ?? 0) * 100);
+    const spent = Math.round((spentByMonth.get(month) ?? 0) * 100);
+    return { month, received: received / 100, spent: spent / 100, net: (received - spent) / 100 };
   });
 }

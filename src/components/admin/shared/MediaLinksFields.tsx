@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { Input } from "@/components/ui/Input";
 
 /**
@@ -17,7 +18,7 @@ export function MediaLinksFields({
 }) {
   return (
     <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
-      <legend className="text-label px-1.5">Video &amp; 360° tour (optional)</legend>
+      <legend className="text-label px-1.5"><AdminText>{"Video & 360° tour (optional)"}</AdminText></legend>
       <p className="text-body-sm text-fg-muted -mt-1">
         Paste a link and visitors get a Video and/or 360° button on this {subject}&apos;s page and a small icon on its card.
         Leave a box empty and that option stays hidden.

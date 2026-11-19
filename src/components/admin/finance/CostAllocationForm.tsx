@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -11,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import type { Project } from "@/types/project";
 import type { CostAllocationFormState } from "@/features/costAllocations/actions";
 import type { AllocationMethod } from "@/types/finance/costAllocation";
+import { setFinanceAssistantProject } from "./FinanceAssistant";
 
 export interface CostAllocationFormProps {
   action: (state: CostAllocationFormState, formData: FormData) => Promise<CostAllocationFormState>;
@@ -55,7 +57,7 @@ export function CostAllocationForm({ action, projects, submitLabel }: CostAlloca
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -69,6 +71,7 @@ export function CostAllocationForm({ action, projects, submitLabel }: CostAlloca
         required
         options={projects.map((p) => ({ value: p.id, label: p.name }))}
         placeholder={projects.length > 0 ? "Choose a project" : "No projects yet — add one first"}
+        onChange={(event) => setFinanceAssistantProject(event.target.value)}
       />
 
       <Input label="What is this payment for?" name="title" required placeholder="e.g. Piling — Phase 1" />

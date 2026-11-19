@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -186,13 +187,13 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
                     className="text-body-sm text-fg w-full max-w-xs rounded-md border border-transparent bg-transparent px-1 py-0.5 font-medium outline-none focus:border-border-strong focus:bg-surface"
                   />
                   <span className={`text-caption shrink-0 rounded-full px-2 py-0.5 ${accent.chip}`}>
-                    {tier.unitIds.length} unit{tier.unitIds.length === 1 ? "" : "s"}
+                    {tier.unitIds.length}<AdminText>{" unit"}</AdminText>{tier.unitIds.length === 1 ? "" : "s"}
                   </span>
                   <IconButton icon={Trash2} label={`Delete ${tier.name}`} onClick={() => run(() => deleteUnitTier(tier.id))} className="hover:text-error" />
                 </div>
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-label text-fg-muted">Adjustment</label>
+                    <label className="text-label text-fg-muted"><AdminText>{"Adjustment"}</AdminText></label>
                     <select
                       defaultValue={tier.adjustmentMode}
                       onChange={(e) => run(() => setUnitTierAdjustment(tier.id, e.target.value as TierAdjustmentMode, tier.adjustmentValue))}
@@ -272,8 +273,8 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
             <>
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-2.5 font-normal">Size</th>
-                  <th className="px-4 py-2.5 font-normal">Units</th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Size"}</AdminText></th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Units"}</AdminText></th>
                   <th className="px-4 py-2.5 font-normal">Tier (bulk-assign)</th>
                   <th className="px-4 py-2.5 text-right font-normal">Group Share</th>
                 </tr>
@@ -286,7 +287,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
                   const groupShare = memberIds.reduce((s, id) => s + ("error" in liveMath ? 0 : (liveMath.perUnitAmount.get(id) ?? 0)), 0);
                   return (
                     <tr key={group.sizeSqft} className="border-border text-body-sm border-b align-top last:border-b-0">
-                      <td className="px-4 py-2.5 font-medium whitespace-nowrap">{group.sizeSqft.toLocaleString()} sqft</td>
+                      <td className="px-4 py-2.5 font-medium whitespace-nowrap">{group.sizeSqft.toLocaleString()}<AdminText>{" sqft"}</AdminText></td>
                       <td className="px-4 py-2.5">
                         <div className="flex flex-wrap gap-1.5">
                           {group.members.map((m) => (
@@ -307,7 +308,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
                               — Mixed —
                             </option>
                           )}
-                          <option value="">Baseline</option>
+                          <option value=""><AdminText>{"Baseline"}</AdminText></option>
                           {tiers.map((t) => (
                             <option key={t.id} value={t.id}>
                               {t.name}
@@ -325,10 +326,10 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
             <>
               <thead>
                 <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                  <th className="px-4 py-2.5 font-normal">Unit</th>
-                  <th className="px-4 py-2.5 font-normal">Owner</th>
-                  <th className="px-4 py-2.5 text-right font-normal">Area</th>
-                  <th className="px-4 py-2.5 font-normal">Tier</th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Unit"}</AdminText></th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Owner"}</AdminText></th>
+                  <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Area"}</AdminText></th>
+                  <th className="px-4 py-2.5 font-normal"><AdminText>{"Tier"}</AdminText></th>
                   <th className="px-4 py-2.5 text-right font-normal">Share</th>
                 </tr>
               </thead>
@@ -339,14 +340,14 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
                     <td className="px-4 py-2.5">
                       <OwnerCell label={unit.ownerLabel} href={unit.ownerHref} />
                     </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">{unit.sizeSqft.toLocaleString()} sqft</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums">{unit.sizeSqft.toLocaleString()}<AdminText>{" sqft"}</AdminText></td>
                     <td className="px-4 py-2.5">
                       <select
                         defaultValue={tierOfUnit.get(unit.id) ?? ""}
                         onChange={(e) => run(() => moveUnitToTier(costAllocationId, unit.id, e.target.value || null))}
                         className="text-body-sm h-8 rounded-md border border-border-strong bg-surface-raised px-2 text-fg outline-none focus:border-accent"
                       >
-                        <option value="">Baseline</option>
+                        <option value=""><AdminText>{"Baseline"}</AdminText></option>
                         {tiers.map((t) => (
                           <option key={t.id} value={t.id}>
                             {t.name}
@@ -373,7 +374,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
               <tbody>
                 {parkingSpaces.map((p) => (
                   <tr key={p.id} className="border-border text-body-sm border-b last:border-b-0">
-                    <td className="px-4 py-2.5">Parking {p.parkingNumber}</td>
+                    <td className="px-4 py-2.5"><AdminText>{"Parking "}</AdminText>{p.parkingNumber}</td>
                     <td className="px-4 py-2.5 text-fg-muted">{p.ownerLabel}</td>
                     <td className="px-4 py-2.5 text-right">
                       <input
@@ -401,7 +402,7 @@ export function TierAllocationBuilder({ costAllocationId, totalAmount, units, ti
 
       <div>
         <Button onClick={handleGenerate} loading={isPending} disabled={!!liveError || !!previewError || units.length === 0}>
-          Confirm &amp; Generate
+          <AdminText>{"Confirm & Generate"}</AdminText>
         </Button>
       </div>
     </div>

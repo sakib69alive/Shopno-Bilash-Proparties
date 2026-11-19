@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText, useAdminLanguage } from "@/components/admin/AdminLanguage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -193,6 +194,7 @@ export function StatementStudio({
   const [to, setTo] = useState("");
   const [day, setDay] = useState(todayIso());
   const [noticeRef] = useState(() => newReference("NT"));
+  const { t: copy } = useAdminLanguage();
   const [withSignature, setWithSignature] = useState(false);
   const padRef = useRef<HTMLDivElement>(null);
   const [padBusy, setPadBusy] = useState<null | "pdf" | "png" | "brief">(null);
@@ -346,7 +348,7 @@ export function StatementStudio({
   // For sending to many people the customer's name is filled in per person, so it is not "missing" here.
   const nameLabel = template?.fields.find((f) => f.key === "name")?.label;
   const missingForBulk = missing.filter((m) => m !== nameLabel);
-  const bulkBlockedReason = !title.trim() && !body.trim() ? "Write or choose the notice first." : missingForBulk.length > 0 ? `Fill in first: ${missingForBulk.join(", ")}.` : undefined;
+  const bulkBlockedReason = !title.trim() && !body.trim() ? "Write or choose the notice first." : missingForBulk.length > 0 ? copy("Fill in first: {fields}.").replace("{fields}", () => missingForBulk.map(copy).join(", ")) : undefined;
   function bulkMessage(name: string): string {
     const v = { ...values, name };
     const t = fillTemplate(title, template, v).trim() || "Notice";
@@ -488,14 +490,14 @@ export function StatementStudio({
               )}
             >
               <Icon aria-hidden className={cn("size-5", kind === k ? "text-accent" : "text-fg-subtle")} />
-              <span className="text-body-sm text-fg font-semibold">{label}</span>
-              <span className="text-caption text-fg-subtle leading-snug">{hint}</span>
+              <span className="text-body-sm text-fg font-semibold">{copy(label)}</span>
+              <span className="text-caption text-fg-subtle leading-snug">{copy(hint)}</span>
             </button>
           ))}
         </div>
 
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
-          <p className="text-label text-fg-subtle uppercase">Address &amp; phone on the letterhead</p>
+          <p className="text-label text-fg-subtle uppercase"><AdminText>{"Address & phone on the letterhead"}</AdminText></p>
           <Input label="Address" value={addressText} onChange={(e) => setAddressText(e.target.value)} placeholder="Type any place, e.g. House 14, Road 3, Dhanmondi, Dhaka" helperText="Whatever you type here is printed on the letterhead. Or tap a quick choice:" />
           <div className="-mt-1 flex flex-wrap gap-1.5">
             {baseLetterhead.address && (
@@ -508,7 +510,7 @@ export function StatementStudio({
                   addressText.trim() === baseLetterhead.address ? "border-accent bg-accent text-accent-foreground" : "border-border bg-surface-raised text-fg-muted hover:bg-surface hover:text-fg",
                 )}
               >
-                Company office
+                <AdminText>{"Company office"}</AdminText>
               </button>
             )}
             {addresses.map((a) => (
@@ -535,7 +537,7 @@ export function StatementStudio({
             <>
               {/* Ready-made notices for the things written again and again: pick one, fill in the few details. */}
               <div className="flex flex-col gap-3">
-                <p className="text-label text-fg-muted">Start from</p>
+                <p className="text-label text-fg-muted"><AdminText>{"Start from"}</AdminText></p>
                 <button
                   type="button"
                   onClick={() => chooseTemplate("")}
@@ -545,17 +547,17 @@ export function StatementStudio({
                     templateId === "" ? "border-accent bg-accent-soft text-fg" : "border-border bg-surface-raised text-fg-muted hover:bg-surface",
                   )}
                 >
-                  Custom — write your own
+                  <AdminText>{"Custom — write your own"}</AdminText>
                 </button>
                 {TEMPLATE_GROUPS.map((g) => (
                   <div key={g}>
-                    <p className="text-caption text-fg-subtle mb-1.5 uppercase">{g}</p>
+                    <p className="text-caption text-fg-subtle mb-1.5 uppercase">{copy(g)}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {NOTICE_TEMPLATES.filter((t) => t.group === g).map((t) => (
                         <button
                           key={t.id}
                           type="button"
-                          title={t.hint}
+                          title={copy(t.hint)}
                           onClick={() => chooseTemplate(t.id)}
                           aria-pressed={templateId === t.id}
                           className={cn(
@@ -563,7 +565,7 @@ export function StatementStudio({
                             templateId === t.id ? "border-accent bg-accent text-accent-foreground" : "border-border bg-surface-raised text-fg-muted hover:bg-surface hover:text-fg",
                           )}
                         >
-                          {t.label}
+                          {copy(t.label)}
                         </button>
                       ))}
                     </div>
@@ -575,8 +577,8 @@ export function StatementStudio({
                 <div className="border-border bg-surface flex flex-col gap-3 rounded-lg border p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-body-sm text-fg font-semibold">{template.label}</p>
-                      <p className="text-caption text-fg-subtle">Fill in these — the text below updates by itself.</p>
+                      <p className="text-body-sm text-fg font-semibold">{copy(template.label)}</p>
+                      <p className="text-caption text-fg-subtle"><AdminText>{"Fill in these — the text below updates by itself."}</AdminText></p>
                     </div>
                     <button
                       type="button"
@@ -586,7 +588,7 @@ export function StatementStudio({
                       }}
                       className="text-caption text-accent hover:text-accent-strong shrink-0"
                     >
-                      Reset text
+                      <AdminText>{"Reset text"}</AdminText>
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -633,14 +635,14 @@ export function StatementStudio({
               )}
 
               <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Office closed on Eid day" />
-              <div className="-mb-2 flex flex-wrap items-center gap-1" role="toolbar" aria-label="Text formatting">
+              <div className="-mb-2 flex flex-wrap items-center gap-1" role="toolbar" aria-label={copy("Text formatting")}>
                 {TOOLS.map(({ id, label, icon: Icon }) => (
                   <button
                     key={id}
                     type="button"
                     onClick={() => format(id)}
-                    title={label}
-                    aria-label={label}
+                    title={copy(label)}
+                    aria-label={copy(label)}
                     className="text-fg-muted hover:bg-surface hover:text-fg hover:border-border flex size-9 items-center justify-center rounded-md border border-transparent transition-colors"
                   >
                     <Icon aria-hidden className="size-4" />
@@ -682,7 +684,7 @@ export function StatementStudio({
                   placeholder="Choose a payment"
                 />
               )}
-              <p className="text-caption text-fg-subtle -mt-1">Newest payments first. The remaining amount on the receipt is an estimate from the recorded price and payments.</p>
+              <p className="text-caption text-fg-subtle -mt-1"><AdminText>{"Newest payments first. The remaining amount on the receipt is an estimate from the recorded price and payments."}</AdminText></p>
             </>
           )}
 
@@ -711,7 +713,7 @@ export function StatementStudio({
                 <Input label="From (optional)" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
                 <Input label="To (optional)" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
               </div>
-              <p className="text-caption text-fg-subtle -mt-1">Leave the dates empty for everything so far.</p>
+              <p className="text-caption text-fg-subtle -mt-1"><AdminText>{"Leave the dates empty for everything so far."}</AdminText></p>
             </>
           )}
 
@@ -726,10 +728,10 @@ export function StatementStudio({
             {withSignature ? (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-label text-fg-muted">Signature</span>
+                  <span className="text-label text-fg-muted"><AdminText>{"Signature"}</AdminText></span>
                   <button type="button" onClick={() => setWithSignature(false)} className="text-caption text-fg-subtle hover:text-error inline-flex items-center gap-1">
                     <X aria-hidden className="size-3.5" />
-                    Remove
+                    <AdminText>{"Remove"}</AdminText>
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -741,7 +743,7 @@ export function StatementStudio({
               <Button type="button" variant="outline" size="sm" onClick={() => setWithSignature(true)}>
                 <PenLine aria-hidden className="size-4" />
                 <Plus aria-hidden className="-ml-1 size-3.5" />
-                Add signature
+                <AdminText>{"Add signature"}</AdminText>
               </Button>
             )}
           </div>
@@ -749,14 +751,14 @@ export function StatementStudio({
           {error && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2 rounded-md px-3 py-2.5">
               <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-              <p className="text-body-sm">{error}</p>
+              <p className="text-body-sm">{copy(error)}</p>
             </div>
           )}
 
           {kind !== "announcement" && (
             <p className="text-caption text-fg-subtle inline-flex items-center gap-2">
               {loading ? <LoaderCircle aria-hidden className="size-3.5 animate-spin" /> : null}
-              {loading ? "Updating the document…" : "The document updates as you change these."}
+              {copy(loading ? "Updating the document…" : "The document updates as you change these.")}
             </p>
           )}
         </div>
@@ -780,34 +782,34 @@ export function StatementStudio({
               const pages = Array.from(sheetsRef.current?.querySelectorAll<HTMLElement>("[data-studio-page]") ?? []);
               return makePdfFile(pages, safeFileName(`${active?.doc.kind ?? ""}-${active?.doc.title ?? "document"}`));
             }}
-            blockedReason={!upload && blocked ? `Fill in first: ${missing.join(", ")}.` : undefined}
+            blockedReason={!upload && blocked ? copy("Fill in first: {fields}.").replace("{fields}", () => missing.map(copy).join(", ")) : undefined}
           />
         )}
 
         {/* The blank letterhead for an AI: download it, give it to Claude (or any AI) with the details, let it write on the pad. */}
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
           <div>
-            <p className="text-body-sm text-fg font-semibold">Blank letterhead for an AI</p>
+            <p className="text-body-sm text-fg font-semibold"><AdminText>{"Blank letterhead for an AI"}</AdminText></p>
             <p className="text-caption text-fg-subtle mt-0.5 leading-snug">
-              Download the empty pad, give it to Claude or any AI together with the instructions and your details — it writes on the pad. Then bring the finished file back with the button below.
+              <AdminText>{"Download the empty pad, give it to Claude or any AI together with the instructions and your details — it writes on the pad. Then bring the finished file back with the button below."}</AdminText>
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="secondary" onClick={() => padAction("pdf")} loading={padBusy === "pdf"} disabled={padBusy !== null}>
               <FileText aria-hidden className="size-3.5" />
-              Pad PDF
+              <AdminText>{"Pad PDF"}</AdminText>
             </Button>
             <Button type="button" size="sm" variant="secondary" onClick={() => padAction("png")} loading={padBusy === "png"} disabled={padBusy !== null}>
               <FileImage aria-hidden className="size-3.5" />
-              Pad image
+              <AdminText>{"Pad image"}</AdminText>
             </Button>
             <Button type="button" size="sm" variant="outline" onClick={() => padAction("brief")} loading={padBusy === "brief"} disabled={padBusy !== null}>
               {briefCopied ? <Check aria-hidden className="size-3.5" /> : <Sparkles aria-hidden className="size-3.5" />}
-              {briefCopied ? "Copied" : "Copy AI instructions"}
+              {copy(briefCopied ? "Copied" : "Copy AI instructions")}
             </Button>
           </div>
           <div className="border-border flex flex-col gap-2 border-t pt-3">
-            <p className="text-body-sm text-fg font-semibold">Already have your finished design?</p>
+            <p className="text-body-sm text-fg font-semibold"><AdminText>{"Already have your finished design?"}</AdminText></p>
             <label
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
@@ -817,7 +819,7 @@ export function StatementStudio({
               className="border-border-strong text-body-sm text-fg hover:bg-surface flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed px-3 py-4 text-center transition-colors"
             >
               <Upload aria-hidden className="text-accent size-4 shrink-0" />
-              {upload ? "Choose a different file" : "Add the finished PDF or picture"}
+              {copy(upload ? "Choose a different file" : "Add the finished PDF or picture")}
               <input
                 type="file"
                 accept="application/pdf,image/*"
@@ -829,7 +831,7 @@ export function StatementStudio({
               />
             </label>
             <p className="text-caption text-fg-subtle leading-snug">
-              Any PDF or picture works — made with an AI, edited by you, or from any app. It does not need the letterhead pad or the instructions above. It is shown exactly as it is (never changed or re-laid-out), so nothing can break. You can also press Ctrl+V to paste a copied picture. Up to 20 MB; not saved on the site.
+              <AdminText>{"Any PDF or picture works — made with an AI, edited by you, or from any app. It does not need the letterhead pad or the instructions above. It is shown exactly as it is (never changed or re-laid-out), so nothing can break. You can also press Ctrl+V to paste a copied picture. Up to 20 MB; not saved on the site."}</AdminText>
             </p>
           </div>
         </div>
@@ -851,20 +853,20 @@ export function StatementStudio({
                 className="bg-accent text-accent-foreground text-body-sm inline-flex h-11 items-center gap-2 rounded-md px-4 font-medium"
               >
                 <Download aria-hidden className="size-4" />
-                Download
+                <AdminText>{"Download"}</AdminText>
               </a>
               {canShareFile && (
                 <Button type="button" variant="secondary" onClick={shareUpload}>
                   <Share2 aria-hidden className="size-4" />
-                  Share (WhatsApp…)
+                  <AdminText>{"Share (WhatsApp…)"}</AdminText>
                 </Button>
               )}
               <Button type="button" variant="outline" onClick={() => setUpload(null)}>
                 <X aria-hidden className="size-4" />
-                Remove
+                <AdminText>{"Remove"}</AdminText>
               </Button>
               <a href={upload.url} target="_blank" rel="noopener" className="text-body-sm text-accent hover:text-accent-strong inline-flex h-11 items-center px-2 font-medium">
-                Open in a new tab
+                <AdminText>{"Open in a new tab"}</AdminText>
               </a>
               <span className="text-caption text-fg-subtle ml-1 truncate">
                 {upload.file.name} · {(upload.file.size / 1024 / 1024).toFixed(upload.file.size > 1024 * 1024 ? 1 : 2)} MB
@@ -873,10 +875,10 @@ export function StatementStudio({
             <div className="bg-surface border-border overflow-hidden rounded-xl border">
               {uploadBroken ? (
                 <p className="text-body-sm text-fg-muted p-6">
-                  This browser cannot show that file here, but the file itself is fine. Use <b>Download</b> or <b>Open in a new tab</b> above.
+                  {copy("This browser cannot show that file here, but the file itself is fine. Use Download or Open in a new tab above.")}
                 </p>
               ) : upload.file.type === "application/pdf" || /\.pdf$/i.test(upload.file.name) ? (
-                <iframe title={`Preview of ${upload.file.name}`} src={`${upload.url}#view=FitH`} className="h-[80vh] w-full" />
+                <iframe title={copy("Preview of {file}").replace("{file}", () => upload.file.name)} src={`${upload.url}#view=FitH`} className="h-[80vh] w-full" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element -- a local blob URL, not a site image
                 <img src={upload.url} alt={upload.file.name} onError={() => setUploadBroken(true)} className="mx-auto max-h-[80vh] w-auto max-w-full" />
@@ -889,25 +891,26 @@ export function StatementStudio({
               <div role="status" className="bg-warning-soft text-warning mb-3 flex items-start gap-2.5 rounded-lg px-3.5 py-3">
                 <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
                 <p className="text-body-sm">
-                  <b>Not ready to download yet.</b> Fill in: {missing.join(", ")}. The PDF, image and copy unlock as soon as nothing is left blank.
+                  <b>{copy("Not ready to download yet.")}</b>{" "}
+                  <AdminText values={{ fields: missing.map(copy).join(", ") }}>{"Fill in {fields} to enable PDF, image and copy."}</AdminText>
                 </p>
               </div>
             )}
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Button type="button" onClick={() => run("pdf")} loading={busy === "pdf"} disabled={busy !== null || blocked}>
                 <FileText aria-hidden className="size-4" />
-                Download PDF
+                <AdminText>{"Download PDF"}</AdminText>
               </Button>
               <Button type="button" variant="secondary" onClick={() => run("png")} loading={busy === "png"} disabled={busy !== null || blocked}>
                 <FileImage aria-hidden className="size-4" />
-                Download image
+                <AdminText>{"Download image"}</AdminText>
               </Button>
               <Button type="button" variant="outline" onClick={() => run("copy")} loading={busy === "copy"} disabled={busy !== null || blocked}>
                 {copied ? <Check aria-hidden className="size-4" /> : <Copy aria-hidden className="size-4" />}
-                {copied ? "Copied" : "Copy image"}
+                {copy(copied ? "Copied" : "Copy image")}
               </Button>
               <span className="text-caption text-fg-subtle ml-1">
-                {pageCount} {pageCount === 1 ? "page" : "pages"} · A4
+                <AdminText values={{ count: pageCount }}>{pageCount === 1 ? "{count} page · A4" : "{count} pages · A4"}</AdminText>
               </span>
             </div>
 
@@ -924,9 +927,9 @@ export function StatementStudio({
           <div ref={previewBoxRef} className="border-border text-fg-subtle flex min-h-[24rem] flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-8 text-center">
             {loading ? <LoaderCircle aria-hidden className="size-6 animate-spin" /> : <Download aria-hidden className="size-6" />}
             <p className="text-body-sm max-w-sm">
-              {kind === "announcement"
+              {copy(kind === "announcement"
                 ? "Start typing (or paste) on the left — your notice appears here on the company letterhead, live."
-                : "Choose from the options on the left and the document appears here, ready to download as a PDF or image."}
+                : "Choose from the options on the left and the document appears here, ready to download as a PDF or image.")}
             </p>
           </div>
         )}

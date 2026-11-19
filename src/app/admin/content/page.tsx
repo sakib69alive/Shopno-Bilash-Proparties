@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { ArrowRight, FileStack, Images, Newspaper, Building2, Home, Plus, UserCog, Users, Milestone, ScrollText } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -30,7 +31,7 @@ export default async function AdminContentPage() {
 
   return (
     <>
-      <AdminPageHeader title="Content" description="Manage what the public website shows." />
+      <AdminPageHeader title={<AdminText>{"Content"}</AdminText>} description={<AdminText>{"Manage what the public website shows."}</AdminText>} />
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
         {SECTIONS.map((section) => {
           const Icon = section.icon;
@@ -43,7 +44,7 @@ export default async function AdminContentPage() {
               >
                 <Icon aria-hidden className="size-5 shrink-0" />
                 <span className="text-body-sm flex-1">{section.label}</span>
-                <span className="text-caption bg-surface rounded px-1.5 py-0.5">Soon</span>
+                <span className="text-caption bg-surface rounded px-1.5 py-0.5"><AdminText>{"Soon"}</AdminText></span>
               </div>
             );
           }

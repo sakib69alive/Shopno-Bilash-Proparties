@@ -36,7 +36,7 @@ export default async function EditGalleryItemPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Gallery", href: "/admin/content/gallery" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

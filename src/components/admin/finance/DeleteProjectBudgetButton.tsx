@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
@@ -22,7 +23,7 @@ export function DeleteProjectBudgetButton({ id, category }: { id: string; catego
   return (
     <Button variant="outline" size="sm" onClick={handleDelete} loading={isPending} className="hover:text-error">
       <Trash2 aria-hidden className="size-3.5" />
-      Delete
+      <AdminText>{"Delete"}</AdminText>
     </Button>
   );
 }

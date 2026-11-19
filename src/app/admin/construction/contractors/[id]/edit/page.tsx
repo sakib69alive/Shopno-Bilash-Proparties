@@ -35,7 +35,7 @@ export default async function EditContractorPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Construction", href: "/admin/construction" },
           { label: "Contractors", href: "/admin/construction/contractors" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

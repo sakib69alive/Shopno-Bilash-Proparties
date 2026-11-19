@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Users } from "lucide-react";
@@ -153,7 +154,7 @@ export default async function ProjectOwnersPage({ params }: PageProps) {
           action={
             canSeeCustomers && (
               <Link href="/admin/customers/new" className="text-body-sm text-accent font-medium hover:underline">
-                Add Customer
+                <AdminText>{"Add Customer"}</AdminText>
               </Link>
             )
           }
@@ -204,7 +205,7 @@ export default async function ProjectOwnersPage({ params }: PageProps) {
                     <Link href={`/admin/customers/${customer.id}`} className="text-body-sm text-fg hover:text-accent font-medium transition-colors">
                       {customer.name}
                     </Link>
-                    <p className="text-caption text-fg-subtle">Unit {unit.unitNumber}</p>
+                    <p className="text-caption text-fg-subtle"><AdminText>{"Unit "}</AdminText>{unit.unitNumber}</p>
                   </div>
                   <FinancialSummaryBlock ownerType="customer" ownerId={customer.id} />
                 </div>

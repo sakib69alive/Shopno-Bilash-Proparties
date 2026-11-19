@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -36,14 +37,14 @@ export default async function AdminContractorsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Contractors"
-        description="Everyone your team assigns to construction phases and tasks."
-        breadcrumbs={[{ label: "Construction", href: "/admin/construction" }, { label: "Contractors" }]}
+        title={<AdminText>{"Contractors"}</AdminText>}
+        description={<AdminText>{"Everyone your team assigns to construction phases and tasks."}</AdminText>}
+        breadcrumbs={[{ label: "Construction", href: "/admin/construction" }, { label: "Contractors", localize: true }]}
         primaryAction={
           canManage && (
             <Link href="/admin/construction/contractors/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Add Contractor
+              <AdminText>{"Add Contractor"}</AdminText>
             </Link>
           )
         }

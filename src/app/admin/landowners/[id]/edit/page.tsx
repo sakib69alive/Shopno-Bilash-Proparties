@@ -35,7 +35,7 @@ export default async function EditLandownerPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Landowners", href: "/admin/landowners" },
           { label: landowner.name, href: `/admin/landowners/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

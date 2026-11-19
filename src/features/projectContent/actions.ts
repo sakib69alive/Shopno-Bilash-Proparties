@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/permissions";
 import { computeMove, type MoveDirection } from "@/lib/sortOrder";
 import { recordAuditEvent } from "@/features/audit/repository";
 import { projectContentRepository, slugifyProjectName } from "@/features/projectContent/repository";
+import { companySettingsRepository, COMPANY_SETTINGS_ID } from "@/features/settings/repository";
 import { saveUploadedFile, deleteUploadedFile } from "@/lib/fileStorage";
 import { checkMapField } from "@/lib/mapLinks";
 import { roomsFromForm, prepareBlueprintFile } from "@/features/planRooms/fromForm";
@@ -23,6 +24,33 @@ import {
 
 export interface ProjectContentFormState {
   error?: string;
+}
+
+export async function updateHomeFeaturedProjects(ids: string[] | null): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user || !hasPermission(user.role, "content.update")) return false;
+
+  const [settings, projects] = await Promise.all([
+    companySettingsRepository.findById(COMPANY_SETTINGS_ID),
+    projectContentRepository.list(),
+  ]);
+  const projectIds = new Set(projects.map((project) => project.id));
+  if (!settings || (ids !== null && (!Array.isArray(ids) || ids.some((id) => !projectIds.has(id)) || new Set(ids).size !== ids.length))) {
+    return false;
+  }
+
+  await companySettingsRepository.update(COMPANY_SETTINGS_ID, { homeFeaturedProjectIds: ids });
+  revalidatePath("/");
+  revalidatePath("/admin/content/projects");
+  await recordAuditEvent({
+    actorUserId: user.id,
+    action: "content.homeFeaturedProjects.update",
+    entityType: "CompanySettings",
+    entityId: COMPANY_SETTINGS_ID,
+    previousValue: settings.homeFeaturedProjectIds ?? null,
+    newValue: ids,
+  });
+  return true;
 }
 
 const PROJECT_STATUSES: ProjectStatus[] = [

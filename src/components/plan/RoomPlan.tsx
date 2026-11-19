@@ -5,6 +5,7 @@ import { Layers, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { doorBelongsTo, doorsOf, planViewTransform, polygonCentroid, pressableRooms, roomSummary, ROOM_TYPE_LABEL, ROOM_TYPES, type PlanRoom, type PlanRooms, type PlanView, type RoomType } from "@/lib/planRooms";
 import type { FlatArea } from "@/types/project";
+import { BlueprintImage } from "./BlueprintImage";
 
 /**
  * The ONE room experience, used everywhere a plan has rooms (public project blueprints, public unit pages on phone and computer, the
@@ -89,6 +90,7 @@ const DOOR_COLORS: Record<RoomTone, { main: string; room: string }> = {
 
 const polygonClip = (points: [number, number][]) => `polygon(${points.map(([x, y]) => `${+(x * 100).toFixed(2)}% ${+(y * 100).toFixed(2)}%`).join(", ")})`;
 const polygonAttr = (points: [number, number][]) => points.map(([x, y]) => `${+(x * 100).toFixed(2)},${+(y * 100).toFixed(2)}`).join(" ");
+const PUBLIC_ROOM_ZOOM_MS = 480;
 
 function bounds(points: [number, number][]): { x0: number; y0: number; x1: number; y1: number } {
   const xs = points.map((p) => p[0]);
@@ -125,6 +127,7 @@ export function RoomStage({
   emphasis,
   fit,
   peek,
+  lowCost = false,
   className,
 }: {
   src: string;
@@ -151,6 +154,8 @@ export function RoomStage({
   fit?: boolean;
   /** A teaser: draw the plan so only this share of its width (e.g. 0.75) fits the parent, the rest running off the right edge to invite a tap. Parent must be a size container, left-aligned. */
   peek?: number;
+  /** Use a lightweight drawing and selection overlay for public building plans. */
+  lowCost?: boolean;
   className?: string;
 }) {
   const t = TONES[tone];
@@ -243,14 +248,28 @@ export function RoomStage({
       <div className={turnBox ? undefined : "absolute inset-0"} style={turnBox ?? { transform: viewTransform, transformOrigin: "50% 50%" }}>
       <div style={frameBox}>
         <div
-          className="absolute inset-0 transition-transform duration-[1200ms] ease-[cubic-bezier(0.25,0.7,0.25,1)]"
+          className={cn("absolute inset-0 motion-safe:transition-transform ease-[cubic-bezier(0.25,0.7,0.25,1)]", !lowCost && "duration-[1200ms]")}
           style={{
+            transitionDuration: lowCost ? `${PUBLIC_ROOM_ZOOM_MS}ms` : undefined,
             transformOrigin: `${wcx * 100}% ${wcy * 100}%`,
             transform: selected.length > 0 && zoom > 1 ? `scale(${zoom.toFixed(3)}) translate(${((wcx - ux) * 100).toFixed(2)}%, ${((wcy - uy) * 100).toFixed(2)}%)` : "none",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- plain img: an uploaded drawing, laid exactly under the room shapes */}
-          <img src={src} alt={alt} draggable={false} style={baseImgStyle} className={cn("absolute inset-0 size-full object-contain", tone === "blue" && "mix-blend-screen")} />
+          {lowCost ? (
+            <BlueprintImage
+              src={src}
+              alt={alt}
+              loading="lazy"
+              vectorKey={zoom > 1 ? selectedIds.join(",") : undefined}
+              vectorDelay={PUBLIC_ROOM_ZOOM_MS}
+              className="absolute top-0 left-0 size-full max-w-none origin-top-left object-contain"
+              // Lay the vector out at the zoomed dimensions so thin lines are rasterized at that size.
+              style={zoom > 1 ? { width: `${zoom * 100}%`, height: `${zoom * 100}%`, transform: `scale(${1 / zoom})` } : undefined}
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- uploaded drawing, laid exactly under the room shapes
+            <img src={src} alt={alt} draggable={false} style={baseImgStyle} className={cn("absolute inset-0 size-full object-contain", tone === "blue" && "mix-blend-screen")} />
+          )}
 
           {/* A whole-floor plan with one flat lit: the others are veiled, this one glows. */}
           {emphasis && (
@@ -265,13 +284,21 @@ export function RoomStage({
           )}
 
           {/* Everything that is not a chosen room fades back. */}
-          <div
+          {!lowCost && <div
             aria-hidden
             className={cn("pointer-events-none absolute inset-0 transition-opacity duration-300", selected.length > 0 ? "opacity-[0.7]" : "opacity-0")}
             style={{ backgroundColor: veilColor ?? t.veil, clipPath: clip }}
-          />
+          />}
 
-          {selected.map((room) => {
+          {lowCost && selected.length > 0 && (
+            <svg aria-hidden viewBox="0 0 100 100" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full">
+              {selected.map((room) => (
+                <polygon key={room.id} points={polygonAttr(room.points)} fill={t.stroke} fillOpacity={0.15} stroke={t.stroke} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              ))}
+            </svg>
+          )}
+
+          {!lowCost && selected.map((room) => {
             const [cx, cy] = polygonCentroid(room.points);
             return (
               <div key={room.id} aria-hidden className="pointer-events-none absolute inset-0" style={{ filter: t.shadow }}>
@@ -374,7 +401,7 @@ function groupLabel(type: RoomType, count: number): string {
  * The room buttons. Phone: a row of group buttons ("All rooms", "All bedrooms 4", "All balconies 2"…) above a sideways-scrolling row
  * of single rooms. Computer: a tidy column grouped by kind, each group with its own "Show all". Selecting is shared with the plan.
  */
-export function RoomPicker({ plan: fullPlan, selectedIds, onSelect, className, onEnlarge }: { plan: PlanRooms; selectedIds: string[]; onSelect: (ids: string[]) => void; className?: string; onEnlarge?: () => void }) {
+export function RoomPicker({ plan: fullPlan, selectedIds, onSelect, className, onEnlarge, lowCost = false }: { plan: PlanRooms; selectedIds: string[]; onSelect: (ids: string[]) => void; className?: string; onEnlarge?: () => void; lowCost?: boolean }) {
   const rowRef = useRef<HTMLDivElement>(null);
   // Doors are drawn on the plan but are not buttons.
   const plan = { ...fullPlan, rooms: pressableRooms(fullPlan.rooms) };
@@ -385,9 +412,19 @@ export function RoomPicker({ plan: fullPlan, selectedIds, onSelect, className, o
 
   useEffect(() => {
     if (selectedIds.length !== 1) return;
-    const el = rowRef.current?.querySelector<HTMLElement>(`[data-room-id="${CSS.escape(selectedIds[0])}"]`);
-    el?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
-  }, [selectedIds]);
+    const rail = rowRef.current;
+    const el = rail?.querySelector<HTMLElement>(`[data-room-id="${CSS.escape(selectedIds[0])}"]`);
+    if (!rail || !el) return;
+    if (!lowCost) {
+      el.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+      return;
+    }
+    const chip = el.getBoundingClientRect();
+    const viewport = rail.getBoundingClientRect();
+    if (chip.left < viewport.left || chip.right > viewport.right) {
+      rail.scrollBy({ left: (chip.left + chip.right - viewport.left - viewport.right) / 2, behavior: "instant" });
+    }
+  }, [selectedIds, lowCost]);
 
   // A group button for "other spaces" would be meaningless; the "all" button already covers them.
   const groups = summary.filter((s) => s.count >= 2 && s.type !== "other");

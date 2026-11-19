@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { ImagePlus, Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -26,19 +27,19 @@ export default async function AdminGalleryListPage({ searchParams }: { searchPar
   return (
     <>
       <AdminPageHeader
-        title="Gallery"
-        description="Images shown on the public Gallery page."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Gallery" }]}
+        title={<AdminText>{"Gallery"}</AdminText>}
+        description={<AdminText>{"Images shown on the public Gallery page."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Gallery", localize: true }]}
         primaryAction={
           canCreate && (
             <div className="flex gap-2">
               <Link href="/admin/content/gallery/bulk" className={buttonVariants({ size: "md" })}>
                 <ImagePlus aria-hidden className="size-4" />
-                Add photos
+                <AdminText>{"Add photos"}</AdminText>
               </Link>
               <Link href="/admin/content/gallery/new" className={buttonVariants({ variant: "outline", size: "md" })}>
                 <Plus aria-hidden className="size-4" />
-                Single image
+                <AdminText>{"Single image"}</AdminText>
               </Link>
             </div>
           )
@@ -47,7 +48,7 @@ export default async function AdminGalleryListPage({ searchParams }: { searchPar
       <div className="flex flex-col gap-4 p-4 sm:p-6">
         {added && (
           <p role="status" className="bg-success-soft text-success rounded-md px-3.5 py-3 text-sm">
-            Added {added} {added === "1" ? "photo" : "photos"}. Open any to add a title or caption.
+            <AdminText>{"Added "}</AdminText>{added} {added === "1" ? "photo" : "photos"}. Open any to add a title or caption.
           </p>
         )}
         <GalleryAdminGrid items={items} canDelete={canDelete} />

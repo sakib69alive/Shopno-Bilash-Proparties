@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -21,7 +22,7 @@ export default async function NewProjectBudgetPage() {
 
   return (
     <>
-      <AdminPageHeader title="Add Budget Line" breadcrumbs={[{ label: "Project Finance", href: "/admin/finance/project-costs" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"Add Budget Line"}</AdminText>} breadcrumbs={[{ label: "Project Finance", href: "/admin/finance/project-costs" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <ProjectBudgetForm action={createProjectBudget} projects={projects} phases={phases} submitLabel="Add Budget Line" />
       </div>

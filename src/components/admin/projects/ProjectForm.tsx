@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -55,7 +56,7 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -92,7 +93,7 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
         />
       </div>
 
-      <h2 className="text-label text-fg-subtle -mb-2 uppercase">Location</h2>
+      <h2 className="text-label text-fg-subtle -mb-2 uppercase"><AdminText>{"Location"}</AdminText></h2>
       <Input label="Address" name="address" required defaultValue={project?.address} placeholder="Street address" />
       <div className="grid gap-5 sm:grid-cols-3">
         <Input label="Area" name="area" defaultValue={project?.area} placeholder="e.g. Gulshan 2" />
@@ -112,7 +113,7 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
         />
       </div>
 
-      <h2 className="text-label text-fg-subtle -mb-2 uppercase">Building</h2>
+      <h2 className="text-label text-fg-subtle -mb-2 uppercase"><AdminText>{"Building"}</AdminText></h2>
       <div className="grid gap-5 sm:grid-cols-2">
         <Input label="Property Type" name="propertyType" required defaultValue={project?.propertyType} placeholder="e.g. Residential" />
         <Input
@@ -133,7 +134,7 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
         <StructureBuilder />
       )}
 
-      <h2 className="text-label text-fg-subtle -mb-2 uppercase">Timeline</h2>
+      <h2 className="text-label text-fg-subtle -mb-2 uppercase"><AdminText>{"Timeline"}</AdminText></h2>
       <div className="grid gap-5 sm:grid-cols-4">
         <Input label="Launch Date" name="launchDate" type="date" defaultValue={project?.launchDate} />
         <Input
@@ -179,7 +180,7 @@ export function ProjectForm({ action, project, submitLabel }: ProjectFormProps) 
 
       <UnitTypesField initial={project?.unitTypes} />
 
-      <h2 className="text-label text-fg-subtle -mb-2 uppercase">Commercial</h2>
+      <h2 className="text-label text-fg-subtle -mb-2 uppercase"><AdminText>{"Commercial"}</AdminText></h2>
       <Input
         label="Budget (BDT, optional)"
         name="budget"

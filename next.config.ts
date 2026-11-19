@@ -47,8 +47,15 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "20mb",
     },
   },
+  async rewrites() {
+    return {
+      beforeFiles: [{ source: "/uploads/documents/:path*", destination: "/api/uploads/documents/:path*" }],
+    };
+  },
   async headers() {
     return [
+      // The push service worker must never be served from a stale cache.
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] },
       {
         source: "/:path*",
         headers: securityHeaders,

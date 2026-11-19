@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Wand2 } from "lucide-react";
@@ -24,7 +25,7 @@ export function ProjectParkingHeader({ projectId, buildings, count, canManage }:
         {canManage && (
           <Button variant="outline" size="sm" onClick={() => setGeneratorOpen(true)}>
             <Wand2 aria-hidden className="size-3.5" />
-            Generate Parking
+            <AdminText>{"Generate Parking"}</AdminText>
           </Button>
         )}
         <Link

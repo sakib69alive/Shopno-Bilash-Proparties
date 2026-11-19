@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import { forwardRef } from "react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { Loader2 } from "lucide-react";
@@ -69,7 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           iconLeft
         )}
-        {children}
+        {typeof children === "string" ? <UiText>{children}</UiText> : children}
         {!loading && iconRight}
       </button>
     );

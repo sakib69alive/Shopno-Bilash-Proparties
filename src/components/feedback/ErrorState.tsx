@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import type { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,8 +25,8 @@ export function ErrorState({
       )}
     >
       <AlertTriangle className="size-8 text-error" aria-hidden />
-      <p className="text-h4">{title}</p>
-      <p className="text-body-sm text-fg-muted max-w-sm">{description}</p>
+      <p className="text-h4"><UiText>{title}</UiText></p>
+      <p className="text-body-sm text-fg-muted max-w-sm"><UiText>{description}</UiText></p>
       {action}
     </div>
   );

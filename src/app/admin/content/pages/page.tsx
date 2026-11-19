@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -36,9 +37,9 @@ export default async function AdminPagesListPage() {
   return (
     <>
       <AdminPageHeader
-        title="Pages"
-        description="Static legal pages shown on the public website."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Pages" }]}
+        title={<AdminText>{"Pages"}</AdminText>}
+        description={<AdminText>{"Static legal pages shown on the public website."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Pages", localize: true }]}
       />
       <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 sm:p-6">
         {pages.map((page) => (
@@ -64,7 +65,7 @@ export default async function AdminPagesListPage() {
               target="_blank"
               className="text-caption text-accent hover:text-accent-strong mt-auto transition-colors"
             >
-              View live page →
+              <AdminText>{"View live page →"}</AdminText>
             </Link>
           </div>
         ))}

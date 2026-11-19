@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
@@ -11,7 +12,7 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" variant="outline" size="sm" loading={pending}>
-      Add Category
+      <AdminText>{"Add Category"}</AdminText>
     </Button>
   );
 }
@@ -35,7 +36,7 @@ export function MaterialCategoryQuickForm() {
       <Input label="Default Unit (optional)" name="defaultUnit" placeholder="e.g. Bag" className="h-9 w-36" />
       <Input label="Description (optional)" name="description" placeholder="e.g. OPC/PCC cement, all brands" className="h-9 flex-1" />
       <SubmitButton />
-      {state.error && <p className="text-body-sm text-error">{state.error}</p>}
+      {state.error && <p className="text-body-sm text-error"><AdminText>{state.error ?? ""}</AdminText></p>}
     </PersistForm>
   );
 }

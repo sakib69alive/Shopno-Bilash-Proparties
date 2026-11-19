@@ -12,11 +12,13 @@ import {
   KeyRound,
   Send,
   TrendingUp,
+  MapPin,
   type LucideIcon,
 } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
+import { Media } from "@/components/ui/Media";
 import { capabilities, trust } from "@/content/home";
-import type { Project } from "@/content/projects";
+import { PROJECT_STATUS_LABEL, type Project } from "@/content/projects";
 import { getProjectAvailability } from "@/lib/projectAvailability";
 import type { PropertyListing } from "@/lib/properties";
 import { ContactActions } from "./ContactActions";
@@ -63,21 +65,14 @@ function Skyline({ className }: { className?: string }) {
   );
 }
 
-/**
- * The phone home page. Top to bottom: search, a full-bleed hero card (the
- * featured project's photo, or a drawn skyline when none exists) with a
- * floating quick-link card, a promise + real-numbers band, featured homes,
- * our developments, what we do, the landowner invitation, why people trust
- * us, and a closing contact card. Every figure comes from real project and
- * unit records — a number that is zero or unknown never appears — and every
- * section that has nothing to show quietly steps aside.
- */
 export function HomeM({
   projects,
+  featuredProjects,
   listings,
   companyName,
 }: {
   projects: Project[];
+  featuredProjects: Project[];
   listings: PropertyListing[];
   companyName: string;
 }) {
@@ -92,10 +87,56 @@ export function HomeM({
 
   return (
     <div className="flex flex-col gap-10 pt-3 pb-8 lg:hidden">
-      {/* ---------- Hero ---------- */}
-      <div>
-        <HomeHeroM companyName={companyName} />
-        <div className="px-[var(--gutter)]">
+      <HomeHeroM companyName={companyName} />
+
+      {featuredProjects.length > 0 && (
+        <section id="featured-projects" aria-labelledby="mobile-featured-projects" className="mx-auto w-full max-w-3xl scroll-mt-[calc(var(--m-topbar-h)+env(safe-area-inset-top)+1rem)] px-[var(--gutter)]">
+          <h2 id="mobile-featured-projects" className="font-serif-display text-fg text-[2rem] leading-none tracking-tight">
+            Featured projects
+          </h2>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            {featuredProjects.map((project) => {
+              const areas = [...new Set(listings
+                .filter((listing) => listing.projectSlug === project.slug)
+                .map((listing) => listing.area)
+                .filter(Boolean))];
+              return (
+                <Link key={project.id} href={`/projects/${project.slug}`} className="border-border group block min-w-0 border-b pb-3">
+                  {project.coverImage.src && (
+                    <Media
+                      ratio="wide"
+                      src={project.coverImage.src}
+                      alt={project.coverImage.alt}
+                      sizes="(min-width: 640px) 360px, calc(100vw - 32px)"
+                      containerClassName="rounded-xl"
+                    />
+                  )}
+                  <div className="mt-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-accent text-xs font-medium">{PROJECT_STATUS_LABEL[project.status]}</p>
+                      <h3 className="font-serif-display text-fg mt-1 text-[1.5rem] leading-tight">{project.name}</h3>
+                      <p className="text-fg-muted mt-1 flex items-center gap-1.5 text-xs">
+                        <MapPin aria-hidden className="size-3 shrink-0" />
+                        {project.location}
+                      </p>
+                      {areas.length > 0 && areas.length <= 3 && (
+                        <p className="text-fg-muted mt-1.5 text-xs">{areas.join(" · ")}</p>
+                      )}
+                    </div>
+                    <ArrowUpRight aria-hidden className="text-accent mt-2 size-[1.125rem] shrink-0 transition-transform group-active:translate-x-0.5" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <Link href="/projects" className="border-border-strong text-accent mt-5 flex min-h-12 items-center justify-between rounded-full border px-5 text-sm font-semibold">
+            View all projects
+            <ArrowRight aria-hidden className="size-4" />
+          </Link>
+        </section>
+      )}
+
+      <div className="px-[var(--gutter)]">
         {/* Where to go next: four tiles in the same language as the Menu sheet — icon, serif-weight label, one line of context. */}
         <nav aria-label="Quick links" className="mt-3 grid grid-cols-2 gap-3">
           {QUICK_LINKS.map(({ label, hint, href, icon: Icon }) => (
@@ -117,7 +158,6 @@ export function HomeM({
             </Link>
           ))}
         </nav>
-        </div>
       </div>
 
       {/* ---------- Promise + real numbers ---------- */}

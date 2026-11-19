@@ -114,38 +114,44 @@ export function MenuSheet() {
   }
 
   return (
-    <BottomSheet open={menuOpen} onClose={closeMenu} title="Menu" className="lg:hidden" textured>
+    <BottomSheet
+      open={menuOpen}
+      onClose={closeMenu}
+      title="Menu"
+      className="lg:hidden"
+      panelClassName="mx-auto max-w-xl border-t border-border shadow-[0_-16px_54px_-16px_rgba(25,45,37,0.32)]"
+    >
       <button
         type="button"
         onClick={handleSearch}
-        className="bg-surface text-fg-muted flex h-12 w-full items-center gap-3 rounded-full px-4 text-[0.9375rem] transition-transform active:scale-[0.98]"
+        className="border-border bg-surface-raised text-fg-muted mt-2 flex min-h-[3.25rem] w-full items-center gap-3 rounded-2xl border px-4 py-2.5 text-left text-sm shadow-[0_2px_8px_rgba(25,45,37,0.05)] transition-colors active:bg-surface"
       >
-        <Search aria-hidden className="size-[18px]" />
+        <Search aria-hidden className="text-accent size-[18px] shrink-0" />
         Search projects and properties
       </button>
 
-      <nav aria-label="Pages" className="mt-5 flex flex-col gap-5">
+      <nav aria-label="Pages" className="mt-7 flex flex-col gap-7">
         {GROUPS.map((group) => (
           <section key={group.title}>
-            <h3 className="text-label text-fg-subtle mb-2 px-1 uppercase">{group.title}</h3>
-            <ul className="bg-surface-raised border-border divide-border divide-y overflow-hidden rounded-[var(--m-radius-card)] border">
+            <h3 className="text-accent mb-2.5 px-1 text-xs font-semibold tracking-[0.09em] uppercase">{group.title}</h3>
+            <ul className="border-border bg-surface-raised space-y-1 rounded-[1.25rem] border p-1.5 shadow-[0_4px_16px_-6px_rgba(25,45,37,0.16)]">
               {group.links.map(({ label, href, hint, icon: Icon }) => {
                 const current = isCurrent(href, pathname, hash);
                 return (
-                  <li key={href} className="relative">
+                  <li key={href}>
                     <Link
                       href={href}
                       onClick={closeMenu}
                       aria-current={current ? "page" : undefined}
                       className={cn(
-                        "flex min-h-16 items-center gap-3.5 px-3.5 py-2.5 transition-colors active:bg-surface",
-                        current && "bg-accent-soft",
+                        "focus-visible:outline-accent flex min-h-[4.375rem] items-center gap-3.5 rounded-[0.875rem] border px-3 py-2.5 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2",
+                        current ? "bg-accent-soft border-accent/15" : "border-transparent active:bg-surface",
                       )}
                     >
                       <span
                         className={cn(
-                          "flex size-10 shrink-0 items-center justify-center rounded-full",
-                          current ? "bg-accent text-accent-foreground" : "bg-accent-soft text-accent",
+                          "flex size-10 shrink-0 items-center justify-center rounded-xl",
+                          current ? "bg-accent text-accent-foreground" : "bg-surface text-accent",
                         )}
                       >
                         <Icon aria-hidden className="size-[18px]" />
@@ -154,7 +160,7 @@ export function MenuSheet() {
                         <span className={cn("font-display block text-[0.9375rem] leading-tight font-semibold", current && "text-accent")}>
                           {label}
                         </span>
-                        <span className="text-fg-muted mt-0.5 block truncate text-xs">{current ? "You are here" : hint}</span>
+                        <span className="text-fg-muted mt-1 block text-xs leading-relaxed">{current ? "You are here" : hint}</span>
                       </span>
                       {current ? (
                         <span aria-hidden className="bg-accent size-2 shrink-0 rounded-full" />
@@ -162,7 +168,6 @@ export function MenuSheet() {
                         <ChevronRight aria-hidden className="text-fg-subtle size-4 shrink-0" />
                       )}
                     </Link>
-                    {current && <span aria-hidden className="bg-accent absolute top-3 bottom-3 left-0 w-1 rounded-r-full" />}
                   </li>
                 );
               })}

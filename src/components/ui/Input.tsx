@@ -1,3 +1,6 @@
+"use client";
+
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { forwardRef, useId } from "react";
 import type { InputHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
@@ -10,7 +13,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 /** Label is always visible — placeholder text is never used as the only label. */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, helperText, id, disabled, ...props }, ref) => {
+  ({ className, label, error, helperText, id, disabled, placeholder, ...props }, ref) => {
+    const { t } = useUiLanguage();
     const generatedId = useId();
     const inputId = id ?? generatedId;
     const messageId = error || helperText ? `${inputId}-message` : undefined;
@@ -18,7 +22,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         <label htmlFor={inputId} className="text-label text-fg-muted">
-          {label}
+          {t(label)}
         </label>
         <input
           ref={ref}
@@ -35,6 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               "bg-disabled-bg text-disabled-fg border-border cursor-not-allowed",
             className,
           )}
+          placeholder={placeholder && t(placeholder)}
           {...props}
         />
         {(error || helperText) && (
@@ -45,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error ? "text-error" : "text-fg-subtle",
             )}
           >
-            {error || helperText}
+            {t(error || helperText || "")}
           </p>
         )}
       </div>

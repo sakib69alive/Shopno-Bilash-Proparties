@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -48,13 +49,13 @@ export default async function AdminNotificationsPage({ searchParams }: PageProps
   return (
     <>
       <AdminPageHeader
-        title="Notifications"
-        description="Every notification the platform has sent, across every channel."
+        title={<AdminText>{"Notifications"}</AdminText>}
+        description={<AdminText>{"Every notification the platform has sent, across every channel."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/notifications/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Notification
+              <AdminText>{"New Notification"}</AdminText>
             </Link>
           )
         }
@@ -62,7 +63,7 @@ export default async function AdminNotificationsPage({ searchParams }: PageProps
       <div className="p-4 sm:p-6">
         {sent && (
           <div role="status" className="bg-success-soft text-success mb-4 rounded-md px-3.5 py-3 text-body-sm">
-            Sent to {sent} owner{sent === "1" ? "" : "s"}.
+            <AdminText>{"Sent to"}</AdminText> {sent}<AdminText>{" owner"}</AdminText>{sent === "1" ? "" : "s"}.
             {skipped && skipped !== "0" ? ` ${skipped} unit owner${skipped === "1" ? "" : "s"} in this project have no portal account yet and were skipped.` : ""}
           </div>
         )}

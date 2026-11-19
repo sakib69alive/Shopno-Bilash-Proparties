@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -33,8 +34,8 @@ export default async function NewUnitPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="New Property"
-        breadcrumbs={[{ label: "Properties", href: "/admin/properties" }, { label: "New" }]}
+        title={<AdminText>{"New Property"}</AdminText>}
+        breadcrumbs={[{ label: "Properties", href: "/admin/properties" }, { label: "New", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <UnitForm

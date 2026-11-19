@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -56,13 +57,13 @@ export default async function AdminSalesPage() {
   return (
     <>
       <AdminPageHeader
-        title="Sales"
-        description="Every unit sold to a customer."
+        title={<AdminText>{"Sales"}</AdminText>}
+        description={<AdminText>{"Every unit sold to a customer."}</AdminText>}
         primaryAction={
           canCreate && (
             <Link href="/admin/sales/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Record Sale
+              <AdminText>{"Record Sale"}</AdminText>
             </Link>
           )
         }

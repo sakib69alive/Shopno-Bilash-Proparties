@@ -43,7 +43,7 @@ export default async function EditLeadPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Leads / Enquiries", href: "/admin/leads" },
           { label: lead.name, href: `/admin/leads/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

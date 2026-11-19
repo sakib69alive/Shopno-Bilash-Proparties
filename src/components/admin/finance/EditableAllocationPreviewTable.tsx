@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
@@ -70,10 +71,10 @@ export function EditableAllocationPreviewTable({ costAllocationId, totalAmount, 
         <table className="w-full text-left">
           <thead>
             <tr className="border-border text-label text-fg-subtle border-b uppercase">
-              <th className="px-4 py-2.5 font-normal">Unit</th>
-              <th className="px-4 py-2.5 font-normal">Owner</th>
-              <th className="px-4 py-2.5 text-right font-normal">Area</th>
-              <th className="px-4 py-2.5 text-right font-normal">Amount (BDT)</th>
+              <th className="px-4 py-2.5 font-normal"><AdminText>{"Unit"}</AdminText></th>
+              <th className="px-4 py-2.5 font-normal"><AdminText>{"Owner"}</AdminText></th>
+              <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Area"}</AdminText></th>
+              <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Amount (BDT)"}</AdminText></th>
             </tr>
           </thead>
           <tbody>
@@ -81,7 +82,7 @@ export function EditableAllocationPreviewTable({ costAllocationId, totalAmount, 
               <tr key={unit.id} className="border-border text-body-sm border-b last:border-b-0">
                 <td className="px-4 py-2.5">{unit.unitNumber}</td>
                 <td className="px-4 py-2.5 text-fg-muted">{unit.ownerLabel}</td>
-                <td className="px-4 py-2.5 text-right tabular-nums">{unit.sizeSqft.toLocaleString()} sqft</td>
+                <td className="px-4 py-2.5 text-right tabular-nums">{unit.sizeSqft.toLocaleString()}<AdminText>{" sqft"}</AdminText></td>
                 <td className="px-4 py-2.5 text-right">
                   <input
                     type="number"
@@ -95,7 +96,7 @@ export function EditableAllocationPreviewTable({ costAllocationId, totalAmount, 
             ))}
             {parkingSpaces.map((parking) => (
               <tr key={parking.id} className="border-border text-body-sm border-b last:border-b-0">
-                <td className="px-4 py-2.5">Parking {parking.parkingNumber}</td>
+                <td className="px-4 py-2.5"><AdminText>{"Parking "}</AdminText>{parking.parkingNumber}</td>
                 <td className="px-4 py-2.5 text-fg-muted">{parking.ownerLabel}</td>
                 <td className="px-4 py-2.5 text-right text-fg-subtle">—</td>
                 <td className="px-4 py-2.5 text-right">
@@ -131,7 +132,7 @@ export function EditableAllocationPreviewTable({ costAllocationId, totalAmount, 
 
       <div>
         <Button onClick={handleConfirm} loading={isPending} disabled={runningTotal === 0}>
-          Confirm &amp; Generate
+          <AdminText>{"Confirm & Generate"}</AdminText>
         </Button>
       </div>
     </div>

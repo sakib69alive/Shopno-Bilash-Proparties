@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -20,12 +21,12 @@ export default async function BulkAddUnitsPage({ searchParams }: { searchParams:
   return (
     <>
       <AdminPageHeader
-        title="Add units in bulk"
-        description="Create many units for a project at once, then fine-tune any of them."
+        title={<AdminText>{"Add units in bulk"}</AdminText>}
+        description={<AdminText>{"Create many units for a project at once, then fine-tune any of them."}</AdminText>}
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Properties", href: "/admin/content/properties" },
-          { label: "Bulk add" },
+          { label: "Bulk add", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

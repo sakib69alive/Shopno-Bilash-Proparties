@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, ArrowUpToLine, Pencil, Trash2 } from "lucide-react";
@@ -143,7 +144,7 @@ export function UnitContentAdminTable({ units, projects, initialProject = "", ca
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-fg-muted">Project</span>
+            <span className="text-fg-muted"><AdminText>{"Project"}</AdminText></span>
             <select
               value={project}
               onChange={(e) => {
@@ -152,7 +153,7 @@ export function UnitContentAdminTable({ units, projects, initialProject = "", ca
               }}
               className={SELECT}
             >
-              <option value="">All projects</option>
+              <option value=""><AdminText>{"All projects"}</AdminText></option>
               {projects.map((p) => (
                 <option key={p.slug} value={p.slug}>
                   {p.name}
@@ -161,14 +162,14 @@ export function UnitContentAdminTable({ units, projects, initialProject = "", ca
             </select>
           </label>
           <p className="text-body-sm text-fg-muted">
-            {rows.length} {rows.length === 1 ? "unit" : "units"} · {availableCount} available
+            {rows.length} {rows.length === 1 ? "unit" : "units"} · {availableCount}<AdminText>{" available"}</AdminText>
           </p>
         </div>
 
         {canDelete && selected.size > 0 && (
           <Button variant="destructive" size="sm" onClick={handleDeleteSelected} loading={isPending}>
             <Trash2 aria-hidden className="size-4" />
-            Delete {selected.size} selected
+            <AdminText>{"Delete "}</AdminText>{selected.size} selected
           </Button>
         )}
       </div>
@@ -187,7 +188,7 @@ export function UnitContentAdminTable({ units, projects, initialProject = "", ca
             href="/admin/content/properties/new"
             className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}
           >
-            New Property
+            <AdminText>{"New Property"}</AdminText>
           </Link>
         }
       />

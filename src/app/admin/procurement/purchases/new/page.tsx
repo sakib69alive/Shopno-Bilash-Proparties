@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -29,8 +30,8 @@ export default async function NewPurchasePage() {
   return (
     <>
       <AdminPageHeader
-        title="Record Purchase"
-        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Purchases", href: "/admin/procurement/purchases" }, { label: "New" }]}
+        title={<AdminText>{"Record Purchase"}</AdminText>}
+        breadcrumbs={[{ label: "Procurement", href: "/admin/procurement" }, { label: "Purchases", href: "/admin/procurement/purchases" }, { label: "New", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <PurchaseForm action={createPurchase} vendors={vendors} projects={projects} materials={materials} phases={phases} submitLabel="Record Purchase" />

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -40,7 +41,7 @@ export default async function NewPaymentPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <AdminPageHeader title="Record Payment" breadcrumbs={[{ label: "Payments", href: "/admin/sales/payments" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"Record Payment"}</AdminText>} breadcrumbs={[{ label: "Payments", href: "/admin/sales/payments" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <PaymentForm action={createPayment} customers={customers} projects={projects} sales={sales} defaultCustomerId={customerId} defaultSaleId={saleId} submitLabel="Record Payment" />
       </div>

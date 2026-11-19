@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useTransition } from "react";
 import { Pencil, Star, Trash2 } from "lucide-react";
@@ -71,7 +72,7 @@ export function NewsAdminTable({ articles, canDelete }: NewsAdminTableProps) {
       emptyDescription="Create the first News article to publish it on the public site."
       emptyAction={
         <Link href="/admin/content/news/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
-          New Article
+          <AdminText>{"New Article"}</AdminText>
         </Link>
       }
     />

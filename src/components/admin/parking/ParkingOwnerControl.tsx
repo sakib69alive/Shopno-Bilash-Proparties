@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -42,14 +43,14 @@ export function ParkingOwnerControl({ parkingId, ownerLabel, ownerHref, customer
             <p className="text-body text-fg font-medium">{ownerLabel}</p>
           )}
           <Button variant="outline" size="sm" onClick={handleRelease} loading={isPending} className="hover:text-error">
-            Release
+            <AdminText>{"Release"}</AdminText>
           </Button>
         </div>
       ) : (
         <>
-          <p className="text-body-sm text-fg-subtle">No owner assigned — independent of any unit&rsquo;s owner.</p>
+          <p className="text-body-sm text-fg-subtle"><AdminText>{"No owner assigned — independent of any unit’s owner."}</AdminText></p>
           <Button size="sm" onClick={() => setDrawerOpen(true)} className="self-start">
-            Assign Owner
+            <AdminText>{"Assign Owner"}</AdminText>
           </Button>
         </>
       )}

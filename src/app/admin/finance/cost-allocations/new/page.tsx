@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -21,8 +22,8 @@ export default async function NewCostAllocationPage() {
   return (
     <>
       <AdminPageHeader
-        title="New budget"
-        breadcrumbs={[{ label: "Cost Allocations", href: "/admin/finance/cost-allocations" }, { label: "New" }]}
+        title={<AdminText>{"New budget"}</AdminText>}
+        breadcrumbs={[{ label: "Cost Allocations", href: "/admin/finance/cost-allocations" }, { label: "New", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <CostAllocationForm action={createCostAllocation} projects={projects} submitLabel="Next: choose who pays" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
@@ -42,7 +43,7 @@ export function NewsArticleForm({ action, article, projects, submitLabel }: News
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -87,7 +88,7 @@ export function NewsArticleForm({ action, article, projects, submitLabel }: News
       />
 
       <fieldset className="border-border flex flex-col gap-5 rounded-md border p-4">
-        <legend className="text-label px-1.5">Photos</legend>
+        <legend className="text-label px-1.5"><AdminText>{"Photos"}</AdminText></legend>
         <AdminImageField
           label={article ? "Replace cover photo (optional)" : "Cover photo"}
           name="coverImage"

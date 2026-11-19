@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -79,7 +80,7 @@ export default async function AdminVendorDetailPage({ params }: PageProps) {
                 <SetLifecycleStatusButton status={vendor.status} label={vendor.name} onSetStatus={setVendorStatus.bind(null, vendor.id)} />
                 <Link href={`/admin/procurement/${vendor.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
                 <DeleteVendorButton id={vendor.id} name={vendor.name} />
               </>
@@ -91,7 +92,7 @@ export default async function AdminVendorDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Contact</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Contact"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Company" value={vendor.companyName ?? "—"} />
               <Fact label="Contact Person" value={vendor.contactPerson ?? "—"} />
@@ -108,13 +109,13 @@ export default async function AdminVendorDetailPage({ params }: PageProps) {
             <div className="border-border bg-surface-raised rounded-lg border p-4">
               <p className="text-title-md text-fg font-semibold">{formatBDT(totalSpent)}</p>
               <p className="text-caption text-fg-subtle mt-1">
-                Across {purchases.length} {purchases.length === 1 ? "purchase" : "purchases"}
+                <AdminText>{"Across "}</AdminText>{purchases.length} {purchases.length === 1 ? "purchase" : "purchases"}
               </p>
             </div>
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(vendor.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(vendor.updatedAt))} />
@@ -123,7 +124,7 @@ export default async function AdminVendorDetailPage({ params }: PageProps) {
         </div>
 
         <div className="flex flex-col gap-4">
-          <h2 className="text-label text-fg-subtle uppercase">Purchases</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Purchases"}</AdminText></h2>
           {purchases.length === 0 ? (
             <EmptyState title="No purchases yet" description="Purchases recorded against this vendor will appear here." />
           ) : (

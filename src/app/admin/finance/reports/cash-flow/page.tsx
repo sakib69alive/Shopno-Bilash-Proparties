@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -37,30 +38,30 @@ export default async function CashFlowReportPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Monthly Cash Flow"
-        description="Received vs. spent, month by month — an in/out ledger, not a profit/loss statement."
-        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Cash Flow" }]}
+        title={<AdminText>{"Monthly Cash Flow"}</AdminText>}
+        description={<AdminText>{"Monthly collections compared with posted expenses and contractor payments. Materials orders are covered in project costs."}</AdminText>}
+        breadcrumbs={[{ label: "Reports", href: "/admin/finance/reports" }, { label: "Cash Flow", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
           <table className="w-full text-left">
             <thead>
               <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                <th className="px-4 py-3 font-normal">Month</th>
-                <th className="px-4 py-3 text-right font-normal">Received</th>
-                <th className="px-4 py-3 text-right font-normal">Spent</th>
-                <th className="px-4 py-3 text-right font-normal">Net</th>
+                <th className="px-4 py-3 font-normal"><AdminText>{"Month"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Received"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Spent"}</AdminText></th>
+                <th className="px-4 py-3 text-right font-normal"><AdminText>{"Net"}</AdminText></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.month} className="border-border text-body-sm border-b last:border-b-0">
                   <td className="px-4 py-3">{row.month}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatBDT(row.received)}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatBDT(row.spent)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{formatBDT(row.received, 2)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">{formatBDT(row.spent, 2)}</td>
                   <td className={`px-4 py-3 text-right tabular-nums ${row.net >= 0 ? "text-success" : "text-error"}`}>
                     {row.net >= 0 ? "+" : ""}
-                    {formatBDT(row.net)}
+                    {formatBDT(row.net, 2)}
                   </td>
                 </tr>
               ))}

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -25,14 +26,14 @@ export default async function AdminTeamListPage() {
   return (
     <>
       <AdminPageHeader
-        title="Team & Partners"
-        description="Partners, shareholders and team members shown with the Founder on the public Founder page, in the order added. Each person's Group decides which tab they appear under."
-        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Team & Partners" }]}
+        title={<AdminText>{"Team & Partners"}</AdminText>}
+        description={<AdminText>{"Partners, shareholders and team members shown with the Founder on the public Founder page, in the order added. Each person's Group decides which tab they appear under."}</AdminText>}
+        breadcrumbs={[{ label: "Content", href: "/admin/content" }, { label: "Team & Partners", localize: true }]}
         primaryAction={
           canCreate && (
             <Link href="/admin/content/team/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              New Team Member
+              <AdminText>{"New Team Member"}</AdminText>
             </Link>
           )
         }

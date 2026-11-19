@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -41,8 +42,8 @@ export default async function EditSalePage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Sale"
-        breadcrumbs={[{ label: "Sales", href: "/admin/sales" }, { label: sale.id, href: `/admin/sales/${id}` }, { label: "Edit" }]}
+        title={<AdminText>{"Edit Sale"}</AdminText>}
+        breadcrumbs={[{ label: "Sales", href: "/admin/sales" }, { label: sale.id, href: `/admin/sales/${id}` }, { label: "Edit", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <SaleForm

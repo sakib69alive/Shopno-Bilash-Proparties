@@ -1,3 +1,4 @@
+import { UiText } from "./UiLanguage";
 import { forwardRef, useId } from "react";
 import type { InputHTMLAttributes } from "react";
 import { Check } from "lucide-react";
@@ -37,8 +38,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           />
         </span>
         <span className={cn("flex flex-col", className)}>
-          <span className="text-body-sm text-fg">{label}</span>
-          {description && <span className="text-caption text-fg-subtle mt-0.5">{description}</span>}
+          <span className="text-body-sm text-fg"><UiText>{label}</UiText></span>
+          {description && <span className="text-caption text-fg-subtle mt-0.5"><UiText>{description}</UiText></span>}
         </span>
       </label>
     );

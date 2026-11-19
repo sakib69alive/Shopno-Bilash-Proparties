@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -86,7 +87,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
               <>
                 <Link href={`/admin/leads/${lead.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                   <Pencil aria-hidden className="size-3.5" />
-                  Edit
+                  <AdminText>{"Edit"}</AdminText>
                 </Link>
                 <DeleteLeadButton id={lead.id} name={lead.name} />
               </>
@@ -97,7 +98,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Contact</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Contact"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Phone" value={lead.phone} />
             <Fact label="Email" value={lead.email ?? "—"} />
@@ -107,7 +108,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Interest</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Interest"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Budget" value={lead.budget ? formatBDT(lead.budget.amount) : "—"} />
             <Fact label="Assigned To" value={assignedSalesperson?.name ?? "—"} />
@@ -117,7 +118,7 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
               href={`/admin/projects/${interestedProject.id}`}
               className="text-body-sm text-accent hover:text-accent-strong transition-colors"
             >
-              Interested in {interestedProject.name} →
+              <AdminText>{"Interested in"}</AdminText> {interestedProject.name} →
             </Link>
           )}
           {interestedUnit && (
@@ -125,21 +126,21 @@ export default async function AdminLeadDetailPage({ params }: PageProps) {
               href={`/admin/properties/${interestedUnit.id}`}
               className="text-body-sm text-accent hover:text-accent-strong transition-colors"
             >
-              Interested in unit {interestedUnit.unitNumber} →
+              <AdminText>{"Interested in unit"}</AdminText> {interestedUnit.unitNumber} →
             </Link>
           )}
-          {!interestedProject && !interestedUnit && <p className="text-body-sm text-fg-subtle">No specific project or unit noted.</p>}
+          {!interestedProject && !interestedUnit && <p className="text-body-sm text-fg-subtle"><AdminText>{"No specific project or unit noted."}</AdminText></p>}
         </section>
 
         {lead.notes && (
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Notes</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Notes"}</AdminText></h2>
             <p className="text-body text-fg-muted whitespace-pre-line">{lead.notes}</p>
           </section>
         )}
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(lead.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(lead.updatedAt))} />

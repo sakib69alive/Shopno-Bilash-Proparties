@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -12,6 +14,7 @@ import { deleteExpense } from "@/features/finance/expenseActions";
 import { cn } from "@/lib/utils";
 import type { ProjectExpense } from "@/types/finance/project";
 import type { Project } from "@/types/project";
+import { ExplainFinanceButton, setFinanceAssistantProject } from "./FinanceAssistant";
 
 export interface ExpensesAdminExplorerProps {
   expenses: ProjectExpense[];
@@ -27,6 +30,7 @@ export interface ExpensesAdminExplorerProps {
  * fetched by the page — no second project dataset.
  */
 export function ExpensesAdminExplorer({ expenses, projects, canCreate, canDelete, initialProjectId }: ExpensesAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
   const [isPending, startTransition] = useTransition();
@@ -87,6 +91,7 @@ export function ExpensesAdminExplorer({ expenses, projects, canCreate, canDelete
       align: "right",
       render: (e) => (
         <span className="flex items-center justify-end gap-1">
+          <ExplainFinanceButton selection={{ kind: "expense", id: e.id }} />
           <Link href={`/admin/finance/expenses/${e.id}/edit`}>
             <IconButton icon={Pencil} label={`Edit ${e.description}`} size="sm" />
           </Link>
@@ -114,7 +119,7 @@ export function ExpensesAdminExplorer({ expenses, projects, canCreate, canDelete
           canCreate && (
             <Link href="/admin/finance/expenses/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Record Expense
+              <AdminText>{"Record Expense"}</AdminText>
             </Link>
           )
         }
@@ -138,11 +143,11 @@ export function ExpensesAdminExplorer({ expenses, projects, canCreate, canDelete
         </div>
         <select
           value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          onChange={(e) => { setProjectId(e.target.value); setFinanceAssistantProject(e.target.value); }}
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}

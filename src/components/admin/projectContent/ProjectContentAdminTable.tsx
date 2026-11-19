@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { useTransition } from "react";
 import { ArrowDown, ArrowUp, ArrowUpToLine, Pencil, Star, Trash2 } from "lucide-react";
@@ -99,7 +100,7 @@ export function ProjectContentAdminTable({ projects, canDelete, canReorder = fal
       emptyDescription="Create the first project to publish it on the public site."
       emptyAction={
         <Link href="/admin/content/projects/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
-          New Project
+          <AdminText>{"New Project"}</AdminText>
         </Link>
       }
     />

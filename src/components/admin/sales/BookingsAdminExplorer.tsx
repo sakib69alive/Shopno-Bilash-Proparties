@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, ArrowRightLeft, XCircle, Plus } from "lucide-react";
@@ -27,6 +29,7 @@ export interface BookingsAdminExplorerProps {
 const ACTIVE_STATUSES = new Set(["reserved", "booked", "confirmed"]);
 
 export function BookingsAdminExplorer({ bookings, units, customers, projects, canManage }: BookingsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [projectId, setProjectId] = useState<string | "all">("all");
   const [isPending, startTransition] = useTransition();
@@ -139,7 +142,7 @@ export function BookingsAdminExplorer({ bookings, units, customers, projects, ca
           canManage && (
             <Link href="/admin/sales/bookings/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Booking
+              <AdminText>{"New Booking"}</AdminText>
             </Link>
           )
         }
@@ -164,10 +167,10 @@ export function BookingsAdminExplorer({ bookings, units, customers, projects, ca
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}

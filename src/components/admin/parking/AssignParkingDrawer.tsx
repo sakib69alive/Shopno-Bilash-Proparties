@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Drawer } from "@/components/ui/Drawer";
@@ -66,7 +67,7 @@ export function AssignParkingDrawer({ open, onClose, parkingId, customers, share
           }}
         />
         {options.length === 0 ? (
-          <p className="text-body-sm text-fg-subtle">No {ownerType}s available to assign.</p>
+          <p className="text-body-sm text-fg-subtle"><AdminText>{"No "}</AdminText>{ownerType}s available to assign.</p>
         ) : (
           <Select
             label={OWNER_TYPES.find((o) => o.value === ownerType)?.label ?? "Owner"}
@@ -77,7 +78,7 @@ export function AssignParkingDrawer({ open, onClose, parkingId, customers, share
           />
         )}
         <Button onClick={handleAssign} loading={isPending} disabled={!ownerId}>
-          Assign
+          <AdminText>{"Assign"}</AdminText>
         </Button>
       </div>
     </Drawer>

@@ -1,3 +1,5 @@
+import { AdminText } from "../AdminLanguage";
+import type { ReactNode } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { formatNumber } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -13,7 +15,7 @@ export interface KpiCardProps {
   /** `null` = module not tracked yet; a number (including 0) = a real current count. */
   value: number | null;
   formatValue?: (value: number) => string;
-  description?: string;
+  description?: ReactNode;
   /** Shown instead of `description` specifically when `value` is `null`. */
   emptyLabel?: string;
   status?: StatusTone;
@@ -55,7 +57,7 @@ export function KpiCard({
   return (
     <div className={cn("border-border bg-surface-raised hover:border-border-strong rounded-2xl border p-4 shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition-all hover:shadow-[0_8px_20px_rgb(0_0_0/0.06)] sm:p-5", className)}>
       <div className="flex items-center gap-2">
-        <p className="text-label text-fg-subtle truncate uppercase">{label}</p>
+        <p className="text-label text-fg-subtle truncate uppercase"><AdminText>{label}</AdminText></p>
         {status && <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", STATUS_TONE_CLASSES[status])} />}
       </div>
 
@@ -64,7 +66,7 @@ export function KpiCard({
       </p>
 
       {value === null ? (
-        <p className="text-caption text-fg-subtle mt-2">{emptyLabel}</p>
+        <p className="text-caption text-fg-subtle mt-2"><AdminText>{emptyLabel}</AdminText></p>
       ) : (
         (description || trend) && (
           <div className="mt-2 flex items-center gap-1.5">
@@ -78,10 +80,10 @@ export function KpiCard({
                 )}
               >
                 <TrendIcon aria-hidden className="size-3" />
-                {trend.label}
+                <AdminText>{trend.label}</AdminText>
               </span>
             )}
-            {description && <p className="text-caption text-fg-subtle">{description}</p>}
+            {description && <p className="text-caption text-fg-subtle">{typeof description === "string" ? <AdminText>{description}</AdminText> : description}</p>}
           </div>
         )
       )}

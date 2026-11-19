@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -134,7 +135,7 @@ export function UnitOwnershipPanel({
             )}
             {currentOwner.ownerType !== "customer" && (
               <Button variant="outline" size="sm" onClick={handleRelease} loading={isPending} className="hover:text-error">
-                Release
+                <AdminText>{"Release"}</AdminText>
               </Button>
             )}
             {canManage && customerOptions.length > 0 && (
@@ -149,7 +150,7 @@ export function UnitOwnershipPanel({
           description="Assign this unit to a customer, shareholder, or landowner."
           action={
             <Button size="md" onClick={() => setDrawerOpen(true)}>
-              Assign Owner
+              <AdminText>{"Assign Owner"}</AdminText>
             </Button>
           }
         />
@@ -162,7 +163,7 @@ export function UnitOwnershipPanel({
             {pendingTransfers.map((t) => (
               <div key={t.id} className="border-border bg-surface-raised flex items-center justify-between gap-3 rounded-lg border p-3">
                 <div>
-                  <p className="text-body-sm text-fg">To {t.newOwnerLabel}</p>
+                  <p className="text-body-sm text-fg"><AdminText>{"To"}</AdminText> {t.newOwnerLabel}</p>
                   <p className="text-caption text-fg-subtle">
                     {t.date.slice(0, 10)} · {t.reason} · {OBLIGATION_LABELS[t.obligationHandling]}
                   </p>
@@ -170,10 +171,10 @@ export function UnitOwnershipPanel({
                 {canManage && (
                   <div className="flex shrink-0 items-center gap-2">
                     <Button size="sm" onClick={() => handleApprove(t.id)} loading={isPending}>
-                      Approve
+                      <AdminText>{"Approve"}</AdminText>
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => handleReject(t.id)} loading={isPending} className="hover:text-error">
-                      Reject
+                      <AdminText>{"Reject"}</AdminText>
                     </Button>
                   </div>
                 )}

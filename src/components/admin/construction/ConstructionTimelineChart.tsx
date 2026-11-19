@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/admin/construction/ProgressBar";
@@ -32,7 +33,7 @@ export function ConstructionTimelineChart({ phases, effectiveProgressOf }: Const
   const today = new Date();
 
   if (dates.length === 0) {
-    return <p className="text-body-sm text-fg-subtle">Add planned dates to phases to see the timeline.</p>;
+    return <p className="text-body-sm text-fg-subtle"><AdminText>{"Add planned dates to phases to see the timeline."}</AdminText></p>;
   }
 
   const allTimes = [...dates.map((d) => new Date(d).getTime()), today.getTime()];

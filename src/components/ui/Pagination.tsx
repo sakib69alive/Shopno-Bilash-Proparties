@@ -1,3 +1,4 @@
+import { UiText } from "./UiLanguage";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconButton } from "./IconButton";
@@ -19,7 +20,7 @@ export function Pagination({ page, pageCount, onPageChange, className }: Paginat
       className={cn("flex items-center justify-between gap-4", className)}
     >
       <p className="text-caption text-fg-subtle">
-        Page {page} of {pageCount}
+        <UiText values={{ page, total: pageCount }}>{"Page {page} of {total}"}</UiText>
       </p>
       <div className="flex items-center gap-2">
         <IconButton

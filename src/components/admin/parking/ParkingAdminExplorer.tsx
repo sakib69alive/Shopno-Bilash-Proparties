@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -40,6 +42,7 @@ const TYPE_OPTIONS: { value: ParkingType | "all"; label: string }[] = [
 ];
 
 export function ParkingAdminExplorer({ parkingSpaces, projects, canCreate, canDelete, initialProjectId }: ParkingAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ParkingStatus | "all">("all");
   const [type, setType] = useState<ParkingType | "all">("all");
@@ -141,7 +144,7 @@ export function ParkingAdminExplorer({ parkingSpaces, projects, canCreate, canDe
           canCreate && (
             <Link href="/admin/parking/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Add Parking
+              <AdminText>{"Add Parking"}</AdminText>
             </Link>
           )
         }
@@ -166,10 +169,10 @@ export function ParkingAdminExplorer({ parkingSpaces, projects, canCreate, canDe
         <select
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -179,7 +182,7 @@ export function ParkingAdminExplorer({ parkingSpaces, projects, canCreate, canDe
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as ParkingStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (
@@ -191,7 +194,7 @@ export function ParkingAdminExplorer({ parkingSpaces, projects, canCreate, canDe
         <select
           value={type}
           onChange={(e) => setType(e.target.value as ParkingType | "all")}
-          aria-label="Filter by type"
+          aria-label={adminCopy("Filter by type")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {TYPE_OPTIONS.map((opt) => (

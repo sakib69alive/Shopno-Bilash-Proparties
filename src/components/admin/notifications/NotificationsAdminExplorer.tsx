@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus, Check, Archive } from "lucide-react";
@@ -151,7 +152,7 @@ export function NotificationsAdminExplorer({ notifications, users, canCreate, ca
           canCreate && (
             <Link href="/admin/notifications/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Notification
+              <AdminText>{"New Notification"}</AdminText>
             </Link>
           )
         }

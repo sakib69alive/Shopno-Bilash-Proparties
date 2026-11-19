@@ -35,7 +35,7 @@ export default async function EditMilestonePage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Our Story", href: "/admin/content/story" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Car, Plus } from "lucide-react";
@@ -75,7 +76,7 @@ export default async function ProjectParkingPage({ params }: PageProps) {
           description="Add this project's parking spaces to start assigning them — independent of any unit's owner."
           action={
             <Link href={`/admin/parking/new?projectId=${project.id}`} className="text-body-sm text-accent font-medium hover:underline">
-              Add Parking
+              <AdminText>{"Add Parking"}</AdminText>
             </Link>
           }
         />
@@ -99,7 +100,7 @@ export default async function ProjectParkingPage({ params }: PageProps) {
             className="border-border text-fg-subtle hover:text-fg hover:border-fg-subtle flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed p-4 transition-colors"
           >
             <Plus aria-hidden className="size-4" />
-            <p className="text-caption">Add Parking</p>
+            <p className="text-caption"><AdminText>{"Add Parking"}</AdminText></p>
           </Link>
         </div>
       )}

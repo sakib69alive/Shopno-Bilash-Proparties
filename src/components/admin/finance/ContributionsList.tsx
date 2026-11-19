@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -9,6 +11,7 @@ import { ContributionAdjustmentForm } from "@/components/admin/finance/Contribut
 import { formatBDT, formatDate } from "@/lib/format";
 import type { ContributionStatus } from "@/lib/contributionStatus";
 import type { ContributionAdjustment, OwnerType } from "@/types/finance/costAllocation";
+import { ExplainFinanceButton } from "./FinanceAssistant";
 
 export interface ContributionRow {
   contributionId: string;
@@ -48,6 +51,7 @@ const STATUS_OPTIONS: { value: ContributionStatus | "all"; label: string }[] = [
 
 /** "Who hasn't paid" filter — client-side over this one allocation's already-loaded contributions, the established Explorer-filter pattern used everywhere else in this admin panel. */
 export function ContributionsList({ costAllocationId, rows, canManage, boundPaymentAction }: ContributionsListProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ContributionStatus | "all">("all");
 
@@ -77,7 +81,7 @@ export function ContributionsList({ costAllocationId, rows, canManage, boundPaym
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as ContributionStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (
@@ -103,7 +107,10 @@ export function ContributionsList({ costAllocationId, rows, canManage, boundPaym
                   ) : (
                     <p className="text-body-sm text-fg font-medium">{row.ownerName}</p>
                   )}
-                  <p className="text-caption text-fg-subtle mt-0.5 capitalize">{row.ownerType}</p>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                    <p className="text-caption text-fg-subtle capitalize">{row.ownerType}</p>
+                    <ExplainFinanceButton selection={{ kind: "member", id: row.contributionId }} label="Explain member balance" />
+                  </div>
                 </div>
                 <StatusBadge status={row.status} />
               </div>
@@ -134,7 +141,7 @@ export function ContributionsList({ costAllocationId, rows, canManage, boundPaym
 
               {row.adjustments.length > 0 && (
                 <div className="border-border border-t pt-3">
-                  <p className="text-caption text-fg-subtle mb-1.5 uppercase">Adjustments</p>
+                  <p className="text-caption text-fg-subtle mb-1.5 uppercase"><AdminText>{"Adjustments"}</AdminText></p>
                   <div className="flex flex-col gap-1">
                     {row.adjustments.map((a) => (
                       <p key={a.id} className="text-body-sm text-fg-muted">

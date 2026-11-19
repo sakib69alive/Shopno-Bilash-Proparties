@@ -35,7 +35,7 @@ export default async function EditVendorPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Procurement", href: "/admin/procurement" },
           { label: vendor.name, href: `/admin/procurement/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

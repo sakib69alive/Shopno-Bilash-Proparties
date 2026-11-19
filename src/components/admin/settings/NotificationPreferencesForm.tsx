@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -49,7 +50,7 @@ export function NotificationPreferencesForm({ preference }: NotificationPreferen
 
   return (
     <PersistForm state={state} action={formAction} className="flex max-w-2xl flex-col gap-5">
-      {state.error && <p className="text-body-sm text-error">{state.error}</p>}
+      {state.error && <p className="text-body-sm text-error"><AdminText>{state.error ?? ""}</AdminText></p>}
 
       <Select label="Mode" name="mode" options={MODE_OPTIONS} value={mode} onChange={(e) => setMode(e.target.value as typeof mode)} />
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { UiText } from "@/components/ui/UiLanguage";
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -119,7 +120,7 @@ export function DataTable<T>({
               {!sortKey && <option value="">—</option>}
               {sortableCols.map((c) => (
                 <option key={c.key} value={c.key}>
-                  {c.header}
+                  <UiText>{c.header}</UiText>
                   {sortKey === c.key ? (sortDirection === "asc" ? " ↑" : " ↓") : ""}
                 </option>
               ))}
@@ -158,7 +159,7 @@ export function DataTable<T>({
                 <dl className="border-border mt-3 grid grid-cols-1 gap-y-2 border-t pt-3">
                   {labelled.map((col) => (
                     <div key={col.key} className="flex items-baseline justify-between gap-4">
-                      <dt className="text-caption text-fg-subtle shrink-0">{col.header}</dt>
+                      <dt className="text-caption text-fg-subtle shrink-0"><UiText>{col.header}</UiText></dt>
                       <dd className={cn("text-body-sm text-fg min-w-0 text-right break-words", col.align === "right" && "tabular-nums")}>
                         {col.render(row)}
                       </dd>
@@ -205,7 +206,7 @@ export function DataTable<T>({
                       col.align === "right" && "flex-row-reverse",
                     )}
                   >
-                    {col.header}
+                    <UiText>{col.header}</UiText>
                     {sortKey === col.key ? (
                       sortDirection === "asc" ? (
                         <ArrowUp aria-hidden className="size-3.5" />

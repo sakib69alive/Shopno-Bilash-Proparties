@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -43,19 +44,19 @@ export default async function AdminInstallmentsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Installments"
-        description="Every scheduled installment against a signed contract."
+        title={<AdminText>{"Installments"}</AdminText>}
+        description={<AdminText>{"Every scheduled installment against a signed contract."}</AdminText>}
         primaryAction={
           canCreate && (
             <Link href="/admin/sales/installments/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Schedule Installment
+              <AdminText>{"Schedule Installment"}</AdminText>
             </Link>
           )
         }
       />
       <div className="p-4 sm:p-6">
-        <InstallmentsAdminExplorer installments={installments} canCreate={canCreate} canDelete={canDelete} />
+        <InstallmentsAdminExplorer installments={installments} canCreate={canCreate} canDelete={canDelete} canExplain={hasPermission(user.role, "finance.view")} />
       </div>
     </>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,6 +42,7 @@ const STATUS_OPTIONS: { value: CustomerStatus | "all"; label: string }[] = [
  * (Admin Step 7 §8), never an "AI" search.
  */
 export function CustomersAdminExplorer({ customers, projectsByCustomer = {}, canCreate, canDelete, canManagePortalAccess, canRecordPayment }: CustomersAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<CustomerStatus | "all">("all");
   const router = useRouter();
@@ -124,7 +127,7 @@ export function CustomersAdminExplorer({ customers, projectsByCustomer = {}, can
           canCreate && (
             <Link href="/admin/customers/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Customer
+              <AdminText>{"New Customer"}</AdminText>
             </Link>
           )
         }
@@ -142,14 +145,14 @@ export function CustomersAdminExplorer({ customers, projectsByCustomer = {}, can
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, phone, email or project"
-            aria-label="Search customers"
+            aria-label={adminCopy("Search customers")}
             className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface-raised pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as CustomerStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

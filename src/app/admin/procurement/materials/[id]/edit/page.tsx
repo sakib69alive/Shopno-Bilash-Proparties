@@ -35,7 +35,7 @@ export default async function EditMaterialPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Procurement", href: "/admin/procurement" },
           { label: "Materials", href: "/admin/procurement/materials" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

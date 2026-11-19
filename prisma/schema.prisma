@@ -396,3 +396,39 @@ model PolicyRule {
   id   String @id
   data Json
 }
+
+model PortalInstallEvent {
+  id         String   @id
+  userId     String
+  deviceId   String
+  kind       String
+  platform   String
+  browser    String
+  occurredAt DateTime @default(now())
+
+  @@index([userId, deviceId, occurredAt])
+}
+
+// One row per phone/browser a client allowed notifications on (Web Push).
+// `id` is a hash of the endpoint so re-subscribing the same device upserts.
+model PushSubscription {
+  id        String   @id
+  userId    String
+  endpoint  String
+  p256dh    String
+  auth      String
+  userAgent String   @default("")
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model FinanceCalculation {
+  id        String   @id
+  ownerId   String
+  revision  Int      @default(1)
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, updatedAt])
+}

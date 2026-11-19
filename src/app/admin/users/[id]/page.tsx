@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
@@ -72,7 +73,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
             {canManage && (
               <Link href={`/admin/users/${targetUser.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
             )}
             {canManage && targetUser.id !== currentUser.id && <DeleteUserButton id={targetUser.id} name={targetUser.name} />}
@@ -82,7 +83,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Account</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Account"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Email" value={targetUser.email} />
             <Fact label="Phone" value={targetUser.phone ?? "—"} />
@@ -92,7 +93,7 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Linked Records</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Linked Records"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Customer" value={linkedCustomer?.name ?? targetUser.linkedCustomerId ?? "—"} />
             <Fact label="Shareholder" value={targetUser.linkedShareholderId ?? "—"} />
@@ -103,13 +104,13 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
               href={`/admin/customers/${linkedCustomer.id}`}
               className="text-body-sm text-accent hover:text-accent-strong transition-colors"
             >
-              View customer →
+              <AdminText>{"View customer →"}</AdminText>
             </Link>
           )}
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(targetUser.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(targetUser.updatedAt))} />

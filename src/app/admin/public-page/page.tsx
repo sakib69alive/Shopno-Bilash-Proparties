@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -28,7 +29,7 @@ export default async function AdminPublicPageHub() {
 
   return (
     <>
-      <AdminPageHeader title="Public page" description="Pick what you want to change on the website — it takes you straight to the right screen." />
+      <AdminPageHeader title={<AdminText>{"Public page"}</AdminText>} description={<AdminText>{"Pick what you want to change on the website — it takes you straight to the right screen."}</AdminText>} />
       <QuickOpenHub
         board="public"
         role={user.role}

@@ -1,3 +1,6 @@
+"use client";
+
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { forwardRef, useId } from "react";
 import type { SelectHTMLAttributes } from "react";
 import { ChevronDown } from "lucide-react";
@@ -13,21 +16,24 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 /** Same visible-label/error pattern as <Input>, for a labelled form select (not the borderless filter-bar select). */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, helperText, id, disabled, options, placeholder, value, defaultValue, ...props }, ref) => {
+  ({ className, label, error, helperText, id, name, disabled, options, placeholder, value, defaultValue, ...props }, ref) => {
+    const { t } = useUiLanguage();
     const generatedId = useId();
     const selectId = id ?? generatedId;
     const messageId = error || helperText ? `${selectId}-message` : undefined;
     const isControlled = value !== undefined;
+    const recordPicker = /Ids?$/.test(name ?? "");
 
     return (
       <div className="flex flex-col gap-1.5">
         <label htmlFor={selectId} className="text-label text-fg-muted">
-          {label}
+          {t(label)}
         </label>
         <div className="relative">
           <select
             ref={ref}
             id={selectId}
+            name={name}
             disabled={disabled}
             aria-invalid={!!error || undefined}
             aria-describedby={messageId}
@@ -43,12 +49,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           >
             {placeholder && (
               <option value="" disabled>
-                {placeholder}
+                {t(placeholder)}
               </option>
             )}
             {options.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {recordPicker && opt.value ? opt.label : t(opt.label)}
               </option>
             ))}
           </select>
@@ -59,7 +65,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </div>
         {(error || helperText) && (
           <p id={messageId} className={cn("text-body-sm", error ? "text-error" : "text-fg-subtle")}>
-            {error || helperText}
+            {t(error || helperText || "")}
           </p>
         )}
       </div>

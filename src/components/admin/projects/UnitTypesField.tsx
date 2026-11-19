@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -50,7 +51,7 @@ export function UnitTypesField({ initial }: { initial?: UnitType[] }) {
 
       {rows.map((row, i) => (
         <fieldset key={row.key} className="border-border bg-surface flex flex-col gap-4 rounded-xl border p-4">
-          <legend className="text-caption text-fg-subtle px-1 uppercase">Type {i + 1}</legend>
+          <legend className="text-caption text-fg-subtle px-1 uppercase"><AdminText>{"Type "}</AdminText>{i + 1}</legend>
           <input type="hidden" name="unitTypeId" value={row.id} />
           <input type="hidden" name="unitTypeImageUrl" value={row.imageUrl} />
 
@@ -87,7 +88,7 @@ export function UnitTypesField({ initial }: { initial?: UnitType[] }) {
             </div>
             <Button type="button" variant="ghost" onClick={() => setRows((r) => r.filter((x) => x.key !== row.key))}>
               <Trash2 aria-hidden className="size-4" />
-              Remove
+              <AdminText>{"Remove"}</AdminText>
             </Button>
           </div>
         </fieldset>

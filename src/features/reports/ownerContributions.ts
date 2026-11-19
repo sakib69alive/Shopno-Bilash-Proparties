@@ -34,7 +34,7 @@ export async function getOwnerContributionsReport(user: User, projectId?: string
     ownerContributionRepository.list(),
     contributionAdjustmentRepository.list(),
   ]);
-  let allocations = filterToVisibleProjects(user, allAllocations);
+  let allocations = filterToVisibleProjects(user, allAllocations).filter((row) => row.status === "generated");
   let contributions = filterToVisibleProjects(user, allContributions);
   if (projectId) {
     allocations = allocations.filter((a) => a.projectId === projectId);

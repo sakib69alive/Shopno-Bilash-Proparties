@@ -1,5 +1,8 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
+import { setFinanceAssistantProject } from "./FinanceAssistant";
+
 import { PersistForm } from "@/components/ui/PersistForm";
 import { useActionState, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -39,7 +42,7 @@ export function ProjectBudgetForm({ action, budget, projects, phases, submitLabe
       {state.error && (
         <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
           <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-          <p className="text-body-sm">{state.error}</p>
+          <p className="text-body-sm"><AdminText>{state.error ?? ""}</AdminText></p>
         </div>
       )}
 
@@ -49,7 +52,7 @@ export function ProjectBudgetForm({ action, budget, projects, phases, submitLabe
         required
         options={projects.map((p) => ({ value: p.id, label: p.name }))}
         value={projectId}
-        onChange={(e) => setProjectId(e.target.value)}
+        onChange={(e) => { setProjectId(e.target.value); setFinanceAssistantProject(e.target.value); }}
         placeholder={projects.length > 0 ? "Choose a project" : "No projects yet — add one first"}
       />
 

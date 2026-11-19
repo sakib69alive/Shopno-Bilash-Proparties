@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -40,7 +41,7 @@ export function GoalLifecycleActions({ costAllocationId, showMarkCompleted, isAr
       )}
       {!isArchived && (
         <Button variant="outline" size="sm" onClick={handleArchive} loading={isPending}>
-          Archive
+          <AdminText>{"Archive"}</AdminText>
         </Button>
       )}
     </div>

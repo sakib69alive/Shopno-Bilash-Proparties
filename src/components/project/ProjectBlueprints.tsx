@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Maximize2 } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Lightbox } from "@/components/ui/Lightbox";
-import { Media } from "@/components/ui/Media";
+import { BlueprintImage } from "@/components/plan/BlueprintImage";
 import { Reveal } from "@/components/ui/Reveal";
 import { RoomPicker, RoomStage } from "@/components/plan/RoomPlan";
 import { buildingLevel } from "@/lib/planRooms";
@@ -20,23 +20,24 @@ import { cn } from "@/lib/utils";
  */
 export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = false }: { blueprints?: ProjectBlueprint[]; hidden?: boolean; hideZoom?: boolean }) {
   // Admin → Settings → Blueprint AI → Control panel can hide the whole section, one plan, or just the Enlarge button.
-  const blueprints = hidden ? undefined : all?.filter((b) => !b.hidden);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
   const [index, setIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), [setLightboxIndex]);
   // The room pressed on each plan (by slide), so swiping away and back keeps it.
   const [pickedRoom, setPickedRoom] = useState<Record<number, string[]>>({});
 
-  const ordered = (blueprints ?? [])
-    .slice()
-    .sort((a, b) => BLUEPRINT_KIND_ORDER.indexOf(a.kind) - BLUEPRINT_KIND_ORDER.indexOf(b.kind));
+  const ordered = useMemo(() => (hidden ? [] : (all ?? [])
+    .filter((b) => !b.hidden)
+    .sort((a, b) => BLUEPRINT_KIND_ORDER.indexOf(a.kind) - BLUEPRINT_KIND_ORDER.indexOf(b.kind))
+    .map((blueprint) => ({ ...blueprint, rooms: buildingLevel(blueprint.planRooms) }))), [all, hidden]);
   if (ordered.length === 0) return null;
   // The project page offers what a building floor has: flats, lift, stairs, lobby (rooms belong to each flat's own page).
-  const activeRooms = buildingLevel(ordered[index]?.planRooms);
+  const activeRooms = ordered[index]?.rooms;
   // The two-column layout depends on whether ANY plan has rooms, not the visible one — otherwise the slider would change width
   // mid-swipe (the side panel appearing) and land on the wrong slide.
-  const anyRooms = ordered.some((b) => buildingLevel(b.planRooms));
+  const anyRooms = ordered.some((b) => b.rooms);
 
   function onScroll() {
     if (frame.current) return;
@@ -102,14 +103,16 @@ export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = 
             className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
           >
             {ordered.map((b, i) =>
-              buildingLevel(b.planRooms) ? (
+              b.rooms ? (
                 // A plan with rooms: pressing a room lifts it; "Enlarge" below still opens the full-screen view.
                 <div key={b.kind} className="relative w-full shrink-0 snap-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] p-3 [background-size:20px_20px] sm:p-5 lg:p-8">
                   <RoomStage
                     src={b.image.src}
                     alt={b.image.alt}
-                    plan={buildingLevel(b.planRooms)!}
-                    selectedIds={pickedRoom[i] ?? []}
+                    plan={b.rooms}
+                    lowCost
+                    interactive={i === index}
+                    selectedIds={i === index ? pickedRoom[i] ?? [] : []}
                     onSelect={(ids) => setPickedRoom((p) => ({ ...p, [i]: ids }))}
                   />
                 </div>
@@ -124,13 +127,11 @@ export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = 
                   hideZoom && "cursor-default",
                 )}
               >
-                <Media
-                  ratio="auto"
-                  containerClassName="absolute inset-0 bg-transparent"
+                <BlueprintImage
                   src={b.image.src}
                   alt={b.image.alt}
-                  sizes="(min-width: 1280px) 1200px, 100vw"
-                  className="object-contain p-4"
+                  loading="lazy"
+                  className="absolute inset-0 size-full object-contain p-4"
                 />
               </button>
               ),
@@ -158,6 +159,7 @@ export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = 
             plan={activeRooms}
             selectedIds={pickedRoom[index] ?? []}
             onSelect={(ids) => setPickedRoom((p) => ({ ...p, [index]: ids }))}
+            lowCost
             className="mt-5 lg:sticky lg:top-28 lg:mt-0"
           />
         )}
@@ -169,10 +171,11 @@ export function ProjectBlueprints({ blueprints: all, hidden = false, hideZoom = 
       <Lightbox
         images={ordered.map((b) => ({ ...b.image, caption: b.label }))}
         index={lightboxIndex}
-        onClose={() => setLightboxIndex(null)}
+        onClose={closeLightbox}
         onNavigate={setLightboxIndex}
         label="Building blueprints"
         surface="light"
+        blueprintPreview
       />
     </Section>
   );

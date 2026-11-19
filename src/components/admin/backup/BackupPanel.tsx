@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "../AdminLanguage";
 import { useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Download, ImageOff, Images, Loader2, UploadCloud } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/Button";
@@ -63,11 +64,9 @@ export function BackupPanel() {
     <div className="flex max-w-3xl flex-col gap-10">
       <section className="flex flex-col gap-4">
         <div>
-          <h2 className="text-h3">Download a Backup</h2>
+          <h2 className="text-h3"><AdminText>{"Download a Backup"}</AdminText></h2>
           <p className="text-body-sm text-fg-muted mt-1">
-            Everything in the admin panel — every project, unit, sale, payment, expense, owner, document record,
-            plus all the public-site content you edit here (About/Our Story, Founder Profile, Company Policy,
-            News, Gallery captions, Settings). Saves straight to your device; nothing is kept on our server.
+            <AdminText>{"Everything in the admin panel — every project, unit, sale, payment, expense, owner, document record, plus all the public-site content you edit here (About/Our Story, Founder Profile, Company Policy, News, Gallery captions, Settings). Saves straight to your device; nothing is kept on our server."}</AdminText>
           </p>
         </div>
 
@@ -75,28 +74,28 @@ export function BackupPanel() {
           <a href="/api/admin/backup?mode=full" className="border-border-strong bg-surface-raised flex flex-col gap-3 rounded-lg border p-5">
             <Images aria-hidden className="text-accent size-6" />
             <div>
-              <p className="text-body font-semibold text-fg">Full Backup</p>
+              <p className="text-body font-semibold text-fg"><AdminText>{"Full Backup"}</AdminText></p>
               <p className="text-body-sm text-fg-muted mt-1">
-                All data, plus every uploaded photo and document. Larger file, takes longer — the complete picture.
+                <AdminText>{"All data, plus every uploaded photo and document. Larger file, takes longer — the complete picture."}</AdminText>
               </p>
             </div>
             <span className={cn(buttonVariants({ size: "sm" }), "mt-auto w-full")}>
               <Download aria-hidden className="size-4" />
-              Download Full Backup
+              <AdminText>{"Download Full Backup"}</AdminText>
             </span>
           </a>
 
           <a href="/api/admin/backup?mode=data" className="border-border-strong bg-surface-raised flex flex-col gap-3 rounded-lg border p-5">
             <ImageOff aria-hidden className="text-fg-muted size-6" />
             <div>
-              <p className="text-body font-semibold text-fg">Data Only</p>
+              <p className="text-body font-semibold text-fg"><AdminText>{"Data Only"}</AdminText></p>
               <p className="text-body-sm text-fg-muted mt-1">
-                Every record and number, no images or documents. Small, fast — good for a quick, frequent backup.
+                <AdminText>{"Every record and number, no images or documents. Small, fast — good for a quick, frequent backup."}</AdminText>
               </p>
             </div>
             <span className={cn(buttonVariants({ variant: "outline", size: "sm" }), "mt-auto w-full")}>
               <Download aria-hidden className="size-4" />
-              Download Data Only
+              <AdminText>{"Download Data Only"}</AdminText>
             </span>
           </a>
         </div>
@@ -105,19 +104,16 @@ export function BackupPanel() {
       <section className="border-border border-t pt-8">
         <div className="flex flex-col gap-4">
           <div>
-            <h2 className="text-h3">Restore From a Backup</h2>
+            <h2 className="text-h3"><AdminText>{"Restore From a Backup"}</AdminText></h2>
             <p className="text-body-sm text-fg-muted mt-1">
-              Pick a backup .zip downloaded from this page — everything in it goes back to exactly where it came
-              from automatically, no manual sorting needed.
+              <AdminText>{"Pick a backup .zip downloaded from this page — everything in it goes back to exactly where it came from automatically, no manual sorting needed."}</AdminText>
             </p>
           </div>
 
           <div role="alert" className="bg-warning-soft text-warning flex items-start gap-2.5 rounded-md px-3.5 py-3">
             <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
             <p className="text-body-sm">
-              This <strong>replaces</strong> all current data with the backup&rsquo;s contents — anything added or
-              changed since that backup was taken will be lost. This can&rsquo;t be undone. If unsure, download a
-              fresh backup first.
+              <AdminText>{"This replaces all current data with the backup’s contents — anything added or changed since that backup was taken will be lost. This can’t be undone. If unsure, download a fresh backup first."}</AdminText>
             </p>
           </div>
 
@@ -134,7 +130,7 @@ export function BackupPanel() {
           />
 
           <Input
-            label={`Type "${CONFIRM_PHRASE}" to confirm`}
+            label={'Type "RESTORE" to confirm'}
             name="confirm"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
@@ -145,7 +141,7 @@ export function BackupPanel() {
           {result && !result.ok && (
             <div role="alert" className="bg-error-soft text-error flex items-start gap-2.5 rounded-md px-3.5 py-3">
               <AlertTriangle aria-hidden className="mt-0.5 size-4 shrink-0" />
-              <p className="text-body-sm">{result.error}</p>
+              <p className="text-body-sm"><AdminText>{result.error ?? "Restore failed for an unknown reason."}</AdminText></p>
             </div>
           )}
 
@@ -154,22 +150,21 @@ export function BackupPanel() {
               <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0" />
               <div className="text-body-sm">
                 <p>
-                  Restored {result.summary.tables} tables, {result.summary.rows.toLocaleString()} records
-                  {result.summary.files > 0 && `, ${result.summary.files.toLocaleString()} files`}.
+                  <AdminText values={{ tables: result.summary.tables, rows: result.summary.rows.toLocaleString(), files: result.summary.files.toLocaleString() }}>{result.summary.files > 0 ? "Restored {tables} tables, {rows} records, {files} files." : "Restored {tables} tables, {rows} records."}</AdminText>
                 </p>
                 {result.summary.skippedTables.length > 0 && (
                   <p className="mt-1 opacity-80">
-                    Skipped (not part of this version): {result.summary.skippedTables.join(", ")}
+                    <AdminText values={{ tables: result.summary.skippedTables.join(", ") }}>{"Skipped (not part of this version): {tables}"}</AdminText>
                   </p>
                 )}
-                <p className="mt-2 font-medium">Reload the page now to see the restored data.</p>
+                <p className="mt-2 font-medium"><AdminText>{"Reload the page now to see the restored data."}</AdminText></p>
               </div>
             </div>
           )}
 
           <Button variant="destructive" disabled={!canRestore} onClick={handleRestore} className="w-fit">
             {restoring ? <Loader2 aria-hidden className="size-4 animate-spin" /> : <UploadCloud aria-hidden className="size-4" />}
-            {restoring ? "Restoring…" : "Restore Now"}
+            <AdminText>{restoring ? "Restoring…" : "Restore Now"}</AdminText>
           </Button>
         </div>
       </section>

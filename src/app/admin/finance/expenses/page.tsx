@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
@@ -51,13 +52,13 @@ export default async function AdminExpensesPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Expenses"
-        description="Every cost recorded against a project."
+        title={<AdminText>{"Expenses"}</AdminText>}
+        description={<AdminText>{"Every cost recorded against a project."}</AdminText>}
         primaryAction={
           canManage && (
             <Link href="/admin/finance/expenses/new" className={buttonVariants({ size: "md" })}>
               <Plus aria-hidden className="size-4" />
-              Record Expense
+              <AdminText>{"Record Expense"}</AdminText>
             </Link>
           )
         }

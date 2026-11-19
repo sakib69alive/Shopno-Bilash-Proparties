@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -19,12 +20,12 @@ export default async function BulkAddGalleryPage() {
   return (
     <>
       <AdminPageHeader
-        title="Add photos"
-        description="Upload many photos to the public Gallery at once."
+        title={<AdminText>{"Add photos"}</AdminText>}
+        description={<AdminText>{"Upload many photos to the public Gallery at once."}</AdminText>}
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Gallery", href: "/admin/content/gallery" },
-          { label: "Add photos" },
+          { label: "Add photos", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

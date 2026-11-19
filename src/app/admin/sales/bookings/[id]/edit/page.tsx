@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -41,8 +42,8 @@ export default async function EditBookingPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Booking"
-        breadcrumbs={[{ label: "Bookings", href: "/admin/sales/bookings" }, { label: "Edit" }]}
+        title={<AdminText>{"Edit Booking"}</AdminText>}
+        breadcrumbs={[{ label: "Bookings", href: "/admin/sales/bookings" }, { label: "Edit", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <BookingForm

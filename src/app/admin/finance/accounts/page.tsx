@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -30,8 +31,8 @@ export default async function AdminCashAccountsPage() {
   return (
     <>
       <AdminPageHeader
-        title="Accounts"
-        description="Internal cash, bank, and mobile-banking records — not a real banking integration, just where money is tagged as moving through."
+        title={<AdminText>{"Accounts"}</AdminText>}
+        description={<AdminText>{"Internal cash, bank, and mobile-banking records — not a real banking integration, just where money is tagged as moving through."}</AdminText>}
       />
       <div className="p-4 sm:p-6">
         <CashAccountsAdminExplorer accounts={accounts} canManage={hasPermission(user.role, "finance.manage")} />

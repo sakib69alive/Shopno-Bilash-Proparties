@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -64,6 +66,7 @@ export function PropertiesAdminExplorer({
   canDelete,
   initialProjectId,
 }: PropertiesAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<UnitStatus | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
@@ -140,7 +143,7 @@ export function PropertiesAdminExplorer({
     },
     { key: "building", header: "Building", render: (u) => buildingsById.get(u.buildingId)?.name ?? "—" },
     { key: "floor", header: "Floor", render: (u) => floorsById.get(u.floorId)?.label ?? "—" },
-    { key: "owner", header: "Owner", render: (u) => ownerLabels[u.id] ?? <span className="text-fg-muted font-medium">Company</span> },
+    { key: "owner", header: "Owner", render: (u) => ownerLabels[u.id] ?? <span className="text-fg-muted font-medium"><AdminText>{"Company"}</AdminText></span> },
     { key: "area", header: "Area", render: (u) => `${u.sizeSqft.toLocaleString()} sqft`, align: "right" },
     { key: "status", header: "Status", render: (u) => <StatusBadge status={u.status} /> },
     { key: "price", header: "Price", render: (u) => formatBDT(u.finalPrice.amount), align: "right" },
@@ -177,7 +180,7 @@ export function PropertiesAdminExplorer({
           canCreate && (
             <Link href="/admin/properties/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Property
+              <AdminText>{"New Property"}</AdminText>
             </Link>
           )
         }
@@ -190,7 +193,7 @@ export function PropertiesAdminExplorer({
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         <button type="button" onClick={() => setHeld("all")} aria-pressed={held === "all"} className={cn("rounded-xl border px-3 py-2.5 text-left transition-colors", held === "all" ? "border-accent bg-accent-soft" : "border-border bg-surface-raised hover:border-accent")}>
           <span className="text-h4 block tabular-nums">{holdings.total}</span>
-          <span className="text-caption text-fg-subtle">All flats</span>
+          <span className="text-caption text-fg-subtle"><AdminText>{"All flats"}</AdminText></span>
         </button>
         {(Object.keys(HELD_LABEL) as HeldBy[]).map((k) => (
           <button key={k} type="button" onClick={() => setHeld(held === k ? "all" : k)} aria-pressed={held === k} className={cn("rounded-xl border px-3 py-2.5 text-left transition-colors", held === k ? "border-accent bg-accent-soft" : "border-border bg-surface-raised hover:border-accent")}>
@@ -218,10 +221,10 @@ export function PropertiesAdminExplorer({
             setBuildingId("all");
             setFloorId("all");
           }}
-          aria-label="Filter by project"
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -234,7 +237,7 @@ export function PropertiesAdminExplorer({
             setBuildingId(e.target.value);
             setFloorId("all");
           }}
-          aria-label="Filter by building"
+          aria-label={adminCopy("Filter by building")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           <option value="all">All buildings</option>
@@ -248,7 +251,7 @@ export function PropertiesAdminExplorer({
           <select
             value={floorId}
             onChange={(e) => setFloorId(e.target.value)}
-            aria-label="Filter by floor"
+            aria-label={adminCopy("Filter by floor")}
             className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           >
             <option value="all">All floors</option>
@@ -262,7 +265,7 @@ export function PropertiesAdminExplorer({
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as UnitStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

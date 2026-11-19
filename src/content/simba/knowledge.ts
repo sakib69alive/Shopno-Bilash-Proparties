@@ -252,6 +252,19 @@ export const FAQ: FaqItem[] = [
   { q: "How do I remove the practice data?", a: ["Download a backup first.", "Open Remove demo data and follow the steps."], href: "/admin/settings/demo-data", hrefLabel: "Open Remove demo data" },
   { q: "I added a flat but cannot find it", a: ["Flats live under a project's Units tab.", "A flat for the website is a separate record (Public page → A property's public page)."], href: "/admin/projects", hrefLabel: "Open Projects" },
   { q: "Another admin cannot manage things", a: ["Give them the role that fits their job (Staff & Users). Roles control what each person can see and change.", "Tell them to press the Simba button on any page — it explains the page and the next step."], href: "/admin/users", hrefLabel: "Open Staff & Users" },
+  {
+    q: "How do I put a map (Google Maps location) on a project?",
+    a: [
+      "Open Public page → Map, choose the project and press Go. You land on the \"Google Maps link\" field.",
+      "In Google Maps find the exact spot. On a computer, right-click the spot and click the two numbers at the top (like 23.7925, 90.4078) to copy them. On a phone, press and hold the spot and copy the numbers at the top.",
+      "Other things that work: the \"Embed a map\" code (Share → Embed a map → Copy HTML, computer only) or the normal link from the address bar.",
+      "Paste it into the field and press Save at the bottom, then open the project page on the website and look at Location.",
+    ],
+    href: "/admin/public-page",
+    hrefLabel: "Open Public page",
+  },
+  { q: "The map does not show inside the page, only a button", a: ["You pasted a short share link (maps.app.goo.gl…). It can only open Google Maps, not show the map inside the page.", "Replace it with the two numbers (like 23.7925, 90.4078) or the \"Embed a map\" code, then Save.", "Leaving the field empty shows a plain placeholder instead."], href: "/admin/public-page", hrefLabel: "Open Public page" },
+  { q: "The map moves with two fingers only on a phone", a: ["That message comes from Google's own map. It asks for two fingers so that one finger can still scroll the page.", "Pinch with two fingers to zoom and drag with two fingers to move. The \"Open in Google Maps\" button under the map opens the full app, where one finger works."] },
   { q: "A picture will not upload", a: ["Use JPG, PNG, WEBP or SVG.", "Make it smaller if it is very large.", "Plans: upload the layout drawing only, with no background."] },
   { q: "I forgot where something is", a: ["Use the search bar at the very top for projects, flats, owners and leads.", "Public page, Client page and Money page have a button for every job."] },
 ];

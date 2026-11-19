@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -23,9 +24,9 @@ export default async function AdminBlueprintAiPage() {
   return (
     <>
       <AdminPageHeader
-        title="Blueprint AI"
-        description="Master prompts for turning an architect's picture into a phone-ready floor plan with an AI, and a checker for the result."
-        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Blueprint AI" }]}
+        title={<AdminText>{"Blueprint AI"}</AdminText>}
+        description={<AdminText>{"Master prompts for turning an architect's picture into a phone-ready floor plan with an AI, and a checker for the result."}</AdminText>}
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Blueprint AI", localize: true }]}
       />
       <div className="flex flex-col gap-6 p-4 sm:p-6">
         <BlueprintAiTabs active="prompts" />

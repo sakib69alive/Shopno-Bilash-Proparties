@@ -1,3 +1,4 @@
+import { UiText } from "@/components/ui/UiLanguage";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -5,6 +6,7 @@ import { cn } from "@/lib/utils";
 export interface BreadcrumbItem {
   label: string;
   href?: string;
+  localize?: boolean;
 }
 
 export interface BreadcrumbProps {
@@ -26,14 +28,14 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
               {i > 0 && <ChevronRight aria-hidden className="text-fg-subtle size-3.5" />}
               {item.href && !isLast ? (
                 <Link href={item.href} className="text-caption text-fg-subtle hover:text-fg transition-colors">
-                  {item.label}
+                  <UiText>{item.label}</UiText>
                 </Link>
               ) : (
                 <span
                   className={cn("text-caption", isLast ? "text-fg" : "text-fg-subtle")}
                   aria-current={isLast ? "page" : undefined}
                 >
-                  {item.label}
+                  {item.localize ? <UiText>{item.label}</UiText> : item.label}
                 </span>
               )}
             </li>

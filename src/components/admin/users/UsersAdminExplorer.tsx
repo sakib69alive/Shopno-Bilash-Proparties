@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -38,6 +40,7 @@ const ROLE_OPTIONS: { value: RoleName | "all"; label: string }[] = [
  * `userRepository` — plain substring match over name/email.
  */
 export function UsersAdminExplorer({ users, currentUserId, canManage }: UsersAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<UserStatus | "all">("all");
   const [role, setRole] = useState<RoleName | "all">("all");
@@ -114,7 +117,7 @@ export function UsersAdminExplorer({ users, currentUserId, canManage }: UsersAdm
           canManage && (
             <Link href="/admin/users/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Account
+              <AdminText>{"New Account"}</AdminText>
             </Link>
           )
         }
@@ -131,7 +134,7 @@ export function UsersAdminExplorer({ users, currentUserId, canManage }: UsersAdm
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email"
+            placeholder={adminCopy("Search by name or email")}
             aria-label="Search users"
             className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface-raised pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
@@ -139,7 +142,7 @@ export function UsersAdminExplorer({ users, currentUserId, canManage }: UsersAdm
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as RoleName | "all")}
-          aria-label="Filter by role"
+          aria-label={adminCopy("Filter by role")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {ROLE_OPTIONS.map((opt) => (
@@ -151,7 +154,7 @@ export function UsersAdminExplorer({ users, currentUserId, canManage }: UsersAdm
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as UserStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

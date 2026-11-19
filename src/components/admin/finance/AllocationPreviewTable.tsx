@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import Link from "next/link";
 import { formatBDT } from "@/lib/format";
 import type { AllocationPreview } from "@/features/costAllocations/actions";
@@ -14,10 +15,10 @@ export function AllocationPreviewTable({ preview, totalAmount }: AllocationPrevi
       <table className="w-full text-left">
         <thead>
           <tr className="border-border text-label text-fg-subtle border-b uppercase">
-            <th className="px-4 py-2.5 font-normal">Owner</th>
+            <th className="px-4 py-2.5 font-normal"><AdminText>{"Owner"}</AdminText></th>
             <th className="px-4 py-2.5 font-normal">Unit(s)</th>
             <th className="px-4 py-2.5 font-normal">Basis</th>
-            <th className="px-4 py-2.5 text-right font-normal">Payable</th>
+            <th className="px-4 py-2.5 text-right font-normal"><AdminText>{"Payable"}</AdminText></th>
           </tr>
         </thead>
         <tbody>
@@ -55,7 +56,7 @@ export function AllocationPreviewTable({ preview, totalAmount }: AllocationPrevi
           </tr>
           <tr>
             <td colSpan={3} className="text-body-sm px-4 py-2.5">
-              Target
+              <AdminText>{"Target"}</AdminText>
             </td>
             <td className="px-4 py-2.5 text-right tabular-nums">{formatBDT(totalAmount)}</td>
           </tr>

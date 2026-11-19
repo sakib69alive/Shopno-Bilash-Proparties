@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -18,8 +19,8 @@ export default async function NewProjectPage() {
   return (
     <>
       <AdminPageHeader
-        title="New Project"
-        breadcrumbs={[{ label: "Projects", href: "/admin/projects" }, { label: "New" }]}
+        title={<AdminText>{"New Project"}</AdminText>}
+        breadcrumbs={[{ label: "Projects", href: "/admin/projects" }, { label: "New", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <ProjectForm action={createProject} submitLabel="Create Project" />

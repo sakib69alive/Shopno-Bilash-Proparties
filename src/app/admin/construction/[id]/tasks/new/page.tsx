@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -44,11 +45,11 @@ export default async function NewTaskPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="New Task"
+        title={<AdminText>{"New Task"}</AdminText>}
         breadcrumbs={[
           { label: "Construction", href: "/admin/construction" },
           { label: phase.name, href: `/admin/construction/${id}` },
-          { label: "New Task" },
+          { label: "New Task", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

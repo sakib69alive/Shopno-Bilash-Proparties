@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -18,9 +19,9 @@ export default async function AdminDemoDataPage() {
   return (
     <>
       <AdminPageHeader
-        title="Remove demo data"
-        description="Clear the practice data so you can start with your real business."
-        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Remove demo data" }]}
+        title={<AdminText>{"Remove demo data"}</AdminText>}
+        description={<AdminText>{"Clear the practice data so you can start with your real business."}</AdminText>}
+        breadcrumbs={[{ label: "Settings", href: "/admin/settings" }, { label: "Remove demo data", localize: true }]}
       />
       <div className="p-4 sm:p-6">
         <DemoDataPanel />

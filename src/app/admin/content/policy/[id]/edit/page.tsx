@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -31,11 +32,11 @@ export default async function EditPolicyRulePage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Rule"
+        title={<AdminText>{"Edit Rule"}</AdminText>}
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Company Policy", href: "/admin/content/policy" },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

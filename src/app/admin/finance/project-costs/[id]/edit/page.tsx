@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -37,11 +38,11 @@ export default async function EditProjectBudgetPage({ params }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Edit Budget Line"
+        title={<AdminText>{"Edit Budget Line"}</AdminText>}
         breadcrumbs={[
           { label: "Project Finance", href: "/admin/finance/project-costs" },
           { label: budget.category, href: `/admin/finance/project-costs/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

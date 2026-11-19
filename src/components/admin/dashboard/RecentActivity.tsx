@@ -1,3 +1,4 @@
+import { AdminText } from "../AdminLanguage";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { formatDate } from "@/lib/format";
 import { describeAuditAction } from "@/lib/auditActions";
@@ -33,7 +34,7 @@ export function RecentActivity({ activity }: RecentActivityProps) {
             <span className="bg-surface text-fg-muted flex size-8 shrink-0 items-center justify-center rounded-full">
               <Icon aria-hidden className="size-4" />
             </span>
-            <span className="text-body-sm flex-1 text-fg">{label}</span>
+            <span className="text-body-sm flex-1 text-fg"><AdminText>{label}</AdminText></span>
             <span className="text-caption text-fg-subtle shrink-0">{formatDate(new Date(entry.occurredAt))}</span>
           </li>
         );

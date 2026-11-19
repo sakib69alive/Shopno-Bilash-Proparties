@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText, useAdminLanguage } from "../AdminLanguage";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -40,6 +41,7 @@ export const QUICK_ACTIONS: { label: string; href: string; icon: typeof Plus; pe
 
 /** Prompt 10 — the one universal search + quick-actions entry point, replacing the disabled header search input. */
 export function GlobalSearch({ user }: GlobalSearchProps) {
+  const { t } = useAdminLanguage();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [open, setOpen] = useState(false);
@@ -93,8 +95,8 @@ export function GlobalSearch({ user }: GlobalSearchProps) {
         value={query}
         onChange={(e) => handleChange(e.target.value)}
         onFocus={() => setOpen(true)}
-        placeholder="Search projects, units, owners, leads…"
-        aria-label="Search"
+        placeholder={t("Search projects, units, owners, leads.")}
+        aria-label={t("Search")}
         className="text-body-sm h-10 w-full rounded-md border border-border-strong bg-surface pl-9 pr-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
       />
 
@@ -103,7 +105,7 @@ export function GlobalSearch({ user }: GlobalSearchProps) {
           {query.trim().length >= 2 ? (
             <div className="max-h-96 overflow-y-auto py-1.5">
               {isPending && results.length === 0 ? (
-                <p className="text-body-sm text-fg-subtle px-4 py-3">Searching…</p>
+                <p className="text-body-sm text-fg-subtle px-4 py-3"><AdminText>{"Searching…"}</AdminText></p>
               ) : results.length === 0 ? (
                 <p className="text-body-sm text-fg-subtle px-4 py-3">No matches for &ldquo;{query}&rdquo;.</p>
               ) : (
@@ -128,7 +130,7 @@ export function GlobalSearch({ user }: GlobalSearchProps) {
             </div>
           ) : (
             <div className="py-1.5">
-              <p className="text-label text-fg-subtle px-4 py-1.5 uppercase">Quick Actions</p>
+              <p className="text-label text-fg-subtle px-4 py-1.5 uppercase"><AdminText>{"Quick Actions"}</AdminText></p>
               {quickActions.map((a) => (
                 <Link
                   key={a.href}
@@ -137,7 +139,7 @@ export function GlobalSearch({ user }: GlobalSearchProps) {
                   className="hover:bg-surface flex items-center gap-3 px-4 py-2 transition-colors"
                 >
                   <a.icon aria-hidden className="text-fg-subtle size-4 shrink-0" />
-                  <span className="text-body-sm text-fg">{a.label}</span>
+                  <span className="text-body-sm text-fg">{t(a.label)}</span>
                 </Link>
               ))}
             </div>

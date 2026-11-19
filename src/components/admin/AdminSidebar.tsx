@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { ADMIN_NAV_GROUPS } from "@/config/navigation";
 import type { RoleName } from "@/config/roles";
 import type { CompanySettings } from "@/types/settings";
@@ -48,7 +49,7 @@ export function AdminSidebar({ role, incompleteHrefs, settings }: AdminSidebarPr
           displayName={settings?.displayName}
           className="h-11 sm:h-11"
         />
-        <span className="text-caption text-fg-subtle">Admin</span>
+        <span className="text-caption text-fg-subtle"><AdminText>{"Admin"}</AdminText></span>
       </div>
 
       <div className="thin-scrollbar flex-1 overflow-y-auto px-3 py-4">

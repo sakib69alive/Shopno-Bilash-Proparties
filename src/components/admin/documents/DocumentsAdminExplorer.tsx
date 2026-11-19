@@ -1,5 +1,7 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
@@ -62,6 +64,7 @@ const OWNER_TYPE_OPTIONS: { value: DocumentOwnerType | "all"; label: string }[] 
  * `documentRepository` — plain substring match over name/category.
  */
 export function DocumentsAdminExplorer({ documents, canCreate, canDelete }: DocumentsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<DocumentStatus | "all">("all");
   const [ownerType, setOwnerType] = useState<DocumentOwnerType | "all">("all");
@@ -146,7 +149,7 @@ export function DocumentsAdminExplorer({ documents, canCreate, canDelete }: Docu
           canCreate && (
             <Link href="/admin/documents/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              New Document
+              <AdminText>{"New Document"}</AdminText>
             </Link>
           )
         }
@@ -171,7 +174,7 @@ export function DocumentsAdminExplorer({ documents, canCreate, canDelete }: Docu
         <select
           value={ownerType}
           onChange={(e) => setOwnerType(e.target.value as DocumentOwnerType | "all")}
-          aria-label="Filter by owner type"
+          aria-label={adminCopy("Filter by owner type")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {OWNER_TYPE_OPTIONS.map((opt) => (
@@ -183,7 +186,7 @@ export function DocumentsAdminExplorer({ documents, canCreate, canDelete }: Docu
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as DocumentStatus | "all")}
-          aria-label="Filter by status"
+          aria-label={adminCopy("Filter by status")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {STATUS_OPTIONS.map((opt) => (

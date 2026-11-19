@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useState } from "react";
 import Link from "next/link";
 import { Building2, Layers, Home, Plus, Wand2 } from "lucide-react";
@@ -47,7 +48,7 @@ export function ProjectUnitsGrid({ projectId, buildings }: ProjectUnitsGridProps
           action={
             <Button size="md" onClick={() => setAddBuildingOpen(true)}>
               <Plus aria-hidden className="size-4" />
-              Add Building
+              <AdminText>{"Add Building"}</AdminText>
             </Button>
           }
         />
@@ -61,11 +62,11 @@ export function ProjectUnitsGrid({ projectId, buildings }: ProjectUnitsGridProps
       <div className="flex items-center justify-end gap-2.5">
         <Button variant="outline" size="sm" onClick={() => setGeneratorOpen(true)}>
           <Wand2 aria-hidden className="size-3.5" />
-          Generate Structure
+          <AdminText>{"Generate Structure"}</AdminText>
         </Button>
         <Button size="sm" onClick={() => setAddBuildingOpen(true)}>
           <Plus aria-hidden className="size-3.5" />
-          Add Building
+          <AdminText>{"Add Building"}</AdminText>
         </Button>
       </div>
 
@@ -83,7 +84,7 @@ export function ProjectUnitsGrid({ projectId, buildings }: ProjectUnitsGridProps
               onClick={() => setAddFloorFor({ buildingId: building.id, nextFloorNumber: (building.floors.at(-1)?.floorNumber ?? 0) + 1 })}
             >
               <Plus aria-hidden className="size-3.5" />
-              Add Floor
+              <AdminText>{"Add Floor"}</AdminText>
             </Button>
           </div>
 
@@ -97,7 +98,7 @@ export function ProjectUnitsGrid({ projectId, buildings }: ProjectUnitsGridProps
                   size="sm"
                   onClick={() => setAddFloorFor({ buildingId: building.id, nextFloorNumber: 1 })}
                 >
-                  Add Floor
+                  <AdminText>{"Add Floor"}</AdminText>
                 </Button>
               }
             />
@@ -114,7 +115,7 @@ export function ProjectUnitsGrid({ projectId, buildings }: ProjectUnitsGridProps
                       className="py-8"
                       action={
                         <Link href={`/admin/properties/new?projectId=${projectId}`} className="text-body-sm text-accent font-medium hover:underline">
-                          Add Units
+                          <AdminText>{"Add Units"}</AdminText>
                         </Link>
                       }
                     />

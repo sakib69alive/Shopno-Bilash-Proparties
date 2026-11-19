@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -44,9 +45,9 @@ export default async function SendDocumentPage({ searchParams }: PageProps) {
   return (
     <>
       <AdminPageHeader
-        title="Send a document to clients"
-        description="Add a PDF or picture, choose one client or many, and it appears in each client's own page."
-        breadcrumbs={[{ label: "Documents", href: "/admin/documents" }, { label: "Send to clients" }]}
+        title={<AdminText>{"Send a document to clients"}</AdminText>}
+        description={<AdminText>{"Add a PDF or picture, choose one client or many, and it appears in each client's own page."}</AdminText>}
+        breadcrumbs={[{ label: "Documents", href: "/admin/documents" }, { label: "Send to clients", localize: true }]}
       />
       <SendDocumentForm
         recipients={recipients}

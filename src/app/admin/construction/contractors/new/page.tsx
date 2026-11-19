@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -18,11 +19,11 @@ export default async function NewContractorPage() {
   return (
     <>
       <AdminPageHeader
-        title="Add Contractor"
+        title={<AdminText>{"Add Contractor"}</AdminText>}
         breadcrumbs={[
           { label: "Construction", href: "/admin/construction" },
           { label: "Contractors", href: "/admin/construction/contractors" },
-          { label: "New" },
+          { label: "New", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
@@ -93,7 +94,7 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
             <div className="flex items-center gap-2">
               <Link href={`/admin/shareholders/${shareholder.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeleteShareholderButton id={shareholder.id} name={shareholder.name} />
             </div>
@@ -104,7 +105,7 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[1fr_1.4fr]">
         <div className="flex flex-col gap-4">
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Contact</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Contact"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Email" value={shareholder.email} />
               <Fact label="Phone" value={shareholder.phone} />
@@ -112,17 +113,17 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Total Contribution</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Total Contribution"}</AdminText></h2>
             <div className="border-border bg-surface-raised rounded-lg border p-4">
               <p className="text-title-md text-fg font-semibold">{formatBDT(totalContribution)}</p>
               <p className="text-caption text-fg-subtle mt-1">
-                Across {holdings.length} {holdings.length === 1 ? "project" : "projects"}
+                <AdminText>{"Across "}</AdminText>{holdings.length} {holdings.length === 1 ? "project" : "projects"}
               </p>
             </div>
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+            <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
             <div className="grid grid-cols-2 gap-4">
               <Fact label="Created" value={formatDate(new Date(shareholder.createdAt))} />
               <Fact label="Last Updated" value={formatDate(new Date(shareholder.updatedAt))} />
@@ -142,11 +143,11 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-label text-fg-subtle uppercase">Shareholdings</h2>
+            <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Shareholdings"}</AdminText></h2>
             {canManage && (
               <Link href={`/admin/shareholders/${shareholder.id}/holdings/new`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Plus aria-hidden className="size-3.5" />
-                Add Shareholding
+                <AdminText>{"Add Shareholding"}</AdminText>
               </Link>
             )}
           </div>
@@ -174,7 +175,7 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
                           {project.name}
                         </Link>
                       ) : (
-                        <span className="text-body-sm text-fg-subtle">Unknown project</span>
+                        <span className="text-body-sm text-fg-subtle"><AdminText>{"Unknown project"}</AdminText></span>
                       )}
                       <div className="flex items-center gap-3">
                         <span className="text-body-sm text-fg tabular-nums">{formatPercent(holding.sharePercentage / 100)}</span>
@@ -182,7 +183,7 @@ export default async function AdminShareholderDetailPage({ params }: PageProps) 
                       </div>
                     </div>
                     <div className="text-caption text-fg-subtle flex flex-wrap gap-x-4 gap-y-1">
-                      <span>Contribution: {formatBDT(holding.totalContribution.amount)}</span>
+                      <span><AdminText>{"Contribution:"}</AdminText> {formatBDT(holding.totalContribution.amount)}</span>
                     </div>
                     {canManage && project && (
                       <UnitAssignmentControl

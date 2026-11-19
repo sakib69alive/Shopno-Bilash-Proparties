@@ -41,7 +41,7 @@ export default async function EditNotificationPage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Notifications", href: "/admin/notifications" },
           { label: notification.title, href: `/admin/notifications/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

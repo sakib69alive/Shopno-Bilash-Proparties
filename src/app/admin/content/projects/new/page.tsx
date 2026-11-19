@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -18,11 +19,11 @@ export default async function NewProjectContentPage() {
   return (
     <>
       <AdminPageHeader
-        title="New Project"
+        title={<AdminText>{"New Project"}</AdminText>}
         breadcrumbs={[
           { label: "Content", href: "/admin/content" },
           { label: "Projects", href: "/admin/content/projects" },
-          { label: "New" },
+          { label: "New", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">

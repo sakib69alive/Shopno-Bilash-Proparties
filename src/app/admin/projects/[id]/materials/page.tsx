@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Boxes, ArrowRight } from "lucide-react";
@@ -109,19 +110,19 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
             href={`/admin/procurement/purchases?projectId=${project.id}`}
             className="text-body-sm text-accent hover:text-accent-strong inline-flex items-center gap-1.5 font-medium transition-colors"
           >
-            Purchases <ArrowRight aria-hidden className="size-3.5" />
+            <AdminText>{"Purchases "}</AdminText><ArrowRight aria-hidden className="size-3.5" />
           </Link>
           <Link
             href={`/admin/procurement/stock?projectId=${project.id}`}
             className="text-body-sm text-accent hover:text-accent-strong inline-flex items-center gap-1.5 font-medium transition-colors"
           >
-            Stock Ledger <ArrowRight aria-hidden className="size-3.5" />
+            <AdminText>{"Stock Ledger "}</AdminText><ArrowRight aria-hidden className="size-3.5" />
           </Link>
           <Link
             href="/admin/procurement"
             className="text-body-sm text-accent hover:text-accent-strong inline-flex items-center gap-1.5 font-medium transition-colors"
           >
-            Suppliers <ArrowRight aria-hidden className="size-3.5" />
+            <AdminText>{"Suppliers "}</AdminText><ArrowRight aria-hidden className="size-3.5" />
           </Link>
         </div>
       </div>
@@ -133,7 +134,7 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
           description="Your project material inventory will appear here."
           action={
             <Link href={`/admin/procurement/stock/new?projectId=${project.id}`} className="text-body-sm text-accent font-medium hover:underline">
-              Add Material
+              <AdminText>{"Add Material"}</AdminText>
             </Link>
           }
         />
@@ -147,15 +148,15 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
           </DashboardSection>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Stock</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Stock"}</AdminText></h2>
             <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-3 font-normal">Material</th>
-                    <th className="px-4 py-3 text-right font-normal">Received</th>
-                    <th className="px-4 py-3 text-right font-normal">Used</th>
-                    <th className="px-4 py-3 text-right font-normal">Current Stock</th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Material"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Received"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Used"}</AdminText></th>
+                    <th className="px-4 py-3 text-right font-normal"><AdminText>{"Current Stock"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -176,7 +177,7 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
                         </td>
                         <td className={`px-4 py-3 text-right font-medium tabular-nums ${low ? "text-error" : "text-fg"}`}>
                           {summary.currentStock} {material.unit}
-                          {low && <span className="text-caption ml-2 font-normal">Low Stock</span>}
+                          {low && <span className="text-caption ml-2 font-normal"><AdminText>{"Low Stock"}</AdminText></span>}
                         </td>
                       </tr>
                     );
@@ -188,7 +189,7 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <section>
-              <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Purchases</h2>
+              <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Recent Purchases"}</AdminText></h2>
               {recentPurchases.length === 0 ? (
                 <EmptyState title="No purchases yet" description="Purchases recorded for this project will appear here." />
               ) : (
@@ -213,7 +214,7 @@ export default async function ProjectMaterialsPage({ params }: PageProps) {
             </section>
 
             <section>
-              <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Usage</h2>
+              <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Recent Usage"}</AdminText></h2>
               {recentUsage.length === 0 ? (
                 <EmptyState title="No usage recorded yet" description="Material consumption recorded on this project will appear here." />
               ) : (

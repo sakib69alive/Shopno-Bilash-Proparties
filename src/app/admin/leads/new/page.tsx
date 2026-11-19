@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { PermissionDeniedState } from "@/components/feedback/PermissionDeniedState";
@@ -26,7 +27,7 @@ export default async function NewLeadPage() {
 
   return (
     <>
-      <AdminPageHeader title="New Lead" breadcrumbs={[{ label: "Leads / Enquiries", href: "/admin/leads" }, { label: "New" }]} />
+      <AdminPageHeader title={<AdminText>{"New Lead"}</AdminText>} breadcrumbs={[{ label: "Leads / Enquiries", href: "/admin/leads" }, { label: "New", localize: true }]} />
       <div className="p-4 sm:p-6">
         <LeadForm action={createLead} projects={projects} units={units} users={users} submitLabel="Add Lead" />
       </div>

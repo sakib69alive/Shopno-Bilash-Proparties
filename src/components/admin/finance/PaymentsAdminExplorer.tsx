@@ -1,7 +1,10 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { ExplainFinanceButton, setFinanceAssistantProject } from "./FinanceAssistant";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
 import { DataTable, type DataTableColumn } from "@/components/ui/DataTable";
 import { EmptyState } from "@/components/feedback/EmptyState";
@@ -46,6 +49,7 @@ const METHOD_OPTIONS: { value: PaymentMethod | "all"; label: string }[] = [
  * projects already fetched by the page — no second dataset of either.
  */
 export function PaymentsAdminExplorer({ payments, customers, projects, canCreate, canDelete, initialProjectId }: PaymentsAdminExplorerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [search, setSearch] = useState("");
   const [method, setMethod] = useState<PaymentMethod | "all">("all");
   const [projectId, setProjectId] = useState<string | "all">(initialProjectId ?? "all");
@@ -116,6 +120,7 @@ export function PaymentsAdminExplorer({ payments, customers, projects, canCreate
       align: "right",
       render: (p) => (
         <span className="flex items-center justify-end gap-1">
+          <ExplainFinanceButton selection={{ kind: "payment", id: p.id }} />
           <Link href={`/admin/sales/payments/${p.id}/edit`}>
             <IconButton icon={Pencil} label={`Edit payment ${p.id}`} size="sm" />
           </Link>
@@ -143,7 +148,7 @@ export function PaymentsAdminExplorer({ payments, customers, projects, canCreate
           canCreate && (
             <Link href="/admin/sales/payments/new" className={cn(buttonVariants({ variant: "outline", size: "md" }), "mt-2")}>
               <Plus aria-hidden className="size-4" />
-              Record Payment
+              <AdminText>{"Record Payment"}</AdminText>
             </Link>
           )
         }
@@ -167,11 +172,11 @@ export function PaymentsAdminExplorer({ payments, customers, projects, canCreate
         </div>
         <select
           value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          aria-label="Filter by project"
+          onChange={(e) => { setProjectId(e.target.value); setFinanceAssistantProject(e.target.value); }}
+          aria-label={adminCopy("Filter by project")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
-          <option value="all">All projects</option>
+          <option value="all"><AdminText>{"All projects"}</AdminText></option>
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -181,7 +186,7 @@ export function PaymentsAdminExplorer({ payments, customers, projects, canCreate
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value as PaymentMethod | "all")}
-          aria-label="Filter by payment method"
+          aria-label={adminCopy("Filter by payment method")}
           className="text-body-sm h-10 rounded-md border border-border-strong bg-surface-raised px-3 text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent-soft"
         >
           {METHOD_OPTIONS.map((opt) => (

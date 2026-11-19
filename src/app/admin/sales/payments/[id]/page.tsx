@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Receipt } from "lucide-react";
@@ -88,11 +89,11 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
             <div className="flex items-center gap-2">
               <Link href={`/admin/statements?paymentId=${payment.id}`} className={buttonVariants({ variant: "primary", size: "sm" })}>
                 <Receipt aria-hidden className="size-3.5" />
-                Create receipt
+                <AdminText>{"Create receipt"}</AdminText>
               </Link>
               <Link href={`/admin/sales/payments/${payment.id}/edit`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 <Pencil aria-hidden className="size-3.5" />
-                Edit
+                <AdminText>{"Edit"}</AdminText>
               </Link>
               <DeletePaymentButton id={payment.id} />
             </div>
@@ -102,7 +103,7 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-2">
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Customer</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Customer"}</AdminText></h2>
           {customer ? (
             <>
               <div className="grid grid-cols-2 gap-4">
@@ -113,16 +114,16 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
                 href={`/admin/customers/${customer.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View customer →
+                <AdminText>{"View customer →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">This customer no longer exists.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"This customer no longer exists."}</AdminText></p>
           )}
         </section>
 
         <section className="border-border bg-surface-raised flex flex-col gap-4 rounded-lg border p-4">
-          <h2 className="text-label text-fg-subtle uppercase">Project</h2>
+          <h2 className="text-label text-fg-subtle uppercase"><AdminText>{"Project"}</AdminText></h2>
           {project ? (
             <>
               <Fact label="Project" value={project.name} />
@@ -130,16 +131,16 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
                 href={`/admin/projects/${project.id}`}
                 className="text-body-sm text-accent hover:text-accent-strong transition-colors"
               >
-                View project →
+                <AdminText>{"View project →"}</AdminText>
               </Link>
             </>
           ) : (
-            <p className="text-body-sm text-fg-subtle">Not linked to a project.</p>
+            <p className="text-body-sm text-fg-subtle"><AdminText>{"Not linked to a project."}</AdminText></p>
           )}
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Payment</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Payment"}</AdminText></h2>
           <div className="grid grid-cols-3 gap-4">
             <Fact label="Amount" value={formatBDT(payment.amount.amount)} />
             <Fact label="Method" value={METHOD_LABEL[payment.method]} />
@@ -151,7 +152,7 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Related Records</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Related Records"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Contract" value={payment.contractId ?? "—"} />
             <Fact label="Installment" value={payment.installmentId ?? "—"} />
@@ -159,7 +160,7 @@ export default async function AdminPaymentDetailPage({ params }: PageProps) {
         </section>
 
         <section>
-          <h2 className="text-label text-fg-subtle mb-2 uppercase">Record</h2>
+          <h2 className="text-label text-fg-subtle mb-2 uppercase"><AdminText>{"Record"}</AdminText></h2>
           <div className="grid grid-cols-2 gap-4">
             <Fact label="Created" value={formatDate(new Date(payment.createdAt))} />
             <Fact label="Last Updated" value={formatDate(new Date(payment.updatedAt))} />

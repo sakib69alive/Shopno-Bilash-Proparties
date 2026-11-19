@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -36,7 +37,7 @@ export default async function EditReminderPage({ params }: PageProps) {
 
   return (
     <>
-      <AdminPageHeader title="Edit Reminder" breadcrumbs={[{ label: "Reminders", href: "/admin/reminders" }, { label: "Edit" }]} />
+      <AdminPageHeader title={<AdminText>{"Edit Reminder"}</AdminText>} breadcrumbs={[{ label: "Reminders", href: "/admin/reminders" }, { label: "Edit", localize: true }]} />
       <div className="p-4 sm:p-6">
         <ReminderForm action={boundAction} reminder={reminder} projects={projects} users={users} submitLabel="Save Changes" />
       </div>

@@ -1,8 +1,10 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Check, Pencil, X } from "lucide-react";
+import { AlertTriangle, Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { formatBDT } from "@/lib/format";
@@ -36,6 +38,10 @@ const OWNER_TONES = ["bg-success", "bg-warning", "bg-info", "bg-error", "bg-acce
 
 const natural = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
 
+function isValidOverride(mode: SplitOverride["mode"], value: string) {
+  return Number.isFinite(Number(value)) && ((mode !== "amount" && mode !== "percent") || Number(value) >= 0);
+}
+
 /** "1A" → "A": the flat's position on its floor, so "all the A flats" can be picked in one tap. */
 function positionOf(unitNumber: string): string | null {
   const m = /([A-Za-z]+)$/.exec(unitNumber.trim());
@@ -52,6 +58,7 @@ function positionOf(unitNumber: string): string | null {
  * add up to the total exactly.
  */
 export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpaces, defaultBasis }: SplitPlannerProps) {
+  const { t: adminCopy } = useUiLanguage();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<Set<string>>(() => new Set(units.map((u) => u.id)));
@@ -112,6 +119,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
   const parkingTotal = Object.values(parkingAmounts).reduce((s, v) => s + (Number(v) || 0), 0);
   const maxAmount = Math.max(1, ...chosen.map((u) => shown[u.id] ?? 0));
   const focus = focusId ? units.find((u) => u.id === focusId) : undefined;
+  const invalidOverride = !!focus && !!editValue.trim() && !isValidOverride(editMode, editValue);
 
   const ownerOrder = useMemo(() => [...new Set(sorted.map((u) => u.ownerLabel))], [sorted]);
   const ownerTotals = useMemo(() => {
@@ -159,12 +167,16 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     select([unit.id], true);
   }
 
-  function applyOverride() {
+  function updateOverride(mode: SplitOverride["mode"], input: string) {
     if (!focus) return;
-    const value = Number(editValue);
-    if (!Number.isFinite(value) || editValue.trim() === "") return;
-    if ((editMode === "amount" || editMode === "percent") && value < 0) return;
-    setOverrides((prev) => ({ ...prev, [focus.id]: { mode: editMode, value } }));
+    setEditMode(mode);
+    setEditValue(input);
+    if (!input.trim()) {
+      clearOverride(focus.id);
+      return;
+    }
+    if (!isValidOverride(mode, input)) return;
+    setOverrides((prev) => ({ ...prev, [focus.id]: { mode, value: Number(input) } }));
     select([focus.id], true);
   }
 
@@ -213,11 +225,11 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
     <div className="border-accent bg-surface-raised flex flex-col gap-3 rounded-lg border-2 p-3">
       <p className="text-body-sm">
         <span className="font-semibold">{focus.unitNumber}</span> · {focus.ownerLabel}
-        {selected.has(focus.id) && shown[focus.id] !== undefined && <span className="text-fg-muted"> — pays {formatBDT(shown[focus.id])} now</span>}
+        {selected.has(focus.id) && shown[focus.id] !== undefined && <span className="text-fg-muted"><AdminText values={{ amount: formatBDT(shown[focus.id]) }}>{" - pays {amount} now"}</AdminText></span>}
       </p>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-caption text-fg-subtle flex flex-col gap-1">
-          Size (sqft)
+          <AdminText>{"Size (sqft)"}</AdminText>
           <input
             type="number"
             min={0}
@@ -230,7 +242,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
               const v = Number(e.target.value);
               if (v !== focus.sizeSqft || sizes[focus.id] !== undefined) void saveSize(focus, v);
             }}
-            aria-label="Flat size in sqft"
+            aria-label={adminCopy("Flat size in sqft")}
             className="text-body-sm h-10 w-32 rounded-md border border-border-strong bg-surface px-3 text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
         </label>
@@ -250,35 +262,31 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
       </div>
       {sizeNote && sizeNote.id === focus.id && <p className={cn("text-caption", sizeNote.ok ? "text-success" : "text-error")}>{sizeNote.text}</p>}
       <div className="flex flex-col gap-2">
-        <p className="text-caption text-fg-subtle">How much should this flat pay?</p>
+        <p className="text-caption text-fg-subtle"><AdminText>{"How much should this flat pay?"}</AdminText></p>
         <div className="flex flex-wrap items-center gap-2">
-          <Chip active={editMode === "extraPercent"} onClick={() => setEditMode("extraPercent")}>More by %</Chip>
-          <Chip active={editMode === "extraAmount"} onClick={() => setEditMode("extraAmount")}>More by ৳</Chip>
-          <Chip active={editMode === "amount"} onClick={() => setEditMode("amount")}>Exactly ৳</Chip>
-          <Chip active={editMode === "percent"} onClick={() => setEditMode("percent")}>Exactly % of total</Chip>
+          <Chip active={editMode === "extraPercent"} onClick={() => updateOverride("extraPercent", editValue)}><AdminText>{"More by %"}</AdminText></Chip>
+          <Chip active={editMode === "extraAmount"} onClick={() => updateOverride("extraAmount", editValue)}><AdminText>{"More by ৳"}</AdminText></Chip>
+          <Chip active={editMode === "amount"} onClick={() => updateOverride("amount", editValue)}><AdminText>{"Exactly ৳"}</AdminText></Chip>
+          <Chip active={editMode === "percent"} onClick={() => updateOverride("percent", editValue)}><AdminText>{"Exactly % of total"}</AdminText></Chip>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <input
-            type="number"
-            min={editMode === "amount" || editMode === "percent" ? 0 : undefined}
+            inputMode="decimal"
             value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyOverride())}
+            onChange={(e) => updateOverride(editMode, e.target.value)}
             placeholder={editMode === "amount" || editMode === "extraAmount" ? "e.g. 25000" : "e.g. 5"}
-            aria-label="Custom value"
+            aria-label={adminCopy("Custom value")}
+            aria-invalid={invalidOverride}
             className="text-body-sm h-10 w-36 rounded-md border border-border-strong bg-surface px-3 text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent-soft"
           />
-          <Button type="button" size="sm" onClick={applyOverride} disabled={editValue.trim() === ""}>
-            <Check aria-hidden className="size-3.5" />
-            Set
-          </Button>
           {overrides[focus.id] && (
             <Button type="button" size="sm" variant="outline" onClick={() => clearOverride(focus.id)}>
-              Back to automatic
+              <AdminText>{"Back to automatic"}</AdminText>
             </Button>
           )}
         </div>
-        <p className="text-caption text-fg-subtle">Minus means less. The other flats cover the difference automatically.</p>
+        {invalidOverride && <p role="alert" className="text-caption text-error">Enter a valid {editMode === "amount" || editMode === "percent" ? "non-negative " : ""}number.</p>}
+        <p className="text-caption text-fg-subtle"><AdminText>{"Minus means less. The other flats cover the difference automatically."}</AdminText></p>
       </div>
     </div>
   ) : null;
@@ -294,13 +302,13 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
         )}
 
         <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">1 · Which flats pay? (tap to choose)</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"1 · Which flats pay? (tap to choose)"}</AdminText></h3>
           <div className="flex flex-wrap gap-2">
-            <Chip onClick={() => select(units.map((u) => u.id), true)}>All flats</Chip>
-            <Chip onClick={() => select(units.map((u) => u.id), false)}>None</Chip>
+            <Chip onClick={() => select(units.map((u) => u.id), true)}><AdminText>{"All flats"}</AdminText></Chip>
+            <Chip onClick={() => select(units.map((u) => u.id), false)}><AdminText>{"None"}</AdminText></Chip>
             {positions.length > 1 && positions.map((p) => (
               <Chip key={p} onClick={() => select(sorted.filter((u) => positionOf(u.unitNumber) === p).map((u) => u.id), !sorted.filter((u) => positionOf(u.unitNumber) === p).every((u) => selected.has(u.id)))}>
-                Every {p} flat
+                Every {p}<AdminText>{" flat"}</AdminText>
               </Chip>
             ))}
           </div>
@@ -338,7 +346,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
                           </span>
                           <span className="flex w-full items-end justify-between gap-2">
                             <span className={cn("text-caption leading-tight", on ? "text-accent-foreground/80" : "text-fg-subtle")}>
-                              {sq(u).toLocaleString("en-US")} sqft{sizes[u.id] !== undefined && sizes[u.id] !== u.sizeSqft ? "*" : ""}
+                              {sq(u).toLocaleString("en-US")}<AdminText>{" sqft"}</AdminText>{sizes[u.id] !== undefined && sizes[u.id] !== u.sizeSqft ? "*" : ""}
                             </span>
                             <span className="text-body font-semibold tabular-nums">{on && amount !== undefined ? formatBDT(amount) : "—"}</span>
                           </span>
@@ -367,10 +375,10 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
         </div>
 
         <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">2 · Should everyone pay the same?</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"2 · Should everyone pay the same?"}</AdminText></h3>
           <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Sharing basis">
-            <Chip active={basis === "equal"} onClick={() => setBasis("equal")}>Yes — same for every flat</Chip>
-            <Chip active={basis === "sqft"} onClick={() => setBasis("sqft")}>No — bigger flat pays more</Chip>
+            <Chip active={basis === "equal"} onClick={() => setBasis("equal")}><AdminText>{"Yes — same for every flat"}</AdminText></Chip>
+            <Chip active={basis === "sqft"} onClick={() => setBasis("sqft")}><AdminText>{"No — bigger flat pays more"}</AdminText></Chip>
           </div>
           {perSqftNote && (
             <p className="text-body-sm text-warning">Heads up: with the same amount per flat, a small flat pays much more per sqft than a big one. Switch to &ldquo;By area&rdquo; or set a custom amount on the small/big flats.</p>
@@ -378,13 +386,13 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
         </div>
 
         <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">3 · Change one flat&apos;s amount (optional)</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"3 · Change one flat's amount (optional)"}</AdminText></h3>
           {focus ? (
             <p className="text-body-sm text-fg-muted">
               Editing <span className="font-semibold">{focus.unitNumber}</span> — the box is right under its floor above (tap the pencil again to close it).
             </p>
           ) : (
-            <p className="text-body-sm text-fg-muted">Tap the small pencil on a flat to change its size or how much it pays — more or less by a %, by taka, or an exact amount. The other flats cover the difference automatically.</p>
+            <p className="text-body-sm text-fg-muted"><AdminText>{"Tap the small pencil on a flat to change its size or how much it pays — more or less by a %, by taka, or an exact amount. The other flats cover the difference automatically."}</AdminText></p>
           )}
 
           <label className="text-body-sm border-border-strong bg-surface-raised flex cursor-pointer items-start gap-3 rounded-lg border px-3.5 py-3">
@@ -416,9 +424,9 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
 
         {parkingSpaces.length > 0 && (
           <div className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
-            <h3 className="text-label text-fg-subtle uppercase">Parking (optional, billed on top)</h3>
+            <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"Parking (optional, billed on top)"}</AdminText></h3>
             <label className="text-body-sm flex flex-wrap items-center gap-2">
-              Same amount for every parking space:
+              <AdminText>{"Same amount for every parking space:"}</AdminText>
               <input
                 type="number"
                 min={0}
@@ -430,7 +438,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
                 }}
                 className="text-body-sm h-9 w-28 rounded-md border border-border-strong bg-surface-raised px-2 text-right text-fg outline-none focus:border-accent"
               />
-              <span className="text-caption text-fg-subtle">or type each one below</span>
+              <span className="text-caption text-fg-subtle"><AdminText>{"or type each one below"}</AdminText></span>
             </label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {parkingSpaces.map((p) => (
@@ -456,15 +464,18 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
       {/* Live result — beside the picker on wide screens, above the details on narrow ones is not needed: it follows the picker. */}
       <aside className="flex flex-col gap-4">
         <div className="border-border bg-surface-raised flex flex-col gap-3 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">What happens now</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"What happens now"}</AdminText></h3>
           <p className="text-body">
             {topMode
-              ? `Budget ${formatBDT(totalAmount)} · extra ${onTopPlan.extra >= 0 ? "+" : "−"}${formatBDT(Math.abs(onTopPlan.extra))} · new total ${formatBDT(onTopPlan.newTotal)}.`
+              ? <AdminText values={{ budget: formatBDT(totalAmount), extra: `${onTopPlan.extra >= 0 ? "+" : "-"}${formatBDT(Math.abs(onTopPlan.extra))}`, total: formatBDT(onTopPlan.newTotal) }}>{"Budget {budget} · extra {extra} · new total {total}."}</AdminText>
               : chosen.length === 0
-              ? "Tap flats to choose who pays."
+              ? <AdminText>{"Tap flats to choose who pays."}</AdminText>
               : plan.error
-                ? "Fix the problem shown below."
-                : `${formatBDT(totalAmount)} is divided between ${chosen.length} flat${chosen.length === 1 ? "" : "s"}.${plan.sharedCount > 0 ? ` On average each flat pays about ${formatBDT(Math.round(Math.max(0, plan.sharedTotal) / plan.sharedCount))}.` : ""}`}
+                ? <AdminText>{"Fix the problem shown below."}</AdminText>
+                : <>
+                  <AdminText values={{ total: formatBDT(totalAmount), count: chosen.length }}>{chosen.length === 1 ? "{total} is allocated to {count} flat." : "{total} is divided between {count} flats."}</AdminText>
+                  {plan.sharedCount > 0 && <AdminText values={{ amount: formatBDT(Math.round(Math.max(0, plan.sharedTotal) / plan.sharedCount)) }}>{" On average each flat pays about {amount}."}</AdminText>}
+                </>}
           </p>
           <div className="grid grid-cols-2 gap-2 text-center">
             <Stat label={topMode ? "New total to collect" : "Total to collect"} value={formatBDT(topMode ? onTopPlan.newTotal : totalAmount)} />
@@ -472,23 +483,23 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
           </div>
           {topMode ? (
             <div className="bg-warning-soft text-body-sm flex flex-col gap-1 rounded-md px-3 py-2">
-              <p className="flex justify-between"><span>Budget as planned</span><span className="font-semibold tabular-nums">{formatBDT(totalAmount)}</span></p>
-              <p className="flex justify-between"><span>{onTopPlan.extra >= 0 ? "Extra added on top" : "Taken off"}</span><span className="font-semibold tabular-nums">{formatBDT(Math.abs(onTopPlan.extra))}</span></p>
-              <p className="flex justify-between border-t border-warning/30 pt-1"><span>New total</span><span className="font-semibold tabular-nums">{formatBDT(onTopPlan.newTotal)}</span></p>
+              <p className="flex justify-between"><span><AdminText>{"Budget as planned"}</AdminText></span><span className="font-semibold tabular-nums">{formatBDT(totalAmount)}</span></p>
+              <p className="flex justify-between"><span><AdminText>{onTopPlan.extra >= 0 ? "Extra added on top" : "Taken off"}</AdminText></span><span className="font-semibold tabular-nums">{formatBDT(Math.abs(onTopPlan.extra))}</span></p>
+              <p className="flex justify-between border-t border-warning/30 pt-1"><span><AdminText>{"New total"}</AdminText></span><span className="font-semibold tabular-nums">{formatBDT(onTopPlan.newTotal)}</span></p>
             </div>
           ) : plan.error ? (
             <p role="alert" className="bg-error-soft text-error text-body-sm rounded-md px-3 py-2">{plan.error}</p>
           ) : chosen.length === 0 ? (
-            <p className="text-body-sm text-fg-muted">Pick at least one flat.</p>
+            <p className="text-body-sm text-fg-muted"><AdminText>{"Pick at least one flat."}</AdminText></p>
           ) : (
-            <p className="bg-success-soft text-success text-body-sm rounded-md px-3 py-2">Correct — adds up to the total{parkingTotal > 0 ? ` (plus ${formatBDT(parkingTotal)} parking)` : ""}.</p>
+            <p className="bg-success-soft text-success text-body-sm rounded-md px-3 py-2"><AdminText>{"Correct — adds up to the total"}</AdminText>{parkingTotal > 0 ? ` (plus ${formatBDT(parkingTotal)} parking)` : ""}.</p>
           )}
         </div>
 
         <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">Each flat pays</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"Each flat pays"}</AdminText></h3>
           {chosen.length === 0 ? (
-            <p className="text-body-sm text-fg-muted">Nothing selected.</p>
+            <p className="text-body-sm text-fg-muted"><AdminText>{"Nothing selected."}</AdminText></p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {chosen.map((u) => {
@@ -523,9 +534,9 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
         </div>
 
         <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-xl border p-4">
-          <h3 className="text-label text-fg-subtle uppercase">Each owner pays</h3>
+          <h3 className="text-label text-fg-subtle uppercase"><AdminText>{"Each owner pays"}</AdminText></h3>
           {ownerTotals.length === 0 ? (
-            <p className="text-body-sm text-fg-muted">Nothing selected.</p>
+            <p className="text-body-sm text-fg-muted"><AdminText>{"Nothing selected."}</AdminText></p>
           ) : (
             <ul className="flex flex-col gap-1.5">
               {ownerTotals.map(([owner, row]) => (
@@ -541,7 +552,7 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
                     />
                   </span>
                   <span className="text-caption text-fg-subtle">
-                    {row.count} flat{row.count === 1 ? "" : "s"} · {row.sqft.toLocaleString("en-US")} sqft
+                    {row.count}<AdminText>{" flat"}</AdminText>{row.count === 1 ? "" : "s"} · {row.sqft.toLocaleString("en-US")}<AdminText>{" sqft"}</AdminText>
                   </span>
                 </li>
               ))}
@@ -549,10 +560,10 @@ export function SplitPlanner({ costAllocationId, totalAmount, units, parkingSpac
           )}
         </div>
 
-        <Button type="button" onClick={handleConfirm} loading={isPending} disabled={chosen.length === 0 || (!topMode && !!plan.error)} className="w-full">
-          Save &amp; send to clients
+        <Button type="button" onClick={handleConfirm} loading={isPending} disabled={chosen.length === 0 || invalidOverride || (!topMode && !!plan.error)} className="w-full">
+          <AdminText>{"Save & send to clients"}</AdminText>
         </Button>
-        <p className="text-caption text-fg-subtle text-center">Each owner gets the amount and last date in their app.</p>
+        <p className="text-caption text-fg-subtle text-center"><AdminText>{"Each owner gets the amount and last date in their app."}</AdminText></p>
       </aside>
     </div>
   );
@@ -578,7 +589,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-surface rounded-lg px-2 py-2.5">
       <p className="text-body-sm font-semibold tabular-nums">{value}</p>
-      <p className="text-caption text-fg-subtle mt-0.5">{label}</p>
+      <p className="text-caption text-fg-subtle mt-0.5"><AdminText>{label}</AdminText></p>
     </div>
   );
 }

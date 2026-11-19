@@ -1,5 +1,6 @@
 "use client";
 
+import { useUiLanguage } from "@/components/ui/UiLanguage";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setMaterialThreshold } from "@/features/procurement/materialThresholdActions";
@@ -13,6 +14,7 @@ export interface MaterialThresholdControlProps {
 
 /** Inline low-stock threshold editor — one row per material on the Stock page, since thresholds are project-scoped (see `MaterialThreshold`'s own doc comment). */
 export function MaterialThresholdControl({ projectId, materialId, unit, currentThreshold }: MaterialThresholdControlProps) {
+  const { t: adminCopy } = useUiLanguage();
   const [value, setValue] = useState(currentThreshold?.toString() ?? "");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -35,7 +37,7 @@ export function MaterialThresholdControl({ projectId, materialId, unit, currentT
         onChange={(e) => setValue(e.target.value)}
         onBlur={handleBlur}
         disabled={isPending}
-        placeholder="Not set"
+        placeholder={adminCopy("Not set")}
         className="text-body-sm h-8 w-24 rounded-md border border-border-strong bg-surface-raised px-2 text-fg outline-none focus:border-accent"
       />
       <span className="text-caption text-fg-subtle">{unit}</span>

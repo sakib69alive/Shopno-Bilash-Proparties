@@ -1,3 +1,4 @@
+import { AdminText } from "@/components/admin/AdminLanguage";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { HardHat, ArrowRight, Plus } from "lucide-react";
@@ -129,7 +130,7 @@ export default async function ProjectConstructionPage({ params }: PageProps) {
           {canManage && (
             <Link href="/admin/construction/new" className="text-body-sm text-accent hover:text-accent-strong inline-flex items-center gap-1.5 font-medium transition-colors">
               <Plus aria-hidden className="size-3.5" />
-              Add Phase
+              <AdminText>{"Add Phase"}</AdminText>
             </Link>
           )}
           <Link
@@ -166,7 +167,7 @@ export default async function ProjectConstructionPage({ params }: PageProps) {
 
           {stats.currentConstructionStage && (
             <div className="border-border bg-surface-raised flex flex-col gap-2 rounded-lg border p-4">
-              <p className="text-label text-fg-subtle uppercase">Current Construction Stage</p>
+              <p className="text-label text-fg-subtle uppercase"><AdminText>{"Current Construction Stage"}</AdminText></p>
               <div className="flex items-center justify-between">
                 <Link href={`/admin/construction/${stats.currentConstructionStage.id}`} className="text-h4 text-fg hover:text-accent transition-colors">
                   {stats.currentConstructionStage.name}
@@ -184,21 +185,21 @@ export default async function ProjectConstructionPage({ params }: PageProps) {
           )}
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Timeline</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Timeline"}</AdminText></h2>
             <ConstructionTimelineChart phases={phases} effectiveProgressOf={effectiveProgressOf} />
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Phases</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Phases"}</AdminText></h2>
             <div className="border-border bg-surface-raised overflow-x-auto scrollbar-none rounded-lg border">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-border text-label text-fg-subtle border-b uppercase">
-                    <th className="px-4 py-3 font-normal">Phase</th>
-                    <th className="px-4 py-3 font-normal">Contractor</th>
-                    <th className="px-4 py-3 font-normal">Progress</th>
-                    <th className="px-4 py-3 font-normal">Status</th>
-                    <th className="px-4 py-3 font-normal">Target End</th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Phase"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Contractor"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Progress"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Status"}</AdminText></th>
+                    <th className="px-4 py-3 font-normal"><AdminText>{"Target End"}</AdminText></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,7 +240,7 @@ export default async function ProjectConstructionPage({ params }: PageProps) {
           </section>
 
           <section>
-            <h2 className="text-label text-fg-subtle mb-3 uppercase">Recent Activity</h2>
+            <h2 className="text-label text-fg-subtle mb-3 uppercase"><AdminText>{"Recent Activity"}</AdminText></h2>
             <ActivityLogPanel projectId={project.id} entries={recentActivity} contractors={contractors} canManage={canManage} />
           </section>
         </>

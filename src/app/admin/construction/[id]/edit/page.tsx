@@ -47,7 +47,7 @@ export default async function EditPhasePage({ params }: PageProps) {
         breadcrumbs={[
           { label: "Construction", href: "/admin/construction" },
           { label: phase.name, href: `/admin/construction/${id}` },
-          { label: "Edit" },
+          { label: "Edit", localize: true },
         ]}
       />
       <div className="p-4 sm:p-6">
